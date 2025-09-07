@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\LawFirmController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -18,9 +19,16 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('admin/index');
     });
 
-    Route::get('/admin/law-firms', function () {
-        return Inertia::render('admin/law-firms/index');
-    });
+    Route::resource('/admin/law-firms', LawFirmController::class)
+        ->names([
+            'index' => 'admin.law-firms.index',
+            'create' => 'admin.law-firms.create',
+            'store' => 'admin.law-firms.store',
+            'show' => 'admin.law-firms.show',
+            'edit' => 'admin.law-firms.edit',
+            'update' => 'admin.law-firms.update',
+            'destroy' => 'admin.law-firms.destroy',
+        ]);
 });
 
 
