@@ -1,10 +1,11 @@
 import Layout from '@/layouts/main-layout';
-import { type SharedData } from '@/types';
-import { Head, usePage } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
+// import { type SharedData } from '@/types';
+// import { Head, usePage } from '@inertiajs/react';
 import { useState, useMemo } from 'react';
 
 const Home = () => {
-    const { auth } = usePage<SharedData>().props;
+    // const { auth } = usePage<SharedData>().props;
 
     // State for filters
     const [searchTerm, setSearchTerm] = useState('');
