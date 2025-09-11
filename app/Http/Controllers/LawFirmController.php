@@ -37,14 +37,20 @@ class LawFirmController extends Controller
     {
         $data = $request->validate([
             'name'        => ['required', 'string', 'max:255'],
-            'slug'        => ['required', 'string', 'max:255', 'unique:law_firms,slug'],
+
+            // slug optional; if provided must be unique (for now we dont't allow editing later we might require it)
+            'slug'        => ['nullable', 'string', 'max:255', 'unique:law_firms,slug'],
             'description' => ['nullable', 'string'],
             'email'       => ['required', 'email', 'max:255', Rule::unique('law_firms', 'email')],
             'location'    => ['required', 'string', 'max:255'],
             'phone'       => ['required', 'string', 'max:255'],
         ]);
 
-        // dd($data);
+        // If slug is blank/null remove it so model hook can create one.
+        if (blank($data['slug'] ?? null)) {
+            unset($data['slug']);
+        }
+        
         LawFirm::create($data);
 
         return redirect()->route('admin.law-firms.index')->with('success', 'Law firm created successfully.');

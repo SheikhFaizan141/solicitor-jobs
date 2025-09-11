@@ -12,7 +12,6 @@ const CreateFirm = () => {
 
     const [form, setForm] = useState({
         name: '',
-        slug: '',
         description: '',
         email: '',
         location: '',
@@ -35,7 +34,7 @@ const CreateFirm = () => {
 
         // Using Inertia.js for form submission
         const data = new FormData();
-        Object.entries(form).forEach(([key, value]) => {
+    Object.entries(form).forEach(([key, value]) => {
             if (value !== null && value !== undefined) {
                 data.append(key, value as string | Blob);
             }
@@ -59,10 +58,7 @@ const CreateFirm = () => {
                         <Label htmlFor="name">Firm Name</Label>
                         <Input id="name" name="name" value={form.name} onChange={handleChange} required placeholder="Enter firm name" />
                     </div>
-                    <div>
-                        <Label htmlFor="slug">Slug</Label>
-                        <Input id="slug" name="slug" value={form.slug} onChange={handleChange} required placeholder="Enter unique slug" />
-                    </div>
+                    {/* Slug removed: generated automatically on server */}
 
                     <div>
                         <Label htmlFor="description">Firm Description</Label>
