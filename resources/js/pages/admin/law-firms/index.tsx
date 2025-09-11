@@ -1,8 +1,22 @@
 import AdminLayout from '@/layouts/admin-layout';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import React from 'react';
 
+interface LawFirm {
+    id: number;
+    name: string;
+    slug: string;
+    description: string;
+    email: string;
+    location: string;
+    phone: string;
+    // Add other fields as necessary
+}
 const LawFirms = () => {
+    const { lawFirms } = usePage().props;
+
+    console.log(lawFirms);
+
     return (
         <div className="px-4 py-3">
             <div className="mb-4 flex items-center justify-between">
@@ -18,7 +32,6 @@ const LawFirms = () => {
                 velit excepturi accusantium facilis illo maiores.
             </p> */}
             <div className="mt-6 overflow-x-auto">
-                
                 <table className="min-w-full border border-gray-200 bg-white">
                     <thead>
                         <tr>
@@ -30,16 +43,9 @@ const LawFirms = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td className="border-b px-4 py-2">1</td>
-                            <td className="border-b px-4 py-2">Smith & Co</td>
-                            <td className="border-b px-4 py-2">London</td>
-                            <td className="border-b px-4 py-2">01234 567890</td>
-                            <td className="border-b px-4 py-2">
-                                <button className="mr-2 text-blue-600 hover:underline">Edit</button>
-                                <button className="text-red-600 hover:underline">Delete</button>
-                            </td>
-                        </tr>
+                        {lawFirms.map((firm: LawFirm) => (
+                            <TableRow key={firm.id} firm={firm} />
+                        ))}
                         {/* Add more rows as needed */}
                     </tbody>
                 </table>
@@ -47,6 +53,25 @@ const LawFirms = () => {
         </div>
     );
 };
+
+interface TableRowProps {
+    firm: LawFirm;
+}
+
+function TableRow({ firm }: TableRowProps) {
+    return (
+        <tr>
+            <td className="border-b px-4 py-2">{firm.id}</td>
+            <td className="border-b px-4 py-2">{firm.name}</td>
+            <td className="border-b px-4 py-2">{firm.location}</td>
+            <td className="border-b px-4 py-2">{firm.phone}</td>
+            <td className="border-b px-4 py-2">
+                <button className="mr-2 text-blue-600 hover:underline">Edit</button>
+                <button className="text-red-600 hover:underline">Delete</button>
+            </td>
+        </tr>
+    );
+}
 
 LawFirms.layout = (page: React.ReactNode) => <AdminLayout>{page}</AdminLayout>;
 

@@ -1,7 +1,12 @@
 import AdminLayout from '@/layouts/admin-layout';
+import { usePage } from '@inertiajs/react';
 import React from 'react';
 
 const AdminPanel = () => {
+    const { lawFirms } = usePage().props;
+
+    console.log(lawFirms);
+    
     return (
         <div style={{ padding: '2rem' }} className="bg-red-500 text-black">
             <h1>Admin Panel</h1>

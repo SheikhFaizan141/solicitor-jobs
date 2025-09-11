@@ -3,10 +3,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import AdminLayout from '@/layouts/admin-layout';
-import { Form } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import React, { useState } from 'react';
 
 const CreateFirm = () => {
+    const { errors } = usePage().props;
+    console.log(errors);
+
     const [form, setForm] = useState({
         name: '',
         slug: '',
@@ -29,11 +32,18 @@ const CreateFirm = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // handle form submission here, e.g., using FormData for file upload
-        // const data = new FormData();
-        // Object.entries(form).forEach(([key, value]) => {
-        //     if (value !== null) data.append(key, value as any);
-        // });
+
+        // Using Inertia.js for form submission
+        const data = new FormData();
+        Object.entries(form).forEach(([key, value]) => {
+            if (value !== null && value !== undefined) {
+                data.append(key, value as string | Blob);
+            }
+        });
+
+        router.post('/admin/law-firms', data, {
+            forceFormData: true,
+        });
     };
 
     return (
@@ -44,7 +54,7 @@ const CreateFirm = () => {
             </header>
 
             <div className="mt-6">
-                <Form className="max-w-md space-y-4" onSubmit={handleSubmit} encType="multipart/form-data">
+                <form className="max-w-md space-y-4" onSubmit={handleSubmit} encType="multipart/form-data">
                     <div>
                         <Label htmlFor="name">Firm Name</Label>
                         <Input id="name" name="name" value={form.name} onChange={handleChange} required placeholder="Enter firm name" />
@@ -60,7 +70,7 @@ const CreateFirm = () => {
                             id="description"
                             name="description"
                             value={form.description}
-                            onChange={handleChange}
+                            onChange={(e) => setForm({ ...form, description: e.target.value })}
                             placeholder="Enter firm description, practice areas, job opportunities..."
                             rows={6}
                             className="resize-vertical"
@@ -100,7 +110,7 @@ const CreateFirm = () => {
                     </div> */}
 
                     <Button type="submit">Create Firm</Button>
-                </Form>
+                </form>
             </div>
         </div>
     );
