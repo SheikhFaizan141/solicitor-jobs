@@ -50,7 +50,7 @@ class LawFirmController extends Controller
         if (blank($data['slug'] ?? null)) {
             unset($data['slug']);
         }
-        
+
         LawFirm::create($data);
 
         return redirect()->route('admin.law-firms.index')->with('success', 'Law firm created successfully.');
@@ -69,7 +69,9 @@ class LawFirmController extends Controller
      */
     public function edit(LawFirm $lawFirm)
     {
-        //
+        return Inertia::render('admin/law-firms/edit', [
+            'lawFirm' => $lawFirm,
+        ]);
     }
 
     /**
@@ -77,7 +79,24 @@ class LawFirmController extends Controller
      */
     public function update(Request $request, LawFirm $lawFirm)
     {
-        //
+        $data = $request->validate([
+            'name'        => ['required', 'string', 'max:255'],
+            'slug'        => ['nullable', 'string', 'max:255', Rule::unique('law_firms', 'slug')->ignore($lawFirm->id)],
+            'description' => ['nullable', 'string'],
+            'email'       => ['required', 'email', 'max:255', Rule::unique('law_firms', 'email')->ignore($lawFirm->id)],
+            'location'    => ['required', 'string', 'max:255'],
+            'phone'       => ['required', 'string', 'max:255'],
+        ]);
+
+        if (blank($data['slug'] ?? null)) {
+            unset($data['slug']); // preserve existing slug if field cleared
+        }
+
+        $lawFirm->update($data);
+
+        return redirect()
+            ->route('admin.law-firms.index')
+            ->with('success', 'Law firm updated successfully.');
     }
 
     /**
@@ -85,6 +104,10 @@ class LawFirmController extends Controller
      */
     public function destroy(LawFirm $lawFirm)
     {
-        //
+        $lawFirm->delete();
+
+        return redirect()
+            ->route('admin.law-firms.index')
+            ->with('success', 'Law firm deleted successfully.');
     }
 }
