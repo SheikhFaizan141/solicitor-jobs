@@ -3,14 +3,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import AdminLayout from '@/layouts/admin-layout';
-import { router, usePage } from '@inertiajs/react';
-import React, { useState } from 'react';
+import { useForm } from '@inertiajs/react';
+import React from 'react';
 
 const CreateFirm = () => {
-    const { errors } = usePage().props;
-    console.log(errors);
-
-    const [form, setForm] = useState({
+    const { data, setData, post, processing, reset, errors } = useForm({
         name: '',
         description: '',
         email: '',
@@ -20,28 +17,16 @@ const CreateFirm = () => {
         logo: null as File | null,
     });
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value, files } = e.target;
-        if (name === 'logo' && files) {
-            setForm({ ...form, logo: files[0] });
-        } else {
-            setForm({ ...form, [name]: value });
-        }
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setData(name as keyof typeof data, value);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-
-        // Using Inertia.js for form submission
-        const data = new FormData();
-    Object.entries(form).forEach(([key, value]) => {
-            if (value !== null && value !== undefined) {
-                data.append(key, value as string | Blob);
-            }
-        });
-
-        router.post('/admin/law-firms', data, {
-            forceFormData: true,
+        post('/admin/law-firms', {
+            onSuccess: () => reset(),
+            preserveScroll: true,
         });
     };
 
@@ -56,22 +41,30 @@ const CreateFirm = () => {
                 <form className="max-w-md space-y-4" onSubmit={handleSubmit} encType="multipart/form-data">
                     <div>
                         <Label htmlFor="name">Firm Name</Label>
-                        <Input id="name" name="name" value={form.name} onChange={handleChange} required placeholder="Enter firm name" />
+                        <Input
+                            id="name"
+                            name="name"
+                            value={data.name}
+                            onChange={handleChange}
+                            required
+                            placeholder="Enter firm name"
+                        />
+                        {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
                     </div>
-                    {/* Slug removed: generated automatically on server */}
-
+                    {/* Slug omitted: server auto-generates */}
                     <div>
                         <Label htmlFor="description">Firm Description</Label>
                         <Textarea
                             id="description"
                             name="description"
-                            value={form.description}
-                            onChange={(e) => setForm({ ...form, description: e.target.value })}
+                            value={data.description}
+                            onChange={handleChange}
                             placeholder="Enter firm description, practice areas, job opportunities..."
                             rows={6}
                             className="resize-vertical"
                         />
                         <p className="mt-1 text-sm text-muted-foreground">You can use basic formatting. Line breaks will be preserved.</p>
+                        {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
                     </div>
                     <div>
                         <Label htmlFor="email">Email</Label>
@@ -79,33 +72,54 @@ const CreateFirm = () => {
                             id="email"
                             name="email"
                             type="email"
-                            value={form.email}
+                            value={data.email}
                             onChange={handleChange}
                             required
                             placeholder="Enter email address"
                         />
+                        {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
                     </div>
                     <div>
                         <Label htmlFor="location">Location</Label>
-                        <Input id="location" name="location" value={form.location} onChange={handleChange} required placeholder="Enter location" />
+                        <Input
+                            id="location"
+                            name="location"
+                            value={data.location}
+                            onChange={handleChange}
+                            required
+                            placeholder="Enter location"
+                        />
+                        {errors.location && <p className="mt-1 text-sm text-red-600">{errors.location}</p>}
                     </div>
                     <div>
                         <Label htmlFor="phone">Phone</Label>
-                        <Input id="phone" name="phone" value={form.phone} onChange={handleChange} required placeholder="Enter phone number" />
+                        <Input
+                            id="phone"
+                            name="phone"
+                            value={data.phone}
+                            onChange={handleChange}
+                            required
+                            placeholder="Enter phone number"
+                        />
+                        {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
                     </div>
-
+                    
+                    {/* Optional future field: contact info */}
                     {/* <div>
                         <Label htmlFor="contact">Contact Info</Label>
-                        <Input id="contact" name="contact" value={form.contact} onChange={handleChange} required placeholder="Enter contact info" />
-                    </div>
-                     */}
-
-                    {/* <div>
-                        <Label htmlFor="logo">Firm Logo</Label>
-                        <Input id="logo" name="logo" type="file" accept="image/*" onChange={handleChange} placeholder="Upload firm logo" />
+                        <Input id="contact" name="contact" value={data.contact} onChange={handleChange} placeholder="Enter contact info" />
+                        {errors.contact && <p className=\"mt-1 text-sm text-red-600\">{errors.contact}</p>}
                     </div> */}
 
-                    <Button type="submit">Create Firm</Button>
+                    {/* Optional file upload */}
+                    {/* <div>
+                        <Label htmlFor="logo">Firm Logo</Label>
+                        <Input id="logo" name="logo" type="file" accept="image/*" onChange={handleFileChange} />
+                        {errors.logo && <p className=\"mt-1 text-sm text-red-600\">{errors.logo}</p>}
+                    </div> */}
+                    <Button type="submit" disabled={processing}>
+                        {processing ? 'Creating...' : 'Create Firm'}
+                    </Button>
                 </form>
             </div>
         </div>

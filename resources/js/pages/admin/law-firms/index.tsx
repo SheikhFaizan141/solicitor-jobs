@@ -1,5 +1,6 @@
+import { Button } from '@/components/ui/button';
 import AdminLayout from '@/layouts/admin-layout';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, useForm, usePage } from '@inertiajs/react';
 import React from 'react';
 
 interface LawFirm {
@@ -59,6 +60,17 @@ interface TableRowProps {
 }
 
 function TableRow({ firm }: TableRowProps) {
+    const { delete: destroy, processing } = useForm();
+
+    const handleDelete = () => {
+        if (confirm('Are you sure you want to delete this law firm?')) {
+            destroy(`/admin/law-firms/${firm.id}`, {
+                method: 'delete',
+                preserveScroll: true,
+            });
+        }
+    };
+
     return (
         <tr>
             <td className="border-b px-4 py-2">{firm.id}</td>
@@ -66,8 +78,26 @@ function TableRow({ firm }: TableRowProps) {
             <td className="border-b px-4 py-2">{firm.location}</td>
             <td className="border-b px-4 py-2">{firm.phone}</td>
             <td className="border-b px-4 py-2">
-                <button className="mr-2 text-blue-600 hover:underline">Edit</button>
-                <button className="text-red-600 hover:underline">Delete</button>
+                <Link href={`/admin/law-firms/${firm.id}/edit`} className="mr-3 text-blue-600 hover:underline">
+                    Edit
+                </Link>
+
+                <form
+                    method="post"
+                    action={`/admin/law-firms/${firm.id}`}
+                    onSubmit={(e) => {
+                        if (!confirm('Are you sure you want to delete this law firm?')) {
+                            e.preventDefault();
+                        }
+                    }}
+                    className="inline"
+                >
+                    <input type="hidden" name="_method" value="delete" />
+
+                    <Button  onClick={handleDelete} disabled={processing} className="text-red-600 hover:underline disabled:opacity-50">
+                        {processing ? 'Deleting...' : 'Delete'}
+                    </Button>
+                </form>
             </td>
         </tr>
     );
