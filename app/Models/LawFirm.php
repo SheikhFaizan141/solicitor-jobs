@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class LawFirm extends Model
 {
@@ -14,8 +15,14 @@ class LawFirm extends Model
         'email',
         'location',
         'phone',
-        // 'logo_path',
+        'logo_path',
     ];
+
+    // Add this so logo_url (from the accessor) is included when model is serialized
+    protected $appends = ['logo_url'];
+    
+    // Hide internal storage path when serializing model for responses
+    protected $hidden = ['logo_path'];
 
     /**
      * Automatically create a unique slug when creating (or when slug manually changed).
@@ -39,6 +46,32 @@ class LawFirm extends Model
     }
 
     /**
+     * Contacts for the law firm (addresses, emails, phones per label)
+     */
+    public function contacts()
+    {
+        return $this->hasMany(LawFirmContact::class);
+    }
+
+    /**
+     * Return public URL for logo when available.
+     */
+    public function getLogoUrlAttribute(): ?string
+    {
+        if (empty($this->logo_path)) {
+            return null;
+        }
+
+        // Help static analysis: Storage::disk() returns a FilesystemAdapter which
+        // provides the `url()` method. Provide an explicit phpdoc so analyzers
+        // understand the type.
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        $disk = Storage::disk('public');
+
+        return $disk->url($this->logo_path);
+    }
+
+    /**
      * Generate a unique slug from a base string. Falls back to short id if base collapses.
      */
     protected static function generateUniqueSlug(string $base): string
@@ -56,7 +89,7 @@ class LawFirm extends Model
         while (static::where('slug', $slug)->exists()) {
             $slug = $original . '-' . $i;
             $i++;
-            
+
             // Safety: if many collisions, append random suffix and break.
             if ($i > 50) {
                 $slug = $original . '-' . Str::lower(Str::random(4));

@@ -6,20 +6,50 @@ import AdminLayout from '@/layouts/admin-layout';
 import { useForm } from '@inertiajs/react';
 import React from 'react';
 
+type Contact = {
+    label: string;
+    address: string;
+    email?: string;
+    phone?: string;
+};
+
 const CreateFirm = () => {
     const { data, setData, post, processing, reset, errors } = useForm({
         name: '',
         description: '',
-        email: '',
-        location: '',
-        phone: '',
-        contact: '',
+        website: '',
+        // multiple contact info
+        contacts: [
+            {
+                label: '',
+                address: '',
+                email: '',
+                phone: '',
+            },
+        ] as Contact[],
         logo: null as File | null,
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setData(name as keyof typeof data, value);
+    };
+
+    // Contact helpers
+    const addContact = () => {
+        const next = [...(data.contacts ?? []), { label: '', address: '', email: '', phone: '' }];
+        setData('contacts', next);
+    };
+
+    const removeContact = (index: number) => {
+        const next = (data.contacts ?? []).filter((_: Contact, i: number) => i !== index);
+        setData('contacts', next);
+    };
+
+    const handleContactChange = (index: number, field: keyof Contact, value: string) => {
+        const contacts = (data.contacts ?? []) as Contact[];
+        const updated = contacts.map((c, i) => (i === index ? { ...c, [field]: value } : c));
+        setData('contacts', updated);
     };
 
     // Preview and file input ref
@@ -48,6 +78,9 @@ const CreateFirm = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        console.log('Submitting form with data:', data);
+        
         post('/admin/law-firms', {
             onSuccess: () => {
                 // Clean up preview URL and reset form
@@ -61,20 +94,22 @@ const CreateFirm = () => {
             forceFormData: true, // ensure multipart/form-data
         });
     };
+
     return (
-        <div className="mx-auto w-full max-w-xl px-4 py-3">
+        <div className="mx-auto w-full max-w-2xl px-4 py-3 ">
             <header>
                 <h1 className="text-2xl font-bold">Create Law Firm</h1>
                 <p className="mt-2">This is the page to create a new law firm listing.</p>
             </header>
 
             <div className="mt-6">
-                <form className="max-w-md space-y-4" onSubmit={handleSubmit} encType="multipart/form-data">
+                <form className="space-y-4" onSubmit={handleSubmit} encType="multipart/form-data">
                     <div>
                         <Label htmlFor="name">Firm Name</Label>
                         <Input id="name" name="name" value={data.name} onChange={handleChange} required placeholder="Enter firm name" />
                         {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
                     </div>
+
                     {/* Slug omitted: server auto-generates */}
                     <div>
                         <Label htmlFor="description">Firm Description</Label>
@@ -90,7 +125,22 @@ const CreateFirm = () => {
                         <p className="mt-1 text-sm text-muted-foreground">You can use basic formatting. Line breaks will be preserved.</p>
                         {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
                     </div>
+
                     <div>
+                        <Label htmlFor="website">Website</Label>
+                        <Input id="website" name="website" type="url" value={data.website} onChange={handleChange} placeholder="Enter website URL" />
+                        {errors.website && <p className="mt-1 text-sm text-red-600">{errors.website}</p>}
+                    </div>
+                    {/* Contact Details */}
+                    <ContactDetails
+                        contacts={(data.contacts ?? []) as Contact[]}
+                        onChange={handleContactChange}
+                        addContact={addContact}
+                        removeContact={removeContact}
+                        errors={errors}
+                    />
+
+                    {/* <div>
                         <Label htmlFor="email">Email</Label>
                         <Input
                             id="email"
@@ -103,6 +153,7 @@ const CreateFirm = () => {
                         />
                         {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
                     </div>
+
                     <div>
                         <Label htmlFor="location">Location</Label>
                         <Input id="location" name="location" value={data.location} onChange={handleChange} required placeholder="Enter location" />
@@ -112,7 +163,7 @@ const CreateFirm = () => {
                         <Label htmlFor="phone">Phone</Label>
                         <Input id="phone" name="phone" value={data.phone} onChange={handleChange} required placeholder="Enter phone number" />
                         {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
-                    </div>
+                    </div> */}
 
                     {/* Optional future field: contact info */}
                     {/* <div>
@@ -144,6 +195,94 @@ const CreateFirm = () => {
         </div>
     );
 };
+
+function ContactDetails({
+    contacts,
+    onChange,
+    addContact,
+    removeContact,
+    errors,
+}: {
+    contacts: Contact[];
+    onChange: (index: number, field: keyof Contact, value: string) => void;
+    addContact: () => void;
+    removeContact: (index: number) => void;
+    errors: any;
+}) {
+    return (
+        <section>
+            <div className="flex items-center justify-between">
+                <h2 className="text-lg font-medium">Contact addresses</h2>
+                <Button type="button" onClick={addContact}>
+                    Add address
+                </Button>
+            </div>
+
+            <div className="mt-3 space-y-4">
+                {contacts.map((c, idx) => (
+                    <div key={idx} className="rounded border p-5">
+                        <div className="grid gap-2">
+                            <div className="flex items-end gap-3">
+                                <div style={{ flex: 1 }}>
+                                    <Label htmlFor={`contacts.${idx}.label`}>Label</Label>
+                                    <Input
+                                        id={`contacts.${idx}.label`}
+                                        name={`contacts.${idx}.label`}
+                                        value={c.label}
+                                        onChange={(e) => onChange(idx, 'label', e.target.value)}
+                                        placeholder="e.g. London, Head Office"
+                                    />
+                                </div>
+                                <div>
+                                    <Button type="button" variant="secondary" onClick={() => removeContact(idx)}>
+                                        Remove
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <Label htmlFor={`contacts.${idx}.address`}>Address</Label>
+                                <Textarea
+                                    id={`contacts.${idx}.address`}
+                                    name={`contacts.${idx}.address`}
+                                    value={c.address}
+                                    onChange={(e) => onChange(idx, 'address', e.target.value)}
+                                    rows={4}
+                                    placeholder="Street, city, postcode..."
+                                />
+                                {/* optionally display errors per-contact if backend returns structured errors */}
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <Label htmlFor={`contacts.${idx}.email`}>Email</Label>
+                                    <Input
+                                        id={`contacts.${idx}.email`}
+                                        name={`contacts.${idx}.email`}
+                                        type="email"
+                                        value={c.email}
+                                        onChange={(e) => onChange(idx, 'email', e.target.value)}
+                                        placeholder="contact@example.com"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor={`contacts.${idx}.phone`}>Phone</Label>
+                                    <Input
+                                        id={`contacts.${idx}.phone`}
+                                        name={`contacts.${idx}.phone`}
+                                        value={c.phone}
+                                        onChange={(e) => onChange(idx, 'phone', e.target.value)}
+                                        placeholder="+44 20 7..."
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </section>
+    );
+}
 
 CreateFirm.layout = (page: React.ReactNode) => <AdminLayout>{page}</AdminLayout>;
 
