@@ -20,9 +20,7 @@ const AdminSidebar: React.FC = () => {
                                 className="flex w-full items-center justify-between px-4 py-2 hover:bg-gray-700"
                             >
                                 <span>Law Firms</span>
-                                <span className={`transform transition-transform ${lawFirmsExpanded ? 'rotate-90' : ''}`}>
-                                    ▶
-                                </span>
+                                <span className={`transform transition-transform ${lawFirmsExpanded ? 'rotate-90' : ''}`}>▶</span>
                             </button>
                             {lawFirmsExpanded && (
                                 <ul className="ml-4 border-l border-gray-600">
@@ -39,15 +37,15 @@ const AdminSidebar: React.FC = () => {
                                 </ul>
                             )}
                         </div>
+                    </li>{' '}
+                    <li>
+                        <Link className="block px-4 py-2 hover:bg-gray-700" href="/admin/reviews">
+                            Reviews
+                        </Link>
                     </li>
                     <li>
                         <Link className="block px-4 py-2 hover:bg-gray-700" href="/admin/cases">
                             Cases
-                        </Link>
-                    </li>
-                    <li>
-                        <Link className="block px-4 py-2 hover:bg-gray-700" href="/admin/settings">
-                            Settings
                         </Link>
                     </li>
                     <li>

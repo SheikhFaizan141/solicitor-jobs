@@ -104,4 +104,36 @@ class LawFirm extends Model
     {
         return $this->belongsToMany(PracticeArea::class, 'law_firm_practice_areas');
     }
+
+    /**
+     * All reviews for this law firm
+     */
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    /**
+     * Only active reviews for this law firm
+     */
+    public function activeReviews()
+    {
+        return $this->hasMany(Review::class)->active();
+    }
+
+    /**
+     * Calculate average rating from active reviews
+     */
+    public function averageRating()
+    {
+        return $this->activeReviews()->avg('rating') ?? 0;
+    }
+
+    /**
+     * Get count of active reviews
+     */
+    public function reviewsCount()
+    {
+        return $this->activeReviews()->count();
+    }
 }

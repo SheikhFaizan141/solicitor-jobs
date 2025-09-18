@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminReviewController;
 use App\Http\Controllers\LawFirmController;
 use App\Http\Controllers\PracticeAreaController;
 use Illuminate\Support\Facades\Route;
@@ -34,9 +35,22 @@ Route::middleware('auth')->group(function () {
     Route::resource('/admin/practice-areas', PracticeAreaController::class)
         ->names('admin.practice-areas')
         ->except(['show']);
+
+
+    // Review management routes - properly grouped with correct naming
+    Route::prefix('/admin/reviews')->name('admin.reviews.')->group(function () {
+        Route::get('/', [AdminReviewController::class, 'index'])->name('index');
+        Route::get('/spam', [AdminReviewController::class, 'spam'])->name('spam');
+        Route::get('/trash', [AdminReviewController::class, 'trash'])->name('trash');
+
+        Route::post('/bulk', [AdminReviewController::class, 'bulkAction'])->name('bulk');
+        Route::post('/{review}/spam', [AdminReviewController::class, 'markAsSpam'])->name('spam.mark');
+        Route::post('/{review}/trash', [AdminReviewController::class, 'moveToTrash'])->name('trash.move');
+        Route::post('/{id}/restore', [AdminReviewController::class, 'restore'])->name('restore');
+        Route::delete('/{id}/force', [AdminReviewController::class, 'forceDelete'])->name('force-delete');
+    });
 });
 
 
-// require __DIR__.'/admin.php';
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
