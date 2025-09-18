@@ -22,8 +22,9 @@ class DatabaseSeeder extends Seeder
         // Create additional test users for reviews
         User::factory(15)->create();
 
-        // Seed reviews with realistic data
+        // Seed law firms and reviews with realistic data
         $this->call([
+            LawFirmSeeder::class,
             ReviewSeeder::class,
         ]);
     }

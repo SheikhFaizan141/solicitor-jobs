@@ -11,6 +11,7 @@ class LawFirm extends Model
     protected $fillable = [
         'name',
         'slug', // still fillable so factory/seeder can override if needed
+        'website',
         'description',
         'email',
         'location',
@@ -99,7 +100,7 @@ class LawFirm extends Model
 
         return $slug;
     }
-    
+
     public function practiceAreas()
     {
         return $this->belongsToMany(PracticeArea::class, 'law_firm_practice_areas');

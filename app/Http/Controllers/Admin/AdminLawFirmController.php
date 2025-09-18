@@ -1,28 +1,26 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\LawFirm;
 use App\Models\PracticeArea;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Storage;
 
-class LawFirmController extends Controller
+class AdminLawFirmController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $lawFirm = LawFirm::latest()->with(['contacts', 'reviews'])->paginate(18);
-
-        // dd($lawFirm);
         return Inertia::render(
-            'home',
+            'admin/law-firms/index',
             [
-                'lawFirms' => $lawFirm,
+                'lawFirms' => LawFirm::with('contacts')->get(),
             ]
         );
     }

@@ -1,15 +1,22 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminLawFirmController;
 use App\Http\Controllers\Admin\AdminReviewController;
 use App\Http\Controllers\LawFirmController;
 use App\Http\Controllers\PracticeAreaController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('home');
-})->name('home');
 
+// Client-facing routes
+Route::get('/', [LawFirmController::class, 'index'])->name('home');
+Route::get('/law-firms/{lawFirm:slug}', [LawFirmController::class, 'show'])->name('law-firms.show');
+
+
+
+
+
+// admin facing routes
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
@@ -21,7 +28,7 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('admin/index');
     });
 
-    Route::resource('/admin/law-firms', LawFirmController::class)
+    Route::resource('/admin/law-firms', AdminLawFirmController::class)
         ->names([
             'index' => 'admin.law-firms.index',
             'create' => 'admin.law-firms.create',
