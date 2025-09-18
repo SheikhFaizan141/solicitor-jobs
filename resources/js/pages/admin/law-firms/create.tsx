@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import AdminLayout from '@/layouts/admin-layout';
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import React from 'react';
 
 type Contact = {
@@ -13,11 +13,16 @@ type Contact = {
     phone?: string;
 };
 
+type PracticeArea = { id: number; name: string; parent_id: number | null };
+
 const CreateFirm = () => {
+    const { practiceAreas } = usePage().props as { practiceAreas: PracticeArea[] };
+
     const { data, setData, post, processing, reset, errors } = useForm({
         name: '',
         description: '',
         website: '',
+        practice_areas: [] as number[], // IDs of selected practice areas
         // multiple contact info
         contacts: [
             {
@@ -35,17 +40,51 @@ const CreateFirm = () => {
         setData(name as keyof typeof data, value);
     };
 
+    // Build tree
+    const tree = React.useMemo(() => {
+        const byParent: Record<string, PracticeArea[]> = {};
+        practiceAreas.forEach((pa) => {
+            const key = (pa.parent_id ?? 'root').toString();
+            if (!byParent[key]) byParent[key] = [];
+            byParent[key].push(pa);
+        });
+        const build = (parentKey: string): PracticeArea[] =>
+            (byParent[parentKey] || []).sort((a, b) => a.name.localeCompare(b.name)).map((n) => ({ ...n, children: build(n.id.toString()) }));
+        return build('root');
+    }, [practiceAreas]);
+
+    const toggleArea = (id: number) => {
+        setData('practice_areas', data.practice_areas.includes(id) ? data.practice_areas.filter((x) => x !== id) : [...data.practice_areas, id]);
+    };
+
+    const renderTree = (nodes: any[], depth = 0) => (
+        <ul className={depth === 0 ? 'space-y-1' : 'mt-1 ml-4 space-y-1'}>
+            {nodes.map((node) => (
+                <li key={node.id}>
+                    <label className="flex items-center gap-2 text-sm">
+                        <input
+                            type="checkbox"
+                            className="rounded border-gray-300"
+                            checked={data.practice_areas.includes(node.id)}
+                            onChange={() => toggleArea(node.id)}
+                        />
+                        <span>{node.name}</span>
+                    </label>
+                    {node.children?.length > 0 && renderTree(node.children, depth + 1)}
+                </li>
+            ))}
+        </ul>
+    );
+
     // Contact helpers
     const addContact = () => {
         const next = [...(data.contacts ?? []), { label: '', address: '', email: '', phone: '' }];
         setData('contacts', next);
     };
-
     const removeContact = (index: number) => {
         const next = (data.contacts ?? []).filter((_: Contact, i: number) => i !== index);
         setData('contacts', next);
     };
-
     const handleContactChange = (index: number, field: keyof Contact, value: string) => {
         const contacts = (data.contacts ?? []) as Contact[];
         const updated = contacts.map((c, i) => (i === index ? { ...c, [field]: value } : c));
@@ -55,7 +94,6 @@ const CreateFirm = () => {
     // Preview and file input ref
     const [logoPreview, setLogoPreview] = React.useState<string | null>(null);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
-
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0] ?? null;
         setData('logo', file);
@@ -80,7 +118,7 @@ const CreateFirm = () => {
         e.preventDefault();
 
         console.log('Submitting form with data:', data);
-        
+
         post('/admin/law-firms', {
             onSuccess: () => {
                 // Clean up preview URL and reset form
@@ -96,7 +134,7 @@ const CreateFirm = () => {
     };
 
     return (
-        <div className="mx-auto w-full max-w-2xl px-4 py-3 ">
+        <div className="mx-auto w-full max-w-2xl px-4 py-3">
             <header>
                 <h1 className="text-2xl font-bold">Create Law Firm</h1>
                 <p className="mt-2">This is the page to create a new law firm listing.</p>
@@ -140,37 +178,13 @@ const CreateFirm = () => {
                         errors={errors}
                     />
 
-                    {/* <div>
-                        <Label htmlFor="email">Email</Label>
-                        <Input
-                            id="email"
-                            name="email"
-                            type="email"
-                            value={data.email}
-                            onChange={handleChange}
-                            required
-                            placeholder="Enter email address"
-                        />
-                        {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
-                    </div>
-
                     <div>
-                        <Label htmlFor="location">Location</Label>
-                        <Input id="location" name="location" value={data.location} onChange={handleChange} required placeholder="Enter location" />
-                        {errors.location && <p className="mt-1 text-sm text-red-600">{errors.location}</p>}
+                        <Label>Practice Areas</Label>
+                        <div className="mt-2 max-h-64 overflow-y-auto rounded border p-3">
+                            {tree.length ? renderTree(tree) : <p className="text-sm text-gray-500">No practice areas yet.</p>}
+                        </div>
+                        {errors.practice_areas && <p className="mt-1 text-sm text-red-600">{errors.practice_areas}</p>}
                     </div>
-                    <div>
-                        <Label htmlFor="phone">Phone</Label>
-                        <Input id="phone" name="phone" value={data.phone} onChange={handleChange} required placeholder="Enter phone number" />
-                        {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
-                    </div> */}
-
-                    {/* Optional future field: contact info */}
-                    {/* <div>
-                        <Label htmlFor="contact">Contact Info</Label>
-                        <Input id="contact" name="contact" value={data.contact} onChange={handleChange} placeholder="Enter contact info" />
-                        {errors.contact && <p className=\"mt-1 text-sm text-red-600\">{errors.contact}</p>}
-                    </div> */}
 
                     {/* Optional file upload */}
                     <div>

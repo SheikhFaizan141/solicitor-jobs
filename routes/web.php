@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\LawFirmController;
+use App\Http\Controllers\PracticeAreaController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -29,6 +30,10 @@ Route::middleware('auth')->group(function () {
             'update' => 'admin.law-firms.update',
             'destroy' => 'admin.law-firms.destroy',
         ]);
+
+    Route::resource('/admin/practice-areas', PracticeAreaController::class)
+        ->names('admin.practice-areas')
+        ->except(['show']);
 });
 
 

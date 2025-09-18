@@ -20,7 +20,7 @@ class LawFirm extends Model
 
     // Add this so logo_url (from the accessor) is included when model is serialized
     protected $appends = ['logo_url'];
-    
+
     // Hide internal storage path when serializing model for responses
     protected $hidden = ['logo_path'];
 
@@ -98,5 +98,10 @@ class LawFirm extends Model
         }
 
         return $slug;
+    }
+    
+    public function practiceAreas()
+    {
+        return $this->belongsToMany(PracticeArea::class, 'law_firm_practice_areas');
     }
 }

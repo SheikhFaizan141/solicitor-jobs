@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\LawFirm;
+use App\Models\PracticeArea;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -28,7 +29,9 @@ class LawFirmController extends Controller
      */
     public function create()
     {
-        return Inertia::render('admin/law-firms/create');
+        return Inertia::render('admin/law-firms/create', [
+            'practiceAreas' => PracticeArea::orderBy('name')->get(),
+        ]);
     }
 
     /**
@@ -36,49 +39,48 @@ class LawFirmController extends Controller
      */
     public function store(Request $request)
     {
-        // dd($request->all());
         $data = $request->validate([
-            'name'        => ['required', 'string', 'max:255'],
-
-            // slug optional; if provided must be unique (for now we dont't allow editing later we might require it)
-            'slug'        => ['nullable', 'string', 'max:255', 'unique:law_firms,slug'],
+            'name' => ['required', 'string', 'max:255'],
+            'slug' => ['nullable', 'string', 'max:255', 'unique:law_firms,slug'],
             'description' => ['nullable', 'string'],
-
-            // logo upload (optional)
-            'logo'        => ['nullable', 'image', 'max:5120'], // max 5MB
-
-            // contacts array
-            'contacts'           => ['nullable', 'array'],
-            'contacts.*.label'   => ['nullable', 'string', 'max:255'],
+            'website' => ['nullable', 'url', 'max:255'],
+            'logo' => ['nullable', 'image', 'max:5120'],
+            'practice_areas' => ['nullable', 'array'],
+            'practice_areas.*' => ['integer', 'exists:practice_areas,id'],
+            'contacts' => ['nullable', 'array'],
+            'contacts.*.label' => ['nullable', 'string', 'max:255'],
             'contacts.*.address' => ['nullable', 'string'],
-            'contacts.*.email'   => ['nullable', 'email', 'max:255'],
-            'contacts.*.phone'   => ['nullable', 'string', 'max:255'],
+            'contacts.*.email' => ['nullable', 'email', 'max:255'],
+            'contacts.*.phone' => ['nullable', 'string', 'max:255'],
         ]);
 
-        // If slug is blank/null remove it so model hook can create one.
-        if (blank($data['slug'] ?? null)) {
-            unset($data['slug']);
-        }
+        if (blank($data['slug'] ?? null)) unset($data['slug']);
 
-        // Handle logo upload if present
         if ($request->hasFile('logo')) {
             $data['logo_path'] = $request->file('logo')->store('law_firm_logos', 'public');
         }
 
+        $practiceAreas = $data['practice_areas'] ?? [];
         $contacts = $data['contacts'] ?? [];
-        unset($data['contacts'], $data['logo']);
+        unset($data['practice_areas'], $data['contacts'], $data['logo']);
 
         $lawFirm = LawFirm::create($data);
 
-        // Persist contacts (skip completely blank entries)
+        if ($practiceAreas) {
+            $lawFirm->practiceAreas()->sync($practiceAreas);
+        }
+
         foreach ($contacts as $c) {
-            if (blank($c['label'] ?? null) && blank($c['address'] ?? null) && blank($c['email'] ?? null) && blank($c['phone'] ?? null)) {
+            if (
+                blank($c['label'] ?? null) && blank($c['address'] ?? null) &&
+                blank($c['email'] ?? null) && blank($c['phone'] ?? null)
+            ) {
                 continue;
             }
             $lawFirm->contacts()->create($c);
         }
 
-        return redirect()->route('admin.law-firms.index')->with('success', 'Law firm created successfully.');
+        return redirect()->route('admin.law-firms.index')->with('success', 'Law firm created.');
     }
 
     /**
