@@ -17,6 +17,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/law-firms/{lawFirm:slug}/reviews', [LawFirmController::class, 'storeReview'])->name('law-firms.reviews.store');
 });
 
+
+/* JOBS */
+
+Route::get('/jobs', function () {
+    return Inertia::render('jobs/index');
+})->name('jobs.index');
+
+
 // admin facing routes
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
