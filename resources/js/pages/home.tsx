@@ -15,6 +15,7 @@ export type PracticeArea = {
 export type Firm = {
     id: number;
     name: string;
+    slug: string;
     website: string;
     logo_url: string;
     rating: number;

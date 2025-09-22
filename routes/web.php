@@ -12,9 +12,10 @@ use Inertia\Inertia;
 Route::get('/', [LawFirmController::class, 'index'])->name('home');
 Route::get('/law-firms/{lawFirm:slug}', [LawFirmController::class, 'show'])->name('law-firms.show');
 
-
-
-
+// Review submission route for authenticated users
+Route::middleware('auth')->group(function () {
+    Route::post('/law-firms/{lawFirm:slug}/reviews', [LawFirmController::class, 'storeReview'])->name('law-firms.reviews.store');
+});
 
 // admin facing routes
 Route::middleware(['auth', 'verified'])->group(function () {

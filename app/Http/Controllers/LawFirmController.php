@@ -134,4 +134,34 @@ class LawFirmController extends Controller
             ->route('admin.law-firms.index')
             ->with('success', 'Law firm deleted successfully.');
     }
+
+
+    /**
+     * Store a review for the law firm.
+     */
+    public function storeReview(Request $request, LawFirm $lawFirm)
+    {
+        $data = $request->validate([
+            'rating' => ['required', 'integer', 'min:1', 'max:5'],
+            'comment' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        // Check if user has already reviewed this law firm
+        $existingReview = $lawFirm->reviews()
+            ->where('user_id', $request->user()->id)
+            ->first();
+
+        if ($existingReview) {
+            return back()->with('error', 'You have already reviewed this law firm.');
+        }
+
+        $lawFirm->reviews()->create([
+            'user_id' => $request->user()->id,
+            'rating' => $data['rating'],
+            'comment' => $data['comment'],
+            'status' => 'active',
+        ]);
+
+        return back()->with('success', 'Thank you for your review!');
+    }
 }
