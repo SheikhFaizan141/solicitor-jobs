@@ -23,5 +23,4 @@ class PracticeArea extends Model
         return $this->belongsToMany(LawFirm::class, 'law_firm_practice_areas');
     }
 
-
 }

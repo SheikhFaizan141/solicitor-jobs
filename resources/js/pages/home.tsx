@@ -1,10 +1,18 @@
+import { FirmCard } from '@/components/law-firms/firm-card';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Layout from '@/layouts/main-layout';
 import { SharedData } from '@/types';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
+import { X } from 'lucide-react';
 // import { type SharedData } from '@/types';
 // import { Head, usePage } from '@inertiajs/react';
+export type PracticeArea = {
+    id: number;
+    name: string;
+};
 
-type Firm = {
+export type Firm = {
     id: number;
     name: string;
     website: string;
@@ -13,7 +21,7 @@ type Firm = {
     reviews: number;
     jobs: number;
     location: string;
-    practiceArea: string;
+    practice_areas: PracticeArea[];
     established: number;
 };
 
@@ -47,10 +55,35 @@ const renderStars = (rating: number) => {
 };
 
 const Home = () => {
-    const { lawFirms } = usePage<SharedData>().props;
+    const { lawFirms, practiceAreas } = usePage<SharedData>().props;
 
-    console.log(lawFirms.data);
+    const {
+        data,
+        setData: setFilters,
+        get,
+        reset,
+        processing,
+    } = useForm({
+        search: '',
+        practice_area: '',
+        sort: '',
+    });
 
+    console.log(data);
+
+    const handleFilter = () => {
+        // get(router('home'), { preserveState: true, replace: true });
+        get('/', { preserveState: true, replace: true });
+    };
+
+    const handleClear = () => {
+        setFilters({ search: '', practice_area: '', sort: '' });
+        get('/', {
+            data: { search: '', practice_area: '', sort: '' },
+            preserveState: true,
+            replace: true,
+        });
+    };
     return (
         <>
             <Head title="Welcome">
@@ -61,7 +94,74 @@ const Home = () => {
                 <h1 className="mb-8 text-4xl font-semibold">Law Firms Directory</h1>
 
                 {/* Filters Section */}
-                <div>filter section</div>
+                <div className="mb-6 flex items-center gap-4">
+                    <div className="flex flex-1 gap-x-4">
+                        {/* Search Component */}
+                        <div className="flex items-center rounded border bg-white px-2 py-1 lg:min-w-80">
+                            <svg className="mr-2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                <circle cx="11" cy="11" r="8" />
+                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                            </svg>
+                            <input
+                                type="text"
+                                placeholder="Search firms..."
+                                className="w-full bg-transparent text-sm outline-none"
+                                onChange={(e) => setFilters({ ...data, search: e.target.value })}
+                                value={data.search}
+                            />
+                        </div>
+
+                        <div>
+                            <Select onValueChange={(value) => setFilters({ ...data, practice_area: value })} value={String(data.practice_area)}>
+                                <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder="All practice areas" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {practiceAreas.map((area: PracticeArea) => (
+                                        <SelectItem key={area.id} value={String(area.id)}>
+                                            {area.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div>
+                            <Select onValueChange={(value) => setFilters({ ...data, sort: value })} value={String(data.sort)}>
+                                <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder="Sort by Rating" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="high">Highest First</SelectItem>
+                                    <SelectItem value="low">Lowest First</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {/* Apply button */}
+                        <Button
+                            type="button"
+                            className="ml-2 rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                            onClick={handleFilter}
+                            disabled={processing}
+                        >
+                            Apply Filters
+                        </Button>
+
+                        <Button
+                            type="button"
+                            className="rounded bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
+                            aria-label="Clear filters"
+                            onClick={handleClear}
+                        >
+                            <X />
+                        </Button>
+                    </div>
+
+                    <div className="">
+                        <span className="text-base font-semibold text-gray-800">353 Companies</span>
+                    </div>
+                </div>
 
                 {/* Grid Layout */}
                 <div className="mb-6 grid grid-cols-1 gap-6 sm:grid-cols-1 lg:grid-cols-2">
@@ -78,10 +178,10 @@ const Home = () => {
                                 <a
                                     key={index}
                                     href={link.url}
-                                    className={`px-3 py-2 text-sm border rounded ${
+                                    className={`rounded border px-3 py-2 text-sm ${
                                         link.active
-                                            ? 'bg-blue-500 text-white border-blue-500'
-                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+                                            ? 'border-blue-500 bg-blue-500 text-white'
+                                            : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'
                                     } ${!link.url ? 'pointer-events-none opacity-50' : ''}`}
                                     dangerouslySetInnerHTML={{ __html: link.label }}
                                 />
@@ -93,87 +193,6 @@ const Home = () => {
         </>
     );
 };
-
-function FirmCard({ firm }: { firm: Firm }) {
-    return (
-        <div
-            key={firm.id}
-            className="cursor-pointer rounded-lg border border-gray-300 bg-white p-6 shadow-md transition-shadow duration-200 ease-in-out hover:shadow-lg"
-        >
-            {/* Header */}
-            <div className="mb-4 flex items-start gap-4">
-                {/* Logo */}
-                <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-gray-300 bg-gray-100">
-                    <img
-                        src={firm.logo_url}
-                        alt={`${firm.name} logo`}
-                        className="block h-16 w-16 object-contain"
-                        onError={(e) => {
-                            // Fallback to initials if image fails to load
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                            const fallback = target.nextElementSibling as HTMLDivElement;
-                            if (fallback) fallback.style.display = 'flex';
-                        }}
-                    />
-                    {/* Fallback initials */}
-                    <div className="hidden h-16 w-16 items-center justify-center rounded-lg border-2 border-gray-300 bg-gray-800 text-xl font-semibold text-white">
-                        {firm.name
-                            .split(' ')
-                            .map((word) => word[0])
-                            .join('')
-                            .slice(0, 2)}
-                    </div>
-                </div>
-
-                {/* Firm Info */}
-                <div className="min-w-0 flex-1">
-                    <h2 className="m-0 mb-1 text-xl font-medium">{firm.name}</h2>
-                    <a
-                        href={firm.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mb-2 text-sm text-amber-800 underline underline-offset-2"
-                    >
-                        Visit Website
-                    </a>
-                </div>
-
-                {/* Visit Website Button */}
-                <div className="flex-shrink-0">
-                    <a
-                        href={firm.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-block rounded border border-blue-600 px-4 py-2 text-sm text-red-600 no-underline transition-all duration-200 hover:bg-blue-600 hover:text-white"
-                    >
-                        Visit Website
-                    </a>
-                </div>
-            </div>
-
-            {/* Details */}
-            <div className="grid grid-cols-2 gap-3">
-                {/* <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500">📍 Location:</span>
-                    <span className="text-sm font-medium">{firm.location}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500">💼 Jobs:</span>
-                    <span className="text-sm font-medium">{firm.jobs} open positions</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500">📅 Established:</span>
-                    <span className="text-sm font-medium">{firm.established}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500">⭐ Rating:</span>
-                    <span className="text-sm font-medium">{firm.rating}/5.0</span>
-                </div> */}
-            </div>
-        </div>
-    );
-}
 
 Home.layout = (page: React.ReactNode) => <Layout>{page}</Layout>;
 
