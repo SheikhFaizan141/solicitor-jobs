@@ -51,8 +51,14 @@ class LawFirmController extends Controller
      */
     public function show(LawFirm $lawFirm)
     {
+        $reviews = $lawFirm->reviews()
+            ->where('status', 'active')
+            ->with('user')
+            ->latest()->paginate(10);
+
         return Inertia::render('law-firms/show', [
             'lawFirm' => $lawFirm->load(['contacts', 'reviews']),
+            'reviews' => $reviews,
         ]);
     }
 
