@@ -24,6 +24,9 @@ Route::get('/jobs', function () {
     return Inertia::render('jobs/index');
 })->name('jobs.index');
 
+Route::get('/jobs/{job:slug}', function () {
+    return Inertia::render('jobs/show');
+})->name('jobs.show');
 
 // admin facing routes
 Route::middleware(['auth', 'verified'])->group(function () {
