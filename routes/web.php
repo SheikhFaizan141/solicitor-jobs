@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminJobListingController;
 use App\Http\Controllers\Admin\AdminLawFirmController;
 use App\Http\Controllers\Admin\AdminReviewController;
+use App\Http\Controllers\JobController;
 use App\Http\Controllers\LawFirmController;
 use App\Http\Controllers\PracticeAreaController;
 use Illuminate\Support\Facades\Route;
@@ -20,13 +22,8 @@ Route::middleware('auth')->group(function () {
 
 /* JOBS */
 
-Route::get('/jobs', function () {
-    return Inertia::render('jobs/index');
-})->name('jobs.index');
-
-Route::get('/jobs/{job:slug}', function () {
-    return Inertia::render('jobs/show');
-})->name('jobs.show');
+Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
+Route::get('/jobs/{jobListing:slug}', [JobController::class, 'show'])->name('jobs.show');
 
 // admin facing routes
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -53,6 +50,11 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('/admin/practice-areas', PracticeAreaController::class)
         ->names('admin.practice-areas')
+        ->except(['show']);
+
+
+    Route::resource('/admin/job-listings', AdminJobListingController::class)
+        ->names('admin.job-listings')
         ->except(['show']);
 
 

@@ -137,4 +137,14 @@ class LawFirm extends Model
     {
         return $this->activeReviews()->count();
     }
+
+      public function jobListings()
+    {
+        return $this->hasMany(JobListing::class);
+    }
+
+    public function jobs()
+    {
+        return $this->hasMany(JobListing::class);
+    }
 }
