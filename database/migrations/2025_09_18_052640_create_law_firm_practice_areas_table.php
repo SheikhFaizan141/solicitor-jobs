@@ -11,14 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('law_firms', function (Blueprint $table) {
+        Schema::create('law_firm_practice_areas', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('slug')->unique();
-            $table->text('description')->nullable();
-            $table->string('website')->nullable();
-            $table->string('logo_path')->nullable();
+            $table->foreignId('law_firm_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('practice_area_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
+
+            $table->unique(['law_firm_id', 'practice_area_id']);
         });
     }
 
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('law_firms');
+        Schema::dropIfExists('law_firm_practice_areas');
     }
 };

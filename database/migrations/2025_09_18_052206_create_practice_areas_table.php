@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('law_firms', function (Blueprint $table) {
+        Schema::create('practice_areas', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('slug')->unique();
-            $table->text('description')->nullable();
-            $table->string('website')->nullable();
-            $table->string('logo_path')->nullable();
+            $table->string('name')->unique();
+            $table->foreignId('parent_id')
+                ->nullable()
+                ->constrained('practice_areas')
+                ->nullOnDelete();
             $table->timestamps();
         });
     }
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('law_firms');
+        Schema::dropIfExists('practice_areas');
     }
 };

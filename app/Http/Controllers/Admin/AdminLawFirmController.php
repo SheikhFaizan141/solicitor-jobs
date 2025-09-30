@@ -1,49 +1,87 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\LawFirm;
 use App\Models\PracticeArea;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Storage;
 
-class LawFirmController extends Controller
+class AdminLawFirmController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index()
     {
-        $search = $request->input('search');
-        $practiceArea = $request->input('practice_area');
-        $sort = $request->input('sort');
+        return Inertia::render(
+            'admin/law-firms/index',
+            [
+                'lawFirms' => LawFirm::with('contacts')->get(),
+            ]
+        );
+    }
 
-        $query = LawFirm::with(['contacts', 'reviews', 'practiceAreas']);
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        return Inertia::render('admin/law-firms/create', [
+            'practiceAreas' => PracticeArea::orderBy('name')->get(),
+        ]);
+    }
 
-        if ($search) {
-            $query->where('name', 'like', "%{$search}%")
-                ->orWhere('description', 'like', "%{$search}%");
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'slug' => ['nullable', 'string', 'max:255', 'unique:law_firms,slug'],
+            'description' => ['nullable', 'string'],
+            'website' => ['nullable', 'url', 'max:255'],
+            'logo' => ['nullable', 'image', 'max:5120'],
+            'practice_areas' => ['nullable', 'array'],
+            'practice_areas.*' => ['integer', 'exists:practice_areas,id'],
+            'contacts' => ['nullable', 'array'],
+            'contacts.*.label' => ['nullable', 'string', 'max:255'],
+            'contacts.*.address' => ['nullable', 'string'],
+            'contacts.*.email' => ['nullable', 'email', 'max:255'],
+            'contacts.*.phone' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        if (blank($data['slug'] ?? null)) unset($data['slug']);
+
+        if ($request->hasFile('logo')) {
+            $data['logo_path'] = $request->file('logo')->store('law_firm_logos', 'public');
         }
 
-        // if ($practiceArea) {
-        //     $lawFirm = $lawFirm->whereHas('practiceAreas', fn($query) => $query->where('id', $practiceArea));
-        // }
+        $practiceAreas = $data['practice_areas'] ?? [];
+        $contacts = $data['contacts'] ?? [];
+        unset($data['practice_areas'], $data['contacts'], $data['logo']);
 
-        // if ($sort) {
-        //     $lawFirm = $lawFirm->orderBy('rating', $sort === 'high' ? 'desc' : 'asc');
-        // }
+        $lawFirm = LawFirm::create($data);
 
-        // $lawFirm = LawFirm::latest()->with(['contacts', 'reviews', 'practiceAreas'])->paginate(18);
+        if ($practiceAreas) {
+            $lawFirm->practiceAreas()->sync($practiceAreas);
+        }
 
-        $lawFirms = $query->paginate(18)->withQueryString();
+        foreach ($contacts as $c) {
+            if (
+                blank($c['label'] ?? null) && blank($c['address'] ?? null) &&
+                blank($c['email'] ?? null) && blank($c['phone'] ?? null)
+            ) {
+                continue;
+            }
+            $lawFirm->contacts()->create($c);
+        }
 
-        return Inertia::render('home', [
-            'lawFirms' => $lawFirms,
-            'practiceAreas' => PracticeArea::whereNull('parent_id')->orderBy('name')->get(),
-            'filters' => $request->only(['search', 'practice_area', 'sort']), // Pass current filters back
-        ]);
+        return redirect()->route('admin.law-firms.index')->with('success', 'Law firm created.');
     }
 
     /**
@@ -51,15 +89,7 @@ class LawFirmController extends Controller
      */
     public function show(LawFirm $lawFirm)
     {
-        $reviews = $lawFirm->reviews()
-            ->where('status', 'active')
-            ->with('user')
-            ->latest()->paginate(10);
-
-        return Inertia::render('law-firms/show', [
-            'lawFirm' => $lawFirm->load(['contacts', 'reviews']),
-            'reviews' => $reviews,
-        ]);
+        //
     }
 
     /**
@@ -139,35 +169,5 @@ class LawFirmController extends Controller
         return redirect()
             ->route('admin.law-firms.index')
             ->with('success', 'Law firm deleted successfully.');
-    }
-
-
-    /**
-     * Store a review for the law firm.
-     */
-    public function storeReview(Request $request, LawFirm $lawFirm)
-    {
-        $data = $request->validate([
-            'rating' => ['required', 'integer', 'min:1', 'max:5'],
-            'comment' => ['nullable', 'string', 'max:1000'],
-        ]);
-
-        // Check if user has already reviewed this law firm
-        $existingReview = $lawFirm->reviews()
-            ->where('user_id', $request->user()->id)
-            ->first();
-
-        if ($existingReview) {
-            return back()->with('error', 'You have already reviewed this law firm.');
-        }
-
-        $lawFirm->reviews()->create([
-            'user_id' => $request->user()->id,
-            'rating' => $data['rating'],
-            'comment' => $data['comment'],
-            'status' => 'active',
-        ]);
-
-        return back()->with('success', 'Thank you for your review!');
     }
 }
