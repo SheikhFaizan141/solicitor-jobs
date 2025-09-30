@@ -21,8 +21,9 @@ Route::middleware('auth')->group(function () {
 
 
 /* JOBS */
-Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
+Route::get('/home', [JobController::class, 'home'])->name('jobs.home');
 
+Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
 Route::get('/jobs/{job:slug}', [JobController::class, 'show'])->name('jobs.show');
 
 // admin facing routes

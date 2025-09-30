@@ -27,6 +27,12 @@ function MainHeader() {
     const { auth } = usePage<SharedData>().props;
     const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
 
+    const navLinkClasses = (path: string) => {
+        const isActive = currentPath === path;
+        return `relative text-sm font-medium transition-colors after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-full after:origin-center after:scale-x-0 after:bg-amber-500 after:transition-transform hover:text-white ${
+            isActive ? 'text-white after:scale-x-100' : 'text-blue-200'
+        }`;
+    };
     return (
         <header className="sticky top-0 z-50 border-b border-gray-200 bg-blue-900 shadow-sm">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -49,21 +55,14 @@ function MainHeader() {
 
                     {/* MAIN NAVIGATION */}
                     <nav className="hidden items-center space-x-8 md:flex">
-                        <Link
-                            href="/"
-                            className={`text-lg font-medium transition-colors hover:text-amber-600 ${
-                                currentPath === '/' ? 'text-zinc-200' : 'text-gray-700'
-                            }`}
-                        >
-                            Home
+                        <Link href="/" className={navLinkClasses('/')}>
+                            Law Firms
                         </Link>
-                        <Link
-                            href="/jobs"
-                            className={`text-lg font-medium transition-colors hover:text-amber-600 ${
-                                currentPath === '/jobs' ? 'text-zinc-200' : 'text-zinc-300'
-                            }`}
-                        >
+                        <Link href="/home" className={navLinkClasses('/home')}>
                             Jobs
+                        </Link>
+                        <Link href="/jobs" className={navLinkClasses('/jobs')}>
+                            Browse All
                         </Link>
                     </nav>
 

@@ -47,16 +47,12 @@ export default function JobShow() {
     return (
         <>
             <Head title={`${job.title} at ${job.law_firm?.name || 'Company'}`} />
-            
+
             <div className="min-h-screen bg-gray-50 pb-16">
-                
                 {/* Header */}
-                <div className="bg-white border-b ">
+                <div className="border-b bg-white">
                     <div className="mx-auto max-w-5xl px-6 py-6">
-                        <Link
-                            href="/jobs"
-                            className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-6"
-                        >
+                        <Link href="/jobs" className="mb-6 inline-flex items-center text-sm text-gray-600 hover:text-gray-900">
                             <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                             </svg>
@@ -65,15 +61,11 @@ export default function JobShow() {
 
                         <div className="flex items-start justify-between">
                             <div className="flex-1">
-                                <div className="flex items-center gap-4 mb-4">
+                                <div className="mb-4 flex items-center gap-4">
                                     {/* Company Logo */}
                                     <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-white">
                                         {job.law_firm?.logo_url ? (
-                                            <img 
-                                                src={job.law_firm.logo_url} 
-                                                alt={`${job.law_firm.name} logo`} 
-                                                className="h-14 w-14 object-cover" 
-                                            />
+                                            <img src={job.law_firm.logo_url} alt={`${job.law_firm.name} logo`} className="h-14 w-14 object-cover" />
                                         ) : (
                                             <div className="flex h-full w-full items-center justify-center text-lg font-semibold text-gray-600">
                                                 {job.law_firm?.name
@@ -86,7 +78,7 @@ export default function JobShow() {
                                     </div>
 
                                     <div>
-                                        <h1 className="text-3xl font-bold text-gray-900 mb-2">{job.title}</h1>
+                                        <h1 className="mb-2 text-3xl font-bold text-gray-900">{job.title}</h1>
                                         {job.law_firm && (
                                             <Link
                                                 href={`/law-firms/${job.law_firm.slug}`}
@@ -99,12 +91,22 @@ export default function JobShow() {
                                 </div>
 
                                 {/* Job Meta */}
-                                <div className="flex flex-wrap items-center gap-6 text-sm text-gray-600 mb-4">
+                                <div className="mb-4 flex flex-wrap items-center gap-6 text-sm text-gray-600">
                                     {job.location && (
                                         <div className="flex items-center">
                                             <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                                />
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                                                />
                                             </svg>
                                             {job.location}
                                         </div>
@@ -112,7 +114,12 @@ export default function JobShow() {
 
                                     <div className="flex items-center">
                                         <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                                            />
                                         </svg>
                                         {formatSalary()}
                                     </div>
@@ -120,7 +127,12 @@ export default function JobShow() {
                                     {job.experience_level && (
                                         <div className="flex items-center">
                                             <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806" />
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+                                                ></path>
                                             </svg>
                                             {job.experience_level}
                                         </div>
@@ -147,7 +159,7 @@ export default function JobShow() {
 
                                 {/* Practice Areas */}
                                 {job.practice_areas && job.practice_areas.length > 0 && (
-                                    <div className="flex flex-wrap gap-2 mb-4">
+                                    <div className="mb-4 flex flex-wrap gap-2">
                                         {job.practice_areas.map((area) => (
                                             <span
                                                 key={area.id}
@@ -168,21 +180,26 @@ export default function JobShow() {
                             </div>
 
                             {/* Apply Button */}
-                            <div className="flex-shrink-0 ml-6">
+                            <div className="ml-6 flex-shrink-0">
                                 {job.is_active ? (
                                     job.application_url ? (
                                         <button
                                             onClick={handleApplyClick}
-                                            className="inline-flex items-center rounded-md bg-amber-600 px-8 py-3 text-base font-medium text-white shadow-sm hover:bg-amber-700 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:outline-none transition-colors"
+                                            className="inline-flex items-center rounded-md bg-amber-600 px-8 py-3 text-base font-medium text-white shadow-sm transition-colors hover:bg-amber-700 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:outline-none"
                                         >
                                             Apply Now
                                             <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                                />
                                             </svg>
                                         </button>
                                     ) : (
                                         <div className="text-center">
-                                            <div className="text-sm text-gray-600 mb-2">Contact employer directly</div>
+                                            <div className="mb-2 text-sm text-gray-600">Contact employer directly</div>
                                             {job.law_firm?.website && (
                                                 <Link
                                                     href={job.law_firm.website}
@@ -209,21 +226,21 @@ export default function JobShow() {
 
                 {/* Content */}
                 <div className="mx-auto max-w-5xl px-6 py-8">
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                         {/* Main Content */}
-                        <div className="lg:col-span-2 space-y-8">
+                        <div className="space-y-8 lg:col-span-2">
                             {/* Job Description */}
                             <section>
-                                <h2 className="text-xl font-semibold text-gray-900 mb-4">Job Description</h2>
+                                <h2 className="mb-4 text-xl font-semibold text-gray-900">Job Description</h2>
                                 <div className="prose prose-gray max-w-none">
-                                    <p className="whitespace-pre-line text-gray-700 leading-relaxed">{job.description}</p>
+                                    <p className="leading-relaxed whitespace-pre-line text-gray-700">{job.description}</p>
                                 </div>
                             </section>
 
                             {/* Requirements */}
                             {job.requirements && job.requirements.length > 0 && (
                                 <section>
-                                    <h2 className="text-xl font-semibold text-gray-900 mb-4">Requirements</h2>
+                                    <h2 className="mb-4 text-xl font-semibold text-gray-900">Requirements</h2>
                                     <ul className="space-y-3">
                                         {job.requirements.map((requirement, index) => (
                                             <li key={index} className="flex items-start gap-3">
@@ -244,7 +261,7 @@ export default function JobShow() {
                             {/* Benefits */}
                             {job.benefits && job.benefits.length > 0 && (
                                 <section>
-                                    <h2 className="text-xl font-semibold text-gray-900 mb-4">Benefits</h2>
+                                    <h2 className="mb-4 text-xl font-semibold text-gray-900">Benefits</h2>
                                     <ul className="space-y-3">
                                         {job.benefits.map((benefit, index) => (
                                             <li key={index} className="flex items-start gap-3">
@@ -267,26 +284,31 @@ export default function JobShow() {
                         <div className="space-y-6">
                             {/* Quick Apply */}
                             {job.is_active && (
-                                <div className="bg-white p-6 rounded-lg border">
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Ready to Apply?</h3>
+                                <div className="rounded-lg border bg-white p-6">
+                                    <h3 className="mb-4 text-lg font-semibold text-gray-900">Ready to Apply?</h3>
                                     {job.application_url ? (
                                         <button
                                             onClick={handleApplyClick}
-                                            className="w-full inline-flex items-center justify-center rounded-md bg-amber-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-amber-700 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:outline-none transition-colors"
+                                            className="inline-flex w-full items-center justify-center rounded-md bg-amber-600 px-6 py-3 text-base font-medium text-white shadow-sm transition-colors hover:bg-amber-700 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:outline-none"
                                         >
                                             Apply Now
                                             <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                                />
                                             </svg>
                                         </button>
                                     ) : (
                                         <div>
-                                            <p className="text-sm text-gray-600 mb-4">Contact the employer directly to apply for this position.</p>
+                                            <p className="mb-4 text-sm text-gray-600">Contact the employer directly to apply for this position.</p>
                                             {job.law_firm?.website && (
                                                 <Link
                                                     href={job.law_firm.website}
                                                     target="_blank"
-                                                    className="w-full inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-3 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                                                    className="inline-flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-3 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-amber-500 focus:outline-none"
                                                 >
                                                     Visit Website
                                                 </Link>
@@ -297,8 +319,8 @@ export default function JobShow() {
                             )}
 
                             {/* Job Details */}
-                            <div className="bg-white p-6 rounded-lg border">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Job Details</h3>
+                            <div className="rounded-lg border bg-white p-6">
+                                <h3 className="mb-4 text-lg font-semibold text-gray-900">Job Details</h3>
                                 <dl className="space-y-3">
                                     {job.location && (
                                         <div>
@@ -335,12 +357,12 @@ export default function JobShow() {
 
                             {/* Company Info */}
                             {job.law_firm && (
-                                <div className="bg-white p-6 rounded-lg border">
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-4">About {job.law_firm.name}</h3>
+                                <div className="rounded-lg border bg-white p-6">
+                                    <h3 className="mb-4 text-lg font-semibold text-gray-900">About {job.law_firm.name}</h3>
                                     {job.law_firm.description ? (
-                                        <p className="text-sm text-gray-700 mb-4">{job.law_firm.description}</p>
+                                        <p className="mb-4 text-sm text-gray-700">{job.law_firm.description}</p>
                                     ) : (
-                                        <p className="text-sm text-gray-500 mb-4">No company description available.</p>
+                                        <p className="mb-4 text-sm text-gray-500">No company description available.</p>
                                     )}
                                     <Link
                                         href={`/law-firms/${job.law_firm.slug}`}
