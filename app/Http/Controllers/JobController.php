@@ -23,7 +23,13 @@ class JobController extends Controller
             $q = $filters['q'];
             $query->where(function ($query) use ($q) {
                 $query->where('title', 'like', "%{$q}%")
-                    ->orWhere('description', 'like', "%{$q}%");
+                    ->orWhere('description', 'like', "%{$q}%")
+                    ->orWhereHas('lawFirm', function ($query) use ($q) {
+                        $query->where('name', 'like', "%{$q}%");
+                    })
+                    ->orWhereHas('practiceAreas', function ($query) use ($q) {
+                        $query->where('name', 'like', "%{$q}%");
+                    });
             });
         }
 
@@ -32,37 +38,71 @@ class JobController extends Controller
         }
 
         if ($filters['experience'] ?? null) {
-            $query->where('experience_level', 'like', "%{$filters['experience']}%");
+            $query->where('experience_level', $filters['experience']);
         }
 
         if ($filters['location'] ?? null) {
-            $query->where('location', 'like', "%{$filters['location']}%");
+            $query->where('location', $filters['location']);
         }
 
         if ($filters['practice_area'] ?? null) {
-            $query->whereHas('practiceAreas', fn($q) => $q->where('id', $filters['practice_area']));
+            $query->whereHas('practiceAreas', function ($query) use ($filters) {
+                $query->where('id', $filters['practice_area']);
+            });
         }
 
         if ($filters['firm'] ?? null) {
             $query->where('law_firm_id', $filters['firm']);
         }
 
-        $jobs = $query->latest('published_at')->paginate(12)->withQueryString();
+        $jobs = $query->latest()->paginate(20);
+
+        // Get filter options
+        $locations = JobListing::active()
+            ->published()
+            ->whereNotNull('location')
+            ->distinct()
+            ->orderBy('location')
+            ->pluck('location')
+            ->filter()
+            ->values()
+            ->toArray();
+
+        $employmentTypes = JobListing::active()
+            ->published()
+            ->distinct()
+            ->orderBy('employment_type')
+            ->pluck('employment_type')
+            ->toArray();
+
+        $experienceLevels = JobListing::active()
+            ->published()
+            ->whereNotNull('experience_level')
+            ->distinct()
+            ->orderBy('experience_level')
+            ->pluck('experience_level')
+            ->filter()
+            ->values()
+            ->toArray();
 
         return Inertia::render('jobs/index', [
             'jobs' => $jobs,
-            'filters' => $filters,
-            'practiceAreas' => PracticeArea::orderBy('name')->get(['id', 'name']),
-            'firms' => LawFirm::orderBy('name')->get(['id', 'name', 'slug']),
+            'filters' => [
+                'locations' => $locations,
+                'employment_types' => $employmentTypes,
+                'experience_levels' => $experienceLevels,
+            ],
         ]);
     }
 
-    public function show(JobListing $jobListing)
+    public function show(JobListing $job)
     {
-        abort_unless($jobListing->is_active && $jobListing->published_at, 404);
+        $job->load(['lawFirm', 'practiceAreas', 'postedBy']);
+
+        // var_dump($job->toArray()); exit;
 
         return Inertia::render('jobs/show', [
-            'job' => $jobListing->load(['lawFirm', 'practiceAreas', 'postedBy']),
+            'job' => $job,
         ]);
     }
 }

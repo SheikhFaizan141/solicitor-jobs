@@ -1,15 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
+import { Briefcase, Building2, ChevronRight, LayoutDashboard, LogOut, MessageSquare, PersonStanding, Tags, Users } from 'lucide-react';
 import React, { useState } from 'react';
-import {
-    LayoutDashboard,
-    Building2,
-    Tags,
-    Briefcase,
-    MessageSquare,
-    Gavel,
-    LogOut,
-    ChevronRight,
-} from 'lucide-react';
 
 type IconType = React.ComponentType<React.SVGProps<SVGSVGElement>>;
 
@@ -51,7 +42,7 @@ const AdminSidebar: React.FC = () => {
     return (
         <aside className="min-h-screen w-64 bg-gray-900 p-4 text-white">
             <nav className="space-y-1">
-                <ul className="m-0 list-none p-0 space-y-1">
+                <ul className="m-0 list-none space-y-1 p-0">
                     {/* Dashboard */}
                     <li>
                         <NavLink href="/admin/dashboard" icon={LayoutDashboard} label="Dashboard" isActive={isActive('/admin/dashboard')} />
@@ -65,27 +56,27 @@ const AdminSidebar: React.FC = () => {
                             aria-expanded={lawFirmsOpen}
                             className={[
                                 'flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm',
-                                'text-gray-200 hover:bg-gray-700 hover:text-white transition-colors',
+                                'text-gray-200 transition-colors hover:bg-gray-700 hover:text-white',
                             ].join(' ')}
                         >
                             <span className="flex items-center gap-2">
                                 <Building2 className="h-4 w-4 opacity-90" />
                                 Law Firms
                             </span>
-                            <ChevronRight
-                                className={[
-                                    'h-4 w-4 transition-transform',
-                                    lawFirmsOpen ? 'rotate-90' : 'rotate-0',
-                                ].join(' ')}
-                            />
+                            <ChevronRight className={['h-4 w-4 transition-transform', lawFirmsOpen ? 'rotate-90' : 'rotate-0'].join(' ')} />
                         </button>
                         {lawFirmsOpen && (
-                            <ul className="mt-1 ml-2 border-l border-gray-700 pl-2 space-y-1">
+                            <ul className="mt-1 ml-2 space-y-1 border-l border-gray-700 pl-2">
                                 <li>
                                     <NavLink href="/admin/law-firms" icon={Building2} label="All Law Firms" isActive={isActive('/admin/law-firms')} />
                                 </li>
                                 <li>
-                                    <NavLink href="/admin/practice-areas" icon={Tags} label="Practice Areas" isActive={isActive('/admin/practice-areas')} />
+                                    <NavLink
+                                        href="/admin/practice-areas"
+                                        icon={Tags}
+                                        label="Practice Areas"
+                                        isActive={isActive('/admin/practice-areas')}
+                                    />
                                 </li>
                             </ul>
                         )}
@@ -101,9 +92,14 @@ const AdminSidebar: React.FC = () => {
                         <NavLink href="/admin/reviews" icon={MessageSquare} label="Reviews" isActive={isActive('/admin/reviews')} />
                     </li>
 
+                    {/* Lawyers */}
+                    <li>
+                        <NavLink href="/admin/cases" icon={PersonStanding} label="Lawyers" isActive={isActive('/admin/cases')} />
+                    </li>
+
                     {/* Cases */}
                     <li>
-                        <NavLink href="/admin/cases" icon={Gavel} label="Cases" isActive={isActive('/admin/cases')} />
+                        <NavLink href="/admin/cases" icon={Users} label="Users" isActive={isActive('/admin/cases')} />
                     </li>
 
                     {/* Logout */}
