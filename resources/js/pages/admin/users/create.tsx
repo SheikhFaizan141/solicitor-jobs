@@ -18,7 +18,7 @@ const CreateUserPage = ({ roles }: Props) => {
   };
 
   return (
-    <div className="max-w-lg space-y-6">
+    <div className="bg-white px-6 py-6 max-w-lg mx-auto space-y-6">
       <h1 className="text-xl font-semibold">Create User</h1>
       <form onSubmit={submit} className="space-y-4">
         <div>

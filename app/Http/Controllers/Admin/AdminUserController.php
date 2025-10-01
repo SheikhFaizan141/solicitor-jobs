@@ -131,4 +131,22 @@ class AdminUserController extends Controller
 
         return redirect()->route('admin.users.index')->with('success', 'User updated.');
     }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Request $request, User $user)
+    {
+        if ($user->id === $request->user()->id) {
+            return back()->withErrors(['general' => 'You cannot delete your own account.']);
+        }
+
+        if ($user->role === User::ROLE_ADMIN && User::where('role', User::ROLE_ADMIN)->count() <= 1) {
+            return back()->withErrors(['general' => 'You cannot delete the last admin account.']);
+        }
+
+        $user->delete();
+
+        return redirect()->route('admin.users.index')->with('success', 'User deleted.');
+    }
 }

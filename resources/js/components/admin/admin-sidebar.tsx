@@ -93,9 +93,9 @@ const AdminSidebar: React.FC = () => {
                     </li>
 
                     {/* Lawyers */}
-                    <li>
+                    {/* <li>
                         <NavLink href="/admin/cases" icon={PersonStanding} label="Lawyers" isActive={isActive('/admin/cases')} />
-                    </li>
+                    </li> */}
 
                     {/* Cases */}
                     <li>

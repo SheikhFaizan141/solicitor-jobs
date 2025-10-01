@@ -36,14 +36,20 @@ interface Props {
     };
 }
 
-const AdminUserPage: any = () => {
+const AdminUserPage = () => {
     const { users, roles, filters } = usePage<Props>().props;
 
-    const { data, setData, get, processing } = useForm({
+    const {
+        data,
+        setData,
+        get,
+        processing,
+        delete: destroy, // add destroy helper
+        errors,
+    } = useForm({
         search: filters.search || '',
         role: filters.role || '',
     });
-
     const handleFilter = () => {
         get('/admin/users', {
             preserveState: true,
@@ -179,25 +185,43 @@ const AdminUserPage: any = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
-                                {users.data.map((user) => (
-                                    <tr key={user.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4">
-                                            <div className="font-medium text-gray-900">{user.name}</div>
-                                        </td>
-                                        <td className="px-6 py-4 text-gray-600">{user.email}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={getRoleBadgeClasses(user.role)}>
-                                                {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-gray-600">{formatDate(user.created_at)}</td>
-                                        <td className="px-6 py-4">
-                                            <Link href={`/admin/users/${user.id}/edit`} className="text-blue-600 hover:text-blue-800 hover:underline">
-                                                Edit
-                                            </Link>
-                                        </td>
-                                    </tr>
-                                ))}
+                                {users.data.map((user) => {
+                                    const handleDelete = () => {
+                                        if (!confirm(`Delete user "${user.name}"? This cannot be undone.`)) return;
+                                        destroy(`/admin/users/${user.id}`, {
+                                            preserveScroll: true,
+                                        });
+                                    };
+                                    return (
+                                        <tr key={user.id} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4">
+                                                <div className="font-medium text-gray-900">{user.name}</div>
+                                            </td>
+                                            <td className="px-6 py-4 text-gray-600">{user.email}</td>
+                                            <td className="px-6 py-4">
+                                                <span className={getRoleBadgeClasses(user.role)}>
+                                                    {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-gray-600">{formatDate(user.created_at)}</td>
+                                            <td className="px-6 py-4">
+                                                <Link
+                                                    href={`/admin/users/${user.id}/edit`}
+                                                    className="text-blue-600 hover:text-blue-800 hover:underline"
+                                                >
+                                                    Edit
+                                                </Link>
+                                                <button
+                                                    onClick={handleDelete}
+                                                    disabled={processing}
+                                                    className="ml-3 text-red-600 hover:text-red-800 hover:underline disabled:opacity-50"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                                 {users.data.length === 0 && (
                                     <tr>
                                         <td colSpan={5} className="px-6 py-12 text-center">
@@ -244,6 +268,7 @@ const AdminUserPage: any = () => {
         </>
     );
 };
+
 
 AdminUserPage.layout = (page: React.ReactNode) => <AdminLayout>{page}</AdminLayout>;
 

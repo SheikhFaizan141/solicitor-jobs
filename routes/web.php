@@ -41,7 +41,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::resource('/admin/users', AdminUserController::class)
         ->names('admin.users')
-        ->except(['show', 'destroy']);
+        ->except(['show']);
 
     Route::resource('/admin/law-firms', AdminLawFirmController::class)
         ->names([
