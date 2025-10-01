@@ -99,7 +99,7 @@ const AdminSidebar: React.FC = () => {
 
                     {/* Cases */}
                     <li>
-                        <NavLink href="/admin/cases" icon={Users} label="Users" isActive={isActive('/admin/cases')} />
+                        <NavLink href="/admin/users" icon={Users} label="Users" isActive={isActive('/admin/cases')} />
                     </li>
 
                     {/* Logout */}

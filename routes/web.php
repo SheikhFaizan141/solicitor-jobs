@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminJobListingController;
 use App\Http\Controllers\Admin\AdminLawFirmController;
 use App\Http\Controllers\Admin\AdminReviewController;
+use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\LawFirmController;
 use App\Http\Controllers\PracticeAreaController;
@@ -33,10 +34,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin', function () {
         return Inertia::render('admin/index');
     });
+
+    Route::resource('/admin/users', AdminUserController::class)
+        ->names('admin.users')
+        ->except(['show', 'destroy']);
 
     Route::resource('/admin/law-firms', AdminLawFirmController::class)
         ->names([
