@@ -12,7 +12,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => (
             <header className="mb-6 border-b pb-4 flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-gray-800">Admin Area</h1>
             </header>
-            <section className="bg-white rounded-lg shadow p-6">
+            <section className="p-6">
                 {children}
             </section>
         </main>

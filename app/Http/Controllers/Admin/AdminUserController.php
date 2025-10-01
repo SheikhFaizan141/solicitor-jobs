@@ -15,12 +15,26 @@ class AdminUserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::query()
+        $query = User::query()
             ->select('id', 'name', 'email', 'role', 'created_at')
-            ->orderByDesc('created_at')
-            ->paginate(20)
+            ->orderBy('created_at', 'desc');
+
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('role')) {
+            $query->where('role', $request->get('role'));
+        }
+
+        $users = $query->paginate(20)
+            ->withQueryString()
             ->through(fn($user) => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -29,9 +43,11 @@ class AdminUserController extends Controller
                 'created_at' => $user->created_at->toDateTimeString(),
             ]);
 
+
         return Inertia::render('admin/users/index', [
             'users' => $users,
             'roles' => [User::ROLE_ADMIN, User::ROLE_EDITOR, User::ROLE_USER],
+            'filters' => $request->only(['search', 'role']),
         ]);
     }
 
