@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminJobListingController;
 use App\Http\Controllers\Admin\AdminLawFirmController;
 use App\Http\Controllers\Admin\AdminReviewController;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\LawFirmController;
 use App\Http\Controllers\PracticeAreaController;
@@ -11,8 +12,10 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 
-// Client-facing routes
-Route::get('/', [LawFirmController::class, 'index'])->name('home');
+Route::get('/', HomeController::class)->name('home');
+
+Route::get('/law-firms', [LawFirmController::class, 'index'])->name('law-firms.index');
+
 Route::get('/law-firms/{lawFirm:slug}', [LawFirmController::class, 'show'])->name('law-firms.show');
 
 // Review submission route for authenticated users
@@ -22,9 +25,10 @@ Route::middleware('auth')->group(function () {
 
 
 /* JOBS */
-Route::get('/home', [JobController::class, 'home'])->name('jobs.home');
+// Route::get('/', [JobController::class, 'home'])->name('jobs.home');
 
 Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
+
 Route::get('/jobs/{job:slug}', [JobController::class, 'show'])->name('jobs.show');
 
 // admin facing routes

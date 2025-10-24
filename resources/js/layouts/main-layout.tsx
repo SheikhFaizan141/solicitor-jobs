@@ -34,7 +34,7 @@ function MainHeader() {
         }`;
     };
     return (
-        <header className="sticky top-0 z-50 border-b border-gray-200 bg-blue-900 shadow-sm">
+        <header className="sticky top-0 z-50 border-b border-gray-200 bg-blue-900 shadow-sm md:pt-2 md:pb-2">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="flex h-16 items-center justify-between">
                     {/* LOGO */}
@@ -56,13 +56,15 @@ function MainHeader() {
                     {/* MAIN NAVIGATION */}
                     <nav className="hidden items-center space-x-8 md:flex">
                         <Link href="/" className={navLinkClasses('/')}>
-                            Law Firms
+                            Home
                         </Link>
-                        <Link href="/home" className={navLinkClasses('/home')}>
+
+                        <Link href="/jobs" className={navLinkClasses('/jobs')}>
                             Jobs
                         </Link>
-                        <Link href="/jobs" className={navLinkClasses('/jobs')}>
-                            Browse All
+
+                        <Link href="/law-firms" className={navLinkClasses('/law-firms')}>
+                            Law Firms
                         </Link>
                     </nav>
 

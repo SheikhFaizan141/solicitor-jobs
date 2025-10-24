@@ -46,7 +46,7 @@ export default function JobsIndex() {
     const { jobs, filters } = usePage<JobsPageProps>().props;
 
     console.log(jobs);
-    
+
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedType, setSelectedType] = useState('All');
     const [selectedExperience, setSelectedExperience] = useState('All');
