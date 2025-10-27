@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\JobListing;
 use App\Models\LawFirm;
 use App\Models\PracticeArea;
+use Illuminate\Contracts\Queue\Job;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -14,11 +15,30 @@ class AdminJobListingController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // dd('index');
+        $search = $request->input('search');
+        $sortBy = $request->input('sort_by', 'created_at');
+        $status = $request->input('status');
+
+        $jobs = JobListing::query()
+            ->when($search, function ($query, $search) {
+                $query->where('title', 'like', '%' . $search . '%')
+                    ->orWhere('location', 'like', '%' . $search . '%');
+            })
+            ->when($status === 'active', function ($query) {
+                $query->where('is_active', true);
+            })
+            ->when($status === 'inactive', function ($query) {
+                $query->where('is_active', false);
+            })
+            ->orderBy($sortBy, 'desc')
+            ->with('lawFirm')
+            ->paginate(20)
+            ->withQueryString();
+
         return Inertia::render('admin/job-listings/index', [
-            'jobs' => JobListing::with('lawFirm')->latest()->paginate(20),
+            'jobs' => $jobs,
         ]);
     }
 

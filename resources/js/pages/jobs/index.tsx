@@ -355,6 +355,27 @@ export default function JobsIndex() {
                                     <p className="mt-1 text-sm text-gray-500">Try adjusting your search filters to find more results.</p>
                                 </div>
                             )}
+
+                            {/* Pagination */}
+                            {jobs.links && (
+                                <div className="mt-8 flex justify-center">
+                                    <div className="flex space-x-1">
+                                        {jobs.links.map((link, index) => (
+                                            <a
+                                                key={index}
+                                                href={link.url}
+                                                className={`rounded border px-3 py-2 text-sm ${
+                                                    link.active
+                                                        ? 'border-blue-500 bg-blue-500 text-white'
+                                                        : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'
+                                                } ${!link.url ? 'pointer-events-none opacity-50' : ''}`}
+                                                dangerouslySetInnerHTML={{ __html: link.label }}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                            
                         </div>
                     </div>
                 </div>

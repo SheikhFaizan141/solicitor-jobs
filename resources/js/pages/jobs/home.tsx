@@ -64,32 +64,32 @@ export default function JobsHome() {
         get('/home', { preserveState: true, replace: true });
     };
 
-    const formatSalary = (job: Job) => {
-        if (job.salary_min && job.salary_max) {
-            return `£${job.salary_min.toLocaleString()} - £${job.salary_max.toLocaleString()}`;
-        }
-        if (job.salary_min) {
-            return `£${job.salary_min.toLocaleString()}+`;
-        }
-        return 'Competitive';
-    };
+    // const formatSalary = (job: Job) => {
+    //     if (job.salary_min && job.salary_max) {
+    //         return `£${job.salary_min.toLocaleString()} - £${job.salary_max.toLocaleString()}`;
+    //     }
+    //     if (job.salary_min) {
+    //         return `£${job.salary_min.toLocaleString()}+`;
+    //     }
+    //     return 'Competitive';
+    // };
 
-    const formatEmploymentType = (type: string) => {
-        return type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
-    };
+    // const formatEmploymentType = (type: string) => {
+    //     return type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+    // };
 
-    const formatTimeAgo = (dateString: string) => {
-        const date = new Date(dateString);
-        const now = new Date();
-        const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    // const formatTimeAgo = (dateString: string) => {
+    //     const date = new Date(dateString);
+    //     const now = new Date();
+    //     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
         
-        if (diffInHours < 24) {
-            return `${diffInHours}h ago`;
-        } else {
-            const diffInDays = Math.floor(diffInHours / 24);
-            return `${diffInDays}d ago`;
-        }
-    };
+    //     if (diffInHours < 24) {
+    //         return `${diffInHours}h ago`;
+    //     } else {
+    //         const diffInDays = Math.floor(diffInHours / 24);
+    //         return `${diffInDays}d ago`;
+    //     }
+    // };
 
     const clearFilters = () => {
         setData({ q: '', location: '', practice_area: '' });
