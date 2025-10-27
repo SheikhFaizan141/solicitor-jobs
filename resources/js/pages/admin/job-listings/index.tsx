@@ -1,29 +1,17 @@
 import AdminLayout from '@/layouts/admin-layout';
-import { Link, router, useForm, usePage } from '@inertiajs/react';
+import { JobListing, PaginatedResponse } from '@/types/job-listing';
+import { Link, router, useForm } from '@inertiajs/react';
 import React, { useEffect, useState } from 'react';
 
-interface JobListing {
-    id: number;
-    title: string;
-    slug: string;
-    law_firm: {
-        id: number;
-        name: string;
-    } | null;
-    location: string | null;
-    employment_type: string;
-    is_active: boolean;
-    published_at: string | null;
+export interface JobAdminProps {
+    jobs: PaginatedResponse<JobListing>;
 }
 
-const Index = () => {
-    const { jobs } = usePage().props as { jobs: { data: JobListing[]; links: any; meta: any } };
-
+const JobAdminIndex: React.FC<JobAdminProps> & { layout?: (page: React.ReactNode) => React.ReactNode } = ({ jobs }) => {
     const { delete: destroy, processing } = useForm();
 
     const [search, setSearch] = useState('');
     const [sortBy, setSortBy] = useState('created_at');
-    // const [orderBy, setOrderBy] = useState('desc');
     const [statusFilter, setStatusFilter] = useState('all');
 
     console.log(jobs);
@@ -226,7 +214,7 @@ const Index = () => {
                             <div className="text-sm text-gray-700">{getPaginationInfo()}</div>
 
                             <nav className="flex items-center space-x-2">
-                                {jobs.links.map((link: any, index: number) => (
+                                {jobs.links.map((link, index) => (
                                     <Link
                                         key={index}
                                         href={link.url || '#'}
@@ -251,6 +239,6 @@ const Index = () => {
     );
 };
 
-Index.layout = (page: React.ReactNode) => <AdminLayout>{page}</AdminLayout>;
+JobAdminIndex.layout = (page: React.ReactNode) => <AdminLayout>{page}</AdminLayout>;
 
-export default Index;
+export default JobAdminIndex;
