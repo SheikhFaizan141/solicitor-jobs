@@ -39,6 +39,9 @@ class AdminJobListingController extends Controller
 
         return Inertia::render('admin/job-listings/index', [
             'jobs' => $jobs,
+            'can' => [
+                'create' => $request->user()->canCreateJobListings(),
+            ]
         ]);
     }
 

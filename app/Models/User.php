@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Gate;
@@ -65,5 +66,20 @@ class User extends Authenticatable
     public function isStaff(): bool
     {
         return in_array($this->role, [self::ROLE_ADMIN, self::ROLE_EDITOR]);
+    }
+
+    public function jobListings(): HasMany
+    {
+        return $this->hasMany(JobListing::class, 'posted_by');
+    }
+
+    public function canManageUsers(): bool
+    {
+        return $this->isAdmin();
+    }
+
+    public function canCreateJobListings(): bool
+    {
+        return $this->isStaff();
     }
 }

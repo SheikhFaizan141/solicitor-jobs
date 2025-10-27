@@ -5,10 +5,16 @@ import React, { useEffect, useState } from 'react';
 
 export interface JobAdminProps {
     jobs: PaginatedResponse<JobListing>;
+    can: {
+        create: boolean;
+    };
 }
 
-const JobAdminIndex: React.FC<JobAdminProps> & { layout?: (page: React.ReactNode) => React.ReactNode } = ({ jobs }) => {
+const JobAdminIndex: React.FC<JobAdminProps> & { layout?: (page: React.ReactNode) => React.ReactNode } = ({ jobs, can }) => {
     const { delete: destroy, processing } = useForm();
+
+    console.log(can);
+    
 
     const [search, setSearch] = useState('');
     const [sortBy, setSortBy] = useState('created_at');
