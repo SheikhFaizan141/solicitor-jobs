@@ -8,6 +8,10 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\LawFirmController;
 use App\Http\Controllers\PracticeAreaController;
+use App\Models\JobListing;
+use App\Models\LawFirm;
+use App\Models\Review;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -40,8 +44,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin', function () {
-        return Inertia::render('admin/index');
-    });
+        return Inertia::render('admin/index', [
+            'stats' => [
+                'lawFirms' => [
+                    'total' => LawFirm::count(),
+                    // 'active' => LawFirm::where('is_active', true)->count(),
+                    'active' =>  10,
+                ],
+                'jobs' => [
+                    'total' => JobListing::count(),
+                    'active' => JobListing::where('is_active', true)->count(),
+                ],
+                'reviews' => [
+                    'total' => Review::count(),
+                    'pending' => Review::where('status', 'pending')->count(),
+                ],
+                'users' => [
+                    'total' => User::count(),
+                    'newThisMonth' => User::where('created_at', '>=', now()->startOfMonth())->count(),
+                ],
+            ],
+        ]);
+    })->name('admin.dashboard');
 
     Route::resource('/admin/users', AdminUserController::class)
         ->names('admin.users')

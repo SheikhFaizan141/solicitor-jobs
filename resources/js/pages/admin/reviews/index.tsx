@@ -277,9 +277,9 @@ export default function ReviewsIndex() {
                 <Tabs value={activeTab} className="space-y-4">
                     <TabsList>
                         <TabsTrigger value="active" asChild>
-                            {/* <Link href={route('admin.reviews.index')} preserveState>
+                            <Link preserveState>
                                 Active ({stats.active})
-                            </Link> */}
+                            </Link>
                         </TabsTrigger>
                         <TabsTrigger value="spam" asChild>
                             {/* <Link href={route('admin.reviews.spam')} preserveState>
