@@ -68,10 +68,12 @@ const AdminSidebar: React.FC = () => {
                         <NavLink href="/admin/reviews" icon={MessageSquare} label="Reviews" isActive={isActive('/admin/reviews')} />
                     </li>
 
-                    {/* Cases */}
-                    <li>
-                        <NavLink href="/admin/users" icon={Users} label="Users" isActive={isActive('/admin/users')} />
-                    </li>
+                    {/* Users */}
+                    {props.auth.user.role === 'admin' && (
+                        <li>
+                            <NavLink href="/admin/users" icon={Users} label="Users" isActive={isActive('/admin/users')} />
+                        </li>
+                    )}
 
                     {/* Logout */}
                     {/* <li className="pt-2">

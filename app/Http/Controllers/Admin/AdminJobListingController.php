@@ -41,9 +41,9 @@ class AdminJobListingController extends Controller
 
         return Inertia::render('admin/job-listings/index', [
             'jobs' => $jobs,
-            'can' => [
-                'create' => $request->user()->canCreateJobListings(),
-            ]
+            // 'can' => [
+            //     'create' => $request->user()->can('create', JobListing::class),
+            // ]
         ]);
     }
 
@@ -52,7 +52,8 @@ class AdminJobListingController extends Controller
      */
     public function create()
     {
-        // $this->authorize('create', JobListing::class);
+        Gate::authorize('create', JobListing::class);
+
         return Inertia::render('admin/job-listings/create', [
             'firms' => LawFirm::orderBy('name')->get(['id', 'name']),
             'practiceAreas' => PracticeArea::orderBy('name')->get(['id', 'name']),
@@ -64,6 +65,8 @@ class AdminJobListingController extends Controller
      */
     public function store(Request $request)
     {
+        Gate::authorize('create', JobListing::class);
+
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', 'unique:job_listings,slug'],
@@ -100,16 +103,18 @@ class AdminJobListingController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
-    {
-        //
-    }
+    // public function show(string $id)
+    // {
+    //     //
+    // }
 
     /**
      * Show the form for editing the specified resource.
      */
     public function edit(JobListing $jobListing)
     {
+        Gate::authorize('update', $jobListing);
+
         return Inertia::render('admin/job-listings/edit', [
             'job' => $jobListing->load('practiceAreas'),
             'firms' => LawFirm::orderBy('name')->get(['id', 'name']),
@@ -122,6 +127,8 @@ class AdminJobListingController extends Controller
      */
     public function update(Request $request, JobListing $jobListing)
     {
+        Gate::authorize('update', $jobListing);
+
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', 'unique:job_listings,slug,' . $jobListing->id],
@@ -155,7 +162,10 @@ class AdminJobListingController extends Controller
      */
     public function destroy(JobListing $jobListing)
     {
+        Gate::authorize('delete', $jobListing);
+
         $jobListing->delete();
+        
         return back()->with('success', 'Job listing deleted.');
     }
 }

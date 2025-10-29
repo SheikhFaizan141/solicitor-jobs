@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
-#[UsePolicy(JobListingPolicy::class)]
 class JobListing extends Model
 {
     use HasFactory, SoftDeletes;
