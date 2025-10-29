@@ -1,14 +1,16 @@
+import { SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { Briefcase, Building2, ChevronRight, LayoutDashboard, MessageSquare, Tags, Users } from 'lucide-react';
 import React, { useState } from 'react';
 
 type IconType = React.ComponentType<React.SVGProps<SVGSVGElement>>;
 
-
-
 const AdminSidebar: React.FC = () => {
-    const page = usePage();
-    const current = page.url || '';
+    const { props, url } = usePage<SharedData>();
+
+    console.log(props.auth.user.role);
+
+    const current = url || '';
     const isActive = (href: string) => current === href || current.startsWith(href + '/');
 
     const [lawFirmsOpen, setLawFirmsOpen] = useState(true);

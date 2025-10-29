@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\JobListing;
 use App\Models\LawFirm;
 use App\Models\PracticeArea;
-use Illuminate\Contracts\Queue\Job;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class AdminJobListingController extends Controller
@@ -17,6 +17,8 @@ class AdminJobListingController extends Controller
      */
     public function index(Request $request)
     {
+        Gate::authorize('viewAny', JobListing::class);
+
         $search = $request->input('search');
         $sortBy = $request->input('sort_by', 'created_at');
         $status = $request->input('status');
@@ -50,6 +52,7 @@ class AdminJobListingController extends Controller
      */
     public function create()
     {
+        // $this->authorize('create', JobListing::class);
         return Inertia::render('admin/job-listings/create', [
             'firms' => LawFirm::orderBy('name')->get(['id', 'name']),
             'practiceAreas' => PracticeArea::orderBy('name')->get(['id', 'name']),
