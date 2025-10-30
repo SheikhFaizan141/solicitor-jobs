@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminJobListingController;
 use App\Http\Controllers\Admin\AdminLawFirmController;
 use App\Http\Controllers\Admin\AdminReviewController;
@@ -8,13 +9,8 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\LawFirmController;
 use App\Http\Controllers\PracticeAreaController;
-use App\Models\JobListing;
-use App\Models\LawFirm;
-use App\Models\Review;
-use App\Models\User;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
-
+use Inertia\Inertia;;
 
 Route::get('/', HomeController::class)->name('home');
 
@@ -28,8 +24,6 @@ Route::middleware('auth')->group(function () {
 });
 
 /* JOBS */
-// Route::get('/', [JobController::class, 'home'])->name('jobs.home');
-
 Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
 
 Route::get('/jobs/{job:slug}', [JobController::class, 'show'])->name('jobs.show');
@@ -48,28 +42,7 @@ Route::middleware(['auth'])->group(function () {
         // Accessible to both Admin and Editor
         Route::middleware('role:admin,editor')->group(function () {
             // Dashboard
-            Route::get('/', function () {
-                return Inertia::render('admin/index', [
-                    'stats' => [
-                        'lawFirms' => [
-                            'total' => LawFirm::count(),
-                            'active' => 10, // placeholder
-                        ],
-                        'jobs' => [
-                            'total' => JobListing::count(),
-                            'active' => JobListing::where('is_active', true)->count(),
-                        ],
-                        'reviews' => [
-                            'total' => Review::count(),
-                            'pending' => Review::where('status', 'pending')->count(),
-                        ],
-                        'users' => [
-                            'total' => User::count(),
-                            'newThisMonth' => User::where('created_at', '>=', now()->startOfMonth())->count(),
-                        ],
-                    ],
-                ]);
-            })->name('dashboard');
+            Route::get('/', AdminDashboardController::class)->name('dashboard');
 
             // Law Firms
             Route::resource('law-firms', AdminLawFirmController::class)
