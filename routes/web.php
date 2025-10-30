@@ -41,74 +41,69 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 
-
-
-
-/* Admin facing routes */
 Route::middleware(['auth'])->group(function () {
+    // Admin Panel (prefix: /admin)
+    Route::prefix('admin')->name('admin.')->group(function () {
 
-    Route::middleware('role:admin,editor')->group(function () {
-        Route::get('/admin', function () {
-            return Inertia::render('admin/index', [
-                'stats' => [
-                    'lawFirms' => [
-                        'total' => LawFirm::count(),
-                        // 'active' => LawFirm::where('is_active', true)->count(),
-                        'active' =>  10,
+        // Accessible to both Admin and Editor
+        Route::middleware('role:admin,editor')->group(function () {
+            // Dashboard
+            Route::get('/', function () {
+                return Inertia::render('admin/index', [
+                    'stats' => [
+                        'lawFirms' => [
+                            'total' => LawFirm::count(),
+                            'active' => 10, // placeholder
+                        ],
+                        'jobs' => [
+                            'total' => JobListing::count(),
+                            'active' => JobListing::where('is_active', true)->count(),
+                        ],
+                        'reviews' => [
+                            'total' => Review::count(),
+                            'pending' => Review::where('status', 'pending')->count(),
+                        ],
+                        'users' => [
+                            'total' => User::count(),
+                            'newThisMonth' => User::where('created_at', '>=', now()->startOfMonth())->count(),
+                        ],
                     ],
-                    'jobs' => [
-                        'total' => JobListing::count(),
-                        'active' => JobListing::where('is_active', true)->count(),
-                    ],
-                    'reviews' => [
-                        'total' => Review::count(),
-                        'pending' => Review::where('status', 'pending')->count(),
-                    ],
-                    'users' => [
-                        'total' => User::count(),
-                        'newThisMonth' => User::where('created_at', '>=', now()->startOfMonth())->count(),
-                    ],
-                ],
-            ]);
-        })->name('admin.dashboard');
+                ]);
+            })->name('dashboard');
 
-        Route::resource('/admin/law-firms', AdminLawFirmController::class)
-            ->names([
-                'index' => 'admin.law-firms.index',
-                'create' => 'admin.law-firms.create',
-                'store' => 'admin.law-firms.store',
-                'show' => 'admin.law-firms.show',
-                'edit' => 'admin.law-firms.edit',
-                'update' => 'admin.law-firms.update',
-                'destroy' => 'admin.law-firms.destroy',
-            ]);
+            // Law Firms
+            Route::resource('law-firms', AdminLawFirmController::class)
+                ->names('law-firms');
 
-        Route::resource('/admin/practice-areas', PracticeAreaController::class)
-            ->names('admin.practice-areas')
-            ->except(['show']);
+            // Practice Areas
+            Route::resource('practice-areas', PracticeAreaController::class)
+                ->names('practice-areas')
+                ->except(['show']);
 
-        Route::resource('/admin/job-listings', AdminJobListingController::class)
-            ->names('admin.job-listings')
-            ->except(['show']);
+            // Job Listings
+            Route::resource('job-listings', AdminJobListingController::class)
+                ->names('job-listings')
+                ->except(['show']);
 
-        // Review management routes - properly grouped with correct naming
-        Route::prefix('/admin/reviews')->name('admin.reviews.')->group(function () {
-            Route::get('/', [AdminReviewController::class, 'index'])->name('index');
-            Route::get('/spam', [AdminReviewController::class, 'spam'])->name('spam');
-            Route::get('/trash', [AdminReviewController::class, 'trash'])->name('trash');
-
-            Route::post('/bulk', [AdminReviewController::class, 'bulkAction'])->name('bulk');
-            Route::post('/{review}/spam', [AdminReviewController::class, 'markAsSpam'])->name('spam.mark');
-            Route::post('/{review}/trash', [AdminReviewController::class, 'moveToTrash'])->name('trash.move');
-            Route::post('/{id}/restore', [AdminReviewController::class, 'restore'])->name('restore');
-            Route::delete('/{id}/force', [AdminReviewController::class, 'forceDelete'])->name('force-delete');
+            // Reviews
+            Route::prefix('reviews')->name('reviews.')->group(function () {
+                Route::get('/', [AdminReviewController::class, 'index'])->name('index');
+                Route::get('/spam', [AdminReviewController::class, 'spam'])->name('spam');
+                Route::get('/trash', [AdminReviewController::class, 'trash'])->name('trash');
+                Route::post('/bulk', [AdminReviewController::class, 'bulkAction'])->name('bulk');
+                Route::post('/{review}/spam', [AdminReviewController::class, 'markAsSpam'])->name('spam.mark');
+                Route::post('/{review}/trash', [AdminReviewController::class, 'moveToTrash'])->name('trash.move');
+                Route::post('/{id}/restore', [AdminReviewController::class, 'restore'])->name('restore');
+                Route::delete('/{id}/force', [AdminReviewController::class, 'forceDelete'])->name('force-delete');
+            });
         });
-    });
 
-    Route::middleware('role:admin')->group(function () {
-        Route::resource('/admin/users', AdminUserController::class)
-            ->names('admin.users')
-            ->except(['show']);
+        // Only Admins (for User Management)
+        Route::middleware('role:admin')->group(function () {
+            Route::resource('users', AdminUserController::class)
+                ->names('users')
+                ->except(['show']);
+        });
     });
 });
 
