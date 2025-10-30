@@ -7,6 +7,7 @@ use App\Models\JobListing;
 use App\Models\LawFirm;
 use App\Models\PracticeArea;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class AdminJobListingController extends Controller
@@ -14,11 +15,35 @@ class AdminJobListingController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // dd('index');
+        Gate::authorize('viewAny', JobListing::class);
+
+        $search = $request->input('search');
+        $sortBy = $request->input('sort_by', 'created_at');
+        $status = $request->input('status');
+
+        $jobs = JobListing::query()
+            ->when($search, function ($query, $search) {
+                $query->where('title', 'like', '%' . $search . '%')
+                    ->orWhere('location', 'like', '%' . $search . '%');
+            })
+            ->when($status === 'active', function ($query) {
+                $query->where('is_active', true);
+            })
+            ->when($status === 'inactive', function ($query) {
+                $query->where('is_active', false);
+            })
+            ->orderBy($sortBy, 'desc')
+            ->with('lawFirm')
+            ->paginate(20)
+            ->withQueryString();
+
         return Inertia::render('admin/job-listings/index', [
-            'jobs' => JobListing::with('lawFirm')->latest()->paginate(20),
+            'jobs' => $jobs,
+            // 'can' => [
+            //     'create' => $request->user()->can('create', JobListing::class),
+            // ]
         ]);
     }
 
@@ -27,6 +52,8 @@ class AdminJobListingController extends Controller
      */
     public function create()
     {
+        Gate::authorize('create', JobListing::class);
+
         return Inertia::render('admin/job-listings/create', [
             'firms' => LawFirm::orderBy('name')->get(['id', 'name']),
             'practiceAreas' => PracticeArea::orderBy('name')->get(['id', 'name']),
@@ -38,6 +65,8 @@ class AdminJobListingController extends Controller
      */
     public function store(Request $request)
     {
+        Gate::authorize('create', JobListing::class);
+
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', 'unique:job_listings,slug'],
@@ -74,16 +103,18 @@ class AdminJobListingController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
-    {
-        //
-    }
+    // public function show(string $id)
+    // {
+    //     //
+    // }
 
     /**
      * Show the form for editing the specified resource.
      */
     public function edit(JobListing $jobListing)
     {
+        Gate::authorize('update', $jobListing);
+
         return Inertia::render('admin/job-listings/edit', [
             'job' => $jobListing->load('practiceAreas'),
             'firms' => LawFirm::orderBy('name')->get(['id', 'name']),
@@ -96,6 +127,8 @@ class AdminJobListingController extends Controller
      */
     public function update(Request $request, JobListing $jobListing)
     {
+        Gate::authorize('update', $jobListing);
+
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', 'unique:job_listings,slug,' . $jobListing->id],
@@ -129,7 +162,10 @@ class AdminJobListingController extends Controller
      */
     public function destroy(JobListing $jobListing)
     {
+        Gate::authorize('delete', $jobListing);
+
         $jobListing->delete();
+        
         return back()->with('success', 'Job listing deleted.');
     }
 }

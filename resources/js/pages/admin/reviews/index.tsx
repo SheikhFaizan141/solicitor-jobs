@@ -277,19 +277,19 @@ export default function ReviewsIndex() {
                 <Tabs value={activeTab} className="space-y-4">
                     <TabsList>
                         <TabsTrigger value="active" asChild>
-                            {/* <Link href={route('admin.reviews.index')} preserveState>
-                                Active ({stats.active})
-                            </Link> */}
+                            <Link preserveState>Active ({stats.active})</Link>
                         </TabsTrigger>
                         <TabsTrigger value="spam" asChild>
                             {/* <Link href={route('admin.reviews.spam')} preserveState>
                                 Spam ({stats.spam})
                             </Link> */}
+                            <Link preserveState>Spam ({stats.spam})</Link>
                         </TabsTrigger>
                         <TabsTrigger value="trash" asChild>
                             {/* <Link href={route('admin.reviews.trash')} preserveState>
                                 Trash ({stats.trash})
                             </Link> */}
+                            <Link preserveState>Trash ({stats.trash})</Link>
                         </TabsTrigger>
                     </TabsList>
 
@@ -434,7 +434,7 @@ export default function ReviewsIndex() {
                     </TabsContent>
                 </Tabs>
             </div>
-      </>
+        </>
     );
 }
 

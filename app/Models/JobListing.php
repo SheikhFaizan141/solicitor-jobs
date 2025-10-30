@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use App\Policies\JobListingPolicy;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -64,7 +67,7 @@ class JobListing extends Model
         return $this->belongsToMany(PracticeArea::class, 'job_listing_practice_areas');
     }
 
-    public function postedBy()
+    public function postedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'posted_by');
     }
