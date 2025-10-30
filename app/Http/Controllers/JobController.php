@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\JobListing;
-use App\Models\LawFirm;
 use App\Models\PracticeArea;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -132,7 +131,7 @@ class JobController extends Controller
             ->published()
             ->with(['lawFirm', 'practiceAreas']);
 
-        if (!empty($filters['q'])) {
+        if (! empty($filters['q'])) {
             $q = $filters['q'];
             $jobsQuery->where(function ($query) use ($q) {
                 $query->where('title', 'like', "%{$q}%")
@@ -143,17 +142,17 @@ class JobController extends Controller
             });
         }
 
-        if (!empty($filters['location'])) {
+        if (! empty($filters['location'])) {
             $jobsQuery->where('location', 'like', "%{$filters['location']}%");
         }
 
-        if (!empty($filters['practice_area'])) {
+        if (! empty($filters['practice_area'])) {
             $jobsQuery->whereHas('practiceAreas', function ($query) use ($filters) {
                 $query->where('id', $filters['practice_area']);
             });
         }
 
-        $searchResults = (!empty($filters['q']) || !empty($filters['location']) || !empty($filters['practice_area']))
+        $searchResults = (! empty($filters['q']) || ! empty($filters['location']) || ! empty($filters['practice_area']))
             ? $jobsQuery->latest()->paginate(10)
             : null;
 

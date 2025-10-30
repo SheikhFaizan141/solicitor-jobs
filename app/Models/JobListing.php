@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use App\Policies\JobListingPolicy;
-use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -31,7 +29,7 @@ class JobListing extends Model
         'requirements',
         'benefits',
         'posted_by',
-        'published_at'
+        'published_at',
     ];
 
     protected $casts = [
@@ -50,7 +48,7 @@ class JobListing extends Model
                 $slug = $base;
                 $i = 2;
                 while (static::withTrashed()->where('slug', $slug)->exists()) {
-                    $slug = $base . '-' . $i++;
+                    $slug = $base.'-'.$i++;
                 }
                 $job->slug = $slug;
             }
@@ -84,20 +82,20 @@ class JobListing extends Model
 
     public function getFormattedSalaryAttribute(): ?string
     {
-        if (!$this->salary_min && !$this->salary_max) {
+        if (! $this->salary_min && ! $this->salary_max) {
             return null;
         }
 
         $currency = $this->salary_currency === 'GBP' ? '£' : $this->salary_currency;
 
         if ($this->salary_min && $this->salary_max) {
-            return $currency . number_format($this->salary_min) . ' - ' . $currency . number_format($this->salary_max);
+            return $currency.number_format($this->salary_min).' - '.$currency.number_format($this->salary_max);
         }
 
         if ($this->salary_min) {
-            return 'From ' . $currency . number_format($this->salary_min);
+            return 'From '.$currency.number_format($this->salary_min);
         }
 
-        return 'Up to ' . $currency . number_format($this->salary_max);
+        return 'Up to '.$currency.number_format($this->salary_max);
     }
 }

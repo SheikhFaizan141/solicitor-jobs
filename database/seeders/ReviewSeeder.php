@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Models\LawFirm;
 use App\Models\Review;
 use App\Models\User;
-use App\Models\LawFirm;
-use Illuminate\Database\Seeder;
 use Faker\Factory as Faker;
+use Illuminate\Database\Seeder;
 
 class ReviewSeeder extends Seeder
 {
@@ -123,7 +123,7 @@ class ReviewSeeder extends Seeder
 
         // Create 30-40 reviews with realistic distribution
         $totalReviews = $faker->numberBetween(30, 40);
-        
+
         for ($i = 0; $i < $totalReviews; $i++) {
             // Weight ratings to be more realistic (more 4-5 star reviews)
             $ratingWeights = [1 => 5, 2 => 10, 3 => 15, 4 => 35, 5 => 35];
@@ -138,7 +138,7 @@ class ReviewSeeder extends Seeder
             );
 
             // Select appropriate comment based on rating
-            $comment = match($rating) {
+            $comment = match ($rating) {
                 5 => $faker->randomElement($excellentComments),
                 4 => $faker->randomElement($goodComments),
                 3 => $faker->randomElement($averageComments),
@@ -174,8 +174,8 @@ class ReviewSeeder extends Seeder
         }
 
         $this->command->info("Created {$totalReviews} reviews with realistic distribution.");
-        $this->command->info('Active: ' . Review::active()->count());
-        $this->command->info('Spam: ' . Review::spam()->count());
-        $this->command->info('Trashed: ' . Review::onlyTrashed()->count());
+        $this->command->info('Active: '.Review::active()->count());
+        $this->command->info('Spam: '.Review::spam()->count());
+        $this->command->info('Trashed: '.Review::onlyTrashed()->count());
     }
 }

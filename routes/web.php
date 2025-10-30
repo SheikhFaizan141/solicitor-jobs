@@ -10,7 +10,7 @@ use App\Http\Controllers\JobController;
 use App\Http\Controllers\LawFirmController;
 use App\Http\Controllers\PracticeAreaController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;;
+use Inertia\Inertia;
 
 Route::get('/', HomeController::class)->name('home');
 
@@ -33,7 +33,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
 });
-
 
 Route::middleware(['auth'])->group(function () {
     // Admin Panel (prefix: /admin)
@@ -80,6 +79,5 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-
-require __DIR__ . '/settings.php';
-require __DIR__ . '/auth.php';
+require __DIR__.'/settings.php';
+require __DIR__.'/auth.php';

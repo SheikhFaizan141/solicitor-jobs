@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class LawFirm extends Model
 {
@@ -81,19 +81,19 @@ class LawFirm extends Model
 
         // If slug empty (e.g., name is only non-latin chars) fallback to a short unique id.
         if ($slug === '') {
-            $slug = 'firm-' . Str::lower(Str::random(6));
+            $slug = 'firm-'.Str::lower(Str::random(6));
         }
 
         $original = $slug;
         $i = 2;
 
         while (static::where('slug', $slug)->exists()) {
-            $slug = $original . '-' . $i;
+            $slug = $original.'-'.$i;
             $i++;
 
             // Safety: if many collisions, append random suffix and break.
             if ($i > 50) {
-                $slug = $original . '-' . Str::lower(Str::random(4));
+                $slug = $original.'-'.Str::lower(Str::random(4));
                 break;
             }
         }
@@ -138,7 +138,7 @@ class LawFirm extends Model
         return $this->activeReviews()->count();
     }
 
-      public function jobListings()
+    public function jobListings()
     {
         return $this->hasMany(JobListing::class);
     }

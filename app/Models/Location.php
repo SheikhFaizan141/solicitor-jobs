@@ -54,9 +54,4 @@ class Location extends Model
             ->orderByDesc('popularity')
             ->limit($limit);
     }
-
-    public function scopeSearch($query, $term)
-    {
-        return 
-    }
 }

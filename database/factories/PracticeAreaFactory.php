@@ -39,7 +39,7 @@ class PracticeAreaFactory extends Factory
             'Media & Entertainment',
             'Sports Law',
             'Data Protection',
-            'Human Rights'
+            'Human Rights',
         ];
 
         return [

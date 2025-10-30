@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Review;
 use App\Models\LawFirm;
+use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Inertia\Inertia;
@@ -23,7 +23,7 @@ class AdminReviewController extends Controller
         $query = $this->applyFilters($query, $request);
 
         $reviews = $query->paginate(20)->withQueryString();
-        
+
         return $this->renderReviewsPage('active', $reviews, $request);
     }
 
@@ -39,7 +39,7 @@ class AdminReviewController extends Controller
         $query = $this->applyFilters($query, $request);
 
         $reviews = $query->paginate(20)->withQueryString();
-        
+
         return $this->renderReviewsPage('spam', $reviews, $request);
     }
 
@@ -55,7 +55,7 @@ class AdminReviewController extends Controller
         $query = $this->applyFilters($query, $request);
 
         $reviews = $query->paginate(20)->withQueryString();
-        
+
         return $this->renderReviewsPage('trash', $reviews, $request);
     }
 
@@ -120,26 +120,26 @@ class AdminReviewController extends Controller
                 Review::whereIn('id', $reviewIds)->update(['status' => 'spam']);
                 $message = 'Reviews marked as spam.';
                 break;
-            
+
             case 'trash':
                 Review::whereIn('id', $reviewIds)->each(function ($review) {
                     $review->moveToTrash();
                 });
                 $message = 'Reviews moved to trash.';
                 break;
-            
+
             case 'restore':
                 Review::withTrashed()->whereIn('id', $reviewIds)->each(function ($review) {
                     $review->markAsActive();
                 });
                 $message = 'Reviews restored.';
                 break;
-            
+
             case 'delete':
                 Review::withTrashed()->whereIn('id', $reviewIds)->forceDelete();
                 $message = 'Reviews permanently deleted.';
                 break;
-            
+
             case 'activate':
                 Review::whereIn('id', $reviewIds)->update(['status' => 'active']);
                 $message = 'Reviews marked as active.';
@@ -173,12 +173,12 @@ class AdminReviewController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('comment', 'like', "%{$search}%")
-                  ->orWhereHas('user', function ($userQuery) use ($search) {
-                      $userQuery->where('name', 'like', "%{$search}%");
-                  })
-                  ->orWhereHas('lawFirm', function ($firmQuery) use ($search) {
-                      $firmQuery->where('name', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('user', function ($userQuery) use ($search) {
+                        $userQuery->where('name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('lawFirm', function ($firmQuery) use ($search) {
+                        $firmQuery->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 

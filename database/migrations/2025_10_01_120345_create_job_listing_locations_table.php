@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('job_listing_locations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('job_listing_id')->constrained()->onDelete('cascade');
-            $table->foreignId("location_id")->constrained()->cascadeOnDelete();
+            $table->foreignId('location_id')->constrained()->cascadeOnDelete();
             $table->boolean('is_primary')->default(false);
             $table->timestamps();
 
