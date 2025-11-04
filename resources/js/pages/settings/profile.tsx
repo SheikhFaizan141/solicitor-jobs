@@ -95,6 +95,26 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                     </div>
                                 )}
 
+                                <div className="grid gap-2">
+                                    <HeadingSmall title="Notifications" description="Control which emails you receive" />
+                                    <label className="inline-flex items-center gap-2">
+                                        <input type="hidden" name="email_notifications" value="0" />
+                                        <input
+                                            type="checkbox"
+                                            name="email_notifications"
+                                            defaultChecked={Boolean(auth.user.email_notifications)}
+                                            value="1"
+                                        />
+                                        <span className="text-sm">Email notifications</span>
+                                    </label>
+
+                                    <label className="inline-flex items-center gap-2">
+                                        <input type="hidden" name="job_alerts" value="0" />
+                                        <input type="checkbox" name="job_alerts" defaultChecked={Boolean(auth.user.job_alerts)} value="1" />
+                                        <span className="text-sm">Job alert digests</span>
+                                    </label>
+                                </div>
+
                                 <div className="flex items-center gap-4">
                                     <Button disabled={processing}>Save</Button>
 

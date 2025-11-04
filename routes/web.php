@@ -6,9 +6,15 @@ use App\Http\Controllers\Admin\AdminLawFirmController;
 use App\Http\Controllers\Admin\AdminReviewController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\JobAlertSubscriptionController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\LawFirmController;
 use App\Http\Controllers\PracticeAreaController;
+use App\Mail\JobAlertDigestMail;
+use App\Models\JobAlertSubscription;
+use App\Models\JobListing;
+use App\Models\PracticeArea;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -35,6 +41,40 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
+
+    // testing
+    Route::get('/dev/preview-job-alert', function () {
+        // $user = User::factory()->create(['email' => 'amesaaasaa@example.test']); // [app/Models/User.php](app/Models/User.php)
+
+        // $area = PracticeArea::first(); // or PracticeArea::first()
+        // $job = JobListing::factory()->create([     // [app/Models/JobListing.php](app/Models/JobListing.php)
+        //     'employment_type' => 'full_time',
+        //     'location' => 'London',
+        //     'is_active' => true,
+        //     'published_at' => now(),
+        // ]);
+        // $job->practiceAreas()->sync([$area->id]);
+
+        // $sub = JobAlertSubscription::create([
+        //     'user_id' => $user->id,
+        //     'frequency' => 'daily',
+        //     'employment_types' => ['full_time'],
+        //     'practice_area_ids' => [$area->id],
+        //     'location' => 'London',
+        //     'is_active' => true,
+        // ]);
+        $subscription = \App\Models\JobAlertSubscription::with('user')->first();
+        $jobs = \App\Models\JobListing::with(['lawFirm', 'practiceAreas'])->active()->published()->take(3)->get();
+
+        return new JobAlertDigestMail($subscription, $jobs);
+    });
+
+    // Route
+
+    Route::get('/job-alerts', [JobAlertSubscriptionController::class, 'index'])->name('job-alerts.index');
+    Route::post('/job-alerts', [JobAlertSubscriptionController::class, 'store'])->name('job-alerts.store');
+    Route::delete('/job-alerts/{subscription}', [JobAlertSubscriptionController::class, 'destroy'])->name('job-alerts.destroy');
+
     // Admin Panel (prefix: /admin)
     Route::prefix('admin')->name('admin.')->group(function () {
 

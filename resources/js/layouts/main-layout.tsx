@@ -66,6 +66,10 @@ function MainHeader() {
                         <Link href="/law-firms" className={navLinkClasses('/law-firms')}>
                             Law Firms
                         </Link>
+
+                        <Link href="/job-alerts" className={navLinkClasses('/job-alerts')}>
+                            Job Alerts
+                        </Link>
                     </nav>
 
                     {/* AUTH BUTTONS */}

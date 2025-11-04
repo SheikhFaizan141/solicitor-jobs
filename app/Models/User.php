@@ -29,6 +29,8 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'email_notifications',
+        'job_alerts'
     ];
 
     /**
@@ -51,6 +53,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'email_notifications' => 'boolean',
+            'job_alerts' => 'boolean',
         ];
     }
 
@@ -69,18 +73,23 @@ class User extends Authenticatable
         return in_array($this->role, [self::ROLE_ADMIN, self::ROLE_EDITOR]);
     }
 
-    public function jobListings(): HasMany
-    {
-        return $this->hasMany(JobListing::class, 'posted_by');
-    }
+    // public function jobListings(): HasMany
+    // {
+    //     return $this->hasMany(JobListing::class, 'posted_by');
+    // }
 
-    public function canManageUsers(): bool
-    {
-        return $this->isAdmin();
-    }
+    // public function canManageUsers(): bool
+    // {
+    //     return $this->isAdmin();
+    // }
 
-    public function canCreateJobListings(): bool
+    // public function canCreateJobListings(): bool
+    // {
+    //     return $this->isStaff();
+    // }
+
+    public function jobAlertSubscriptions(): HasMany
     {
-        return $this->isStaff();
+        return $this->hasMany(JobAlertSubscription::class);
     }
 }
