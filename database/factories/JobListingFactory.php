@@ -3,8 +3,6 @@
 namespace Database\Factories;
 
 use App\Models\JobListing;
-use App\Models\LawFirm;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -47,16 +45,16 @@ class JobListingFactory extends Factory
             'Corporate Compliance Officer',
             'Legal Researcher',
             'Court Clerk',
-            'Legal Secretary'
+            'Legal Secretary',
         ];
 
         // UK cities for job locations
         $ukLocations = [
-            'London', 'Manchester', 'Birmingham', 'Leeds', 'Glasgow', 
-            'Sheffield', 'Bradford', 'Liverpool', 'Edinburgh', 'Bristol', 
-            'Cardiff', 'Leicester', 'Coventry', 'Belfast', 'Nottingham', 
+            'London', 'Manchester', 'Birmingham', 'Leeds', 'Glasgow',
+            'Sheffield', 'Bradford', 'Liverpool', 'Edinburgh', 'Bristol',
+            'Cardiff', 'Leicester', 'Coventry', 'Belfast', 'Nottingham',
             'Newcastle', 'Brighton', 'Hull', 'Plymouth', 'Stoke-on-Trent',
-            'Remote', 'Hybrid - London', 'Hybrid - Manchester'
+            'Remote', 'Hybrid - London', 'Hybrid - Manchester',
         ];
 
         // Experience levels
@@ -70,7 +68,7 @@ class JobListingFactory extends Factory
             '7+ years',
             '10+ years',
             'Senior Level',
-            'Partner Level'
+            'Partner Level',
         ];
 
         // Generate salary range
@@ -83,7 +81,7 @@ class JobListingFactory extends Factory
             'We are seeking an experienced legal professional to handle complex matters and provide strategic advice to our diverse client base.',
             'Exciting opportunity to work with a leading law firm on high-profile cases. Excellent benefits and professional development opportunities available.',
             'Work alongside industry experts in a collaborative environment. This role offers the chance to develop your skills while working on cutting-edge legal matters.',
-            'Join our award-winning team and take your legal career to the next level. We offer competitive compensation and a clear path for advancement.'
+            'Join our award-winning team and take your legal career to the next level. We offer competitive compensation and a clear path for advancement.',
         ];
 
         // Requirements arrays
@@ -93,22 +91,22 @@ class JobListingFactory extends Factory
                 'Strong analytical and research skills',
                 'Excellent written and verbal communication',
                 'Ability to work under pressure and meet deadlines',
-                'Experience with case management systems'
+                'Experience with case management systems',
             ],
             [
                 'Law degree from recognized institution',
                 'Minimum 3 years relevant experience',
                 'Strong attention to detail',
                 'Client-focused approach',
-                'Proficiency in legal research databases'
+                'Proficiency in legal research databases',
             ],
             [
                 'Admitted to practice law in England and Wales',
                 'Experience in relevant practice area',
                 'Strong negotiation skills',
                 'Ability to manage multiple cases simultaneously',
-                'Knowledge of current legal procedures and regulations'
-            ]
+                'Knowledge of current legal procedures and regulations',
+            ],
         ];
 
         // Benefits arrays
@@ -119,7 +117,7 @@ class JobListingFactory extends Factory
                 'Generous pension scheme',
                 '25 days annual leave plus bank holidays',
                 'Professional development budget',
-                'Flexible working arrangements'
+                'Flexible working arrangements',
             ],
             [
                 'Performance-based bonuses',
@@ -127,7 +125,7 @@ class JobListingFactory extends Factory
                 'Season ticket loans',
                 'On-site gym facilities',
                 'Mentorship programs',
-                'Career progression opportunities'
+                'Career progression opportunities',
             ],
             [
                 'Private healthcare',
@@ -135,8 +133,8 @@ class JobListingFactory extends Factory
                 'Continuing education support',
                 'Technology allowance',
                 'Social events and team building',
-                'Parking or transport allowance'
-            ]
+                'Parking or transport allowance',
+            ],
         ];
 
         $isActive = $this->faker->boolean(85); // 85% chance of being active
@@ -154,7 +152,7 @@ class JobListingFactory extends Factory
             'salary_currency' => 'GBP',
             'closing_date' => $this->faker->boolean(70) ? $this->faker->dateTimeBetween('now', '+3 months') : null,
             'is_active' => $isActive,
-            'description' => $this->faker->randomElement($descriptions) . "\n\n" . $this->faker->paragraphs(2, true),
+            'description' => $this->faker->randomElement($descriptions)."\n\n".$this->faker->paragraphs(2, true),
             'requirements' => $this->faker->randomElement($requirements),
             'benefits' => $this->faker->randomElement($benefits),
             'posted_by' => null, // Will be set in seeder

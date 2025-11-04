@@ -25,8 +25,8 @@ class AdminJobListingController extends Controller
 
         $jobs = JobListing::query()
             ->when($search, function ($query, $search) {
-                $query->where('title', 'like', '%' . $search . '%')
-                    ->orWhere('location', 'like', '%' . $search . '%');
+                $query->where('title', 'like', '%'.$search.'%')
+                    ->orWhere('location', 'like', '%'.$search.'%');
             })
             ->when($status === 'active', function ($query) {
                 $query->where('is_active', true);
@@ -131,7 +131,7 @@ class AdminJobListingController extends Controller
 
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
-            'slug' => ['nullable', 'string', 'max:255', 'unique:job_listings,slug,' . $jobListing->id],
+            'slug' => ['nullable', 'string', 'max:255', 'unique:job_listings,slug,'.$jobListing->id],
             'law_firm_id' => ['nullable', 'integer', 'exists:law_firms,id'],
             'location' => ['nullable', 'string', 'max:255'],
             'workplace_type' => ['required', 'in:onsite,remote,hybrid'],
@@ -165,7 +165,7 @@ class AdminJobListingController extends Controller
         Gate::authorize('delete', $jobListing);
 
         $jobListing->delete();
-        
+
         return back()->with('success', 'Job listing deleted.');
     }
 }

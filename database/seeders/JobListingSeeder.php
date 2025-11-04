@@ -24,6 +24,7 @@ class JobListingSeeder extends Seeder
 
         if ($lawFirms->isEmpty()) {
             $this->command->warn('No law firms found. Please run LawFirmSeeder first.');
+
             return;
         }
 
@@ -112,8 +113,8 @@ class JobListingSeeder extends Seeder
                 }
             });
 
-        $this->command->info('Created ' . JobListing::count() . ' job listings successfully!');
-        $this->command->info('Active jobs: ' . JobListing::where('is_active', true)->count());
-        $this->command->info('Inactive jobs: ' . JobListing::where('is_active', false)->count());
+        $this->command->info('Created '.JobListing::count().' job listings successfully!');
+        $this->command->info('Active jobs: '.JobListing::where('is_active', true)->count());
+        $this->command->info('Inactive jobs: '.JobListing::where('is_active', false)->count());
     }
 }

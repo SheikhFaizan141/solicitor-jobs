@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\LawFirm;
 use App\Models\PracticeArea;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Storage;
 
 class LawFirmController extends Controller
 {
@@ -78,22 +78,22 @@ class LawFirmController extends Controller
     public function update(Request $request, LawFirm $lawFirm)
     {
         $data = $request->validate([
-            'name'        => ['required', 'string', 'max:255'],
-            'slug'        => ['nullable', 'string', 'max:255', Rule::unique('law_firms', 'slug')->ignore($lawFirm->id)],
+            'name' => ['required', 'string', 'max:255'],
+            'slug' => ['nullable', 'string', 'max:255', Rule::unique('law_firms', 'slug')->ignore($lawFirm->id)],
             'description' => ['nullable', 'string'],
-            'email'       => ['required', 'email', 'max:255', Rule::unique('law_firms', 'email')->ignore($lawFirm->id)],
-            'location'    => ['required', 'string', 'max:255'],
-            'phone'       => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('law_firms', 'email')->ignore($lawFirm->id)],
+            'location' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:255'],
 
             // logo upload
-            'logo'        => ['nullable', 'image', 'max:5120'],
+            'logo' => ['nullable', 'image', 'max:5120'],
 
             // contacts
-            'contacts'           => ['nullable', 'array'],
-            'contacts.*.label'   => ['nullable', 'string', 'max:255'],
+            'contacts' => ['nullable', 'array'],
+            'contacts.*.label' => ['nullable', 'string', 'max:255'],
             'contacts.*.address' => ['nullable', 'string'],
-            'contacts.*.email'   => ['nullable', 'email', 'max:255'],
-            'contacts.*.phone'   => ['nullable', 'string', 'max:255'],
+            'contacts.*.email' => ['nullable', 'email', 'max:255'],
+            'contacts.*.phone' => ['nullable', 'string', 'max:255'],
         ]);
 
         if (blank($data['slug'] ?? null)) {
@@ -140,7 +140,6 @@ class LawFirmController extends Controller
             ->route('admin.law-firms.index')
             ->with('success', 'Law firm deleted successfully.');
     }
-
 
     /**
      * Store a review for the law firm.

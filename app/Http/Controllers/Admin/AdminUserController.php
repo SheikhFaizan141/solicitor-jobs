@@ -35,14 +35,13 @@ class AdminUserController extends Controller
 
         $users = $query->paginate(20)
             ->withQueryString()
-            ->through(fn($user) => [
+            ->through(fn ($user) => [
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->role,
                 'created_at' => $user->created_at->toDateTimeString(),
             ]);
-
 
         return Inertia::render('admin/users/index', [
             'users' => $users,
@@ -72,7 +71,6 @@ class AdminUserController extends Controller
             'password' => ['required', Password::min(8)],
             'role' => ['required', Rule::in([User::ROLE_EDITOR, User::ROLE_USER])],
         ]);
-
 
         User::create([
             'name' => $data['name'],
@@ -110,9 +108,9 @@ class AdminUserController extends Controller
         }
 
         $data = $request->validate([
-            'name'  => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-            'role'  => ['required', Rule::in([User::ROLE_ADMIN, User::ROLE_EDITOR, User::ROLE_USER])],
+            'role' => ['required', Rule::in([User::ROLE_ADMIN, User::ROLE_EDITOR, User::ROLE_USER])],
             'password' => ['nullable', Password::min(8)],
         ]);
 
@@ -122,7 +120,7 @@ class AdminUserController extends Controller
             'role' => $data['role'],
         ]);
 
-        if (!empty($data['password'])) {
+        if (! empty($data['password'])) {
             $user->password = Hash::make($data['password']);
         }
 

@@ -89,7 +89,7 @@ class Review extends Model
 
     public function isActive()
     {
-        return $this->status === 'active' && !$this->trashed();
+        return $this->status === 'active' && ! $this->trashed();
     }
 
     public function isSpam()

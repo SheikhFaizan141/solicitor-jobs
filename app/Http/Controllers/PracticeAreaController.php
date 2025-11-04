@@ -61,13 +61,14 @@ class PracticeAreaController extends Controller
             'parents' => PracticeArea::where('id', '!=', $practiceArea->id)->orderBy('name')->get(),
         ]);
     }
+
     /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, PracticeArea $practiceArea)
     {
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:practice_areas,name,' . $practiceArea->id],
+            'name' => ['required', 'string', 'max:255', 'unique:practice_areas,name,'.$practiceArea->id],
             'parent_id' => ['nullable', 'integer', 'different:id', 'exists:practice_areas,id'],
         ]);
 
@@ -80,12 +81,14 @@ class PracticeAreaController extends Controller
 
         return redirect()->route('admin.practice-areas.index')->with('success', 'Updated.');
     }
+
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(PracticeArea $practiceArea)
     {
         $practiceArea->delete();
+
         return redirect()->route('admin.practice-areas.index')->with('success', 'Deleted.');
     }
 
@@ -93,9 +96,12 @@ class PracticeAreaController extends Controller
     {
         $p = PracticeArea::find($newParentId);
         while ($p) {
-            if ($p->id === $currentId) return true;
+            if ($p->id === $currentId) {
+                return true;
+            }
             $p = $p->parent;
         }
+
         return false;
     }
 }

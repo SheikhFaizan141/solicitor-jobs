@@ -5,8 +5,8 @@ namespace Database\Seeders;
 use App\Models\LawFirm;
 use App\Models\LawFirmContact;
 use App\Models\PracticeArea;
-use Illuminate\Database\Seeder;
 use Faker\Factory as Faker;
+use Illuminate\Database\Seeder;
 
 class LawFirmSeeder extends Seeder
 {
@@ -25,19 +25,19 @@ class LawFirmSeeder extends Seeder
 
         // UK cities and regions for realistic locations
         $ukLocations = [
-            'London', 'Manchester', 'Birmingham', 'Leeds', 'Glasgow', 'Sheffield', 
+            'London', 'Manchester', 'Birmingham', 'Leeds', 'Glasgow', 'Sheffield',
             'Bradford', 'Liverpool', 'Edinburgh', 'Bristol', 'Cardiff', 'Leicester',
             'Coventry', 'Belfast', 'Nottingham', 'Newcastle', 'Brighton', 'Hull',
             'Plymouth', 'Stoke-on-Trent', 'Wolverhampton', 'Derby', 'Swansea',
             'Southampton', 'Salford', 'Aberdeen', 'Westminster', 'Portsmouth',
             'York', 'Peterborough', 'Dundee', 'Lancaster', 'Oxford', 'Cambridge',
-            'Canterbury', 'Winchester', 'Bath', 'Chester', 'Exeter', 'Norwich'
+            'Canterbury', 'Winchester', 'Bath', 'Chester', 'Exeter', 'Norwich',
         ];
 
         // Common UK law firm name patterns
         $firmNames = [
             'Partners', 'Associates', 'Legal', 'Solicitors', 'Barristers', 'Law',
-            '& Co', 'LLP', 'Legal Services', 'Chambers', 'Legal Partners'
+            '& Co', 'LLP', 'Legal Services', 'Chambers', 'Legal Partners',
         ];
 
         $surnames = [
@@ -55,7 +55,7 @@ class LawFirmSeeder extends Seeder
             'Kim', 'Cox', 'Ward', 'Richardson', 'Watson', 'Brooks', 'Chavez',
             'Wood', 'James', 'Bennett', 'Gray', 'Mendoza', 'Ruiz', 'Hughes',
             'Price', 'Alvarez', 'Castillo', 'Sanders', 'Patel', 'Myers', 'Long',
-            'Ross', 'Foster', 'Jimenez'
+            'Ross', 'Foster', 'Jimenez',
         ];
 
         // Description templates based on practice areas
@@ -65,50 +65,50 @@ class LawFirmSeeder extends Seeder
                 'Expert corporate lawyers serving businesses of all sizes across the UK.',
                 'Trusted corporate legal advisors with decades of combined experience.',
                 'Full-service corporate law firm specializing in mergers, acquisitions, and business formations.',
-                'Corporate law experts helping businesses navigate complex legal challenges.'
+                'Corporate law experts helping businesses navigate complex legal challenges.',
             ],
             'family' => [
                 'Compassionate family law solicitors providing expert guidance during difficult times.',
                 'Experienced family lawyers specializing in divorce, custody, and matrimonial matters.',
                 'Dedicated family law practitioners committed to protecting your interests.',
                 'Specialist family law firm offering sensitive and professional legal support.',
-                'Expert family solicitors handling all aspects of family and matrimonial law.'
+                'Expert family solicitors handling all aspects of family and matrimonial law.',
             ],
             'criminal' => [
                 'Experienced criminal defense lawyers providing robust legal representation.',
                 'Leading criminal law specialists defending clients across all courts.',
                 'Expert criminal solicitors with a proven track record of successful defenses.',
                 'Dedicated criminal law firm providing 24/7 legal representation.',
-                'Specialist criminal defense lawyers committed to protecting your rights.'
+                'Specialist criminal defense lawyers committed to protecting your rights.',
             ],
             'property' => [
                 'Property law specialists providing comprehensive real estate legal services.',
                 'Expert conveyancing solicitors making property transactions smooth and secure.',
                 'Leading property lawyers handling residential and commercial real estate matters.',
                 'Experienced property law firm specializing in conveyancing and property disputes.',
-                'Trusted property solicitors providing expert legal guidance for all property matters.'
+                'Trusted property solicitors providing expert legal guidance for all property matters.',
             ],
             'personal_injury' => [
                 'Personal injury specialists fighting for maximum compensation for our clients.',
                 'Expert personal injury lawyers with a proven track record of successful claims.',
                 'Dedicated personal injury solicitors providing no-win-no-fee representation.',
                 'Leading personal injury law firm helping accident victims secure fair compensation.',
-                'Specialist personal injury lawyers committed to achieving the best outcomes for clients.'
+                'Specialist personal injury lawyers committed to achieving the best outcomes for clients.',
             ],
             'employment' => [
                 'Employment law specialists protecting workers\' rights and employers\' interests.',
                 'Expert employment lawyers providing comprehensive workplace legal services.',
                 'Leading employment law firm handling all aspects of workplace disputes.',
                 'Specialist employment solicitors offering practical legal solutions for workplace issues.',
-                'Experienced employment lawyers providing strategic advice to employers and employees.'
+                'Experienced employment lawyers providing strategic advice to employers and employees.',
             ],
             'general' => [
                 'Full-service law firm providing comprehensive legal services across multiple practice areas.',
                 'Established legal practice offering expert advice across a wide range of legal matters.',
                 'Experienced solicitors providing practical legal solutions for individuals and businesses.',
                 'Trusted legal advisors committed to delivering excellent client service.',
-                'Professional law firm offering expert legal guidance with a personal touch.'
-            ]
+                'Professional law firm offering expert legal guidance with a personal touch.',
+            ],
         ];
 
         $this->command->info('Creating 200 law firms with realistic UK data...');
@@ -125,7 +125,7 @@ class LawFirmSeeder extends Seeder
                 // Modern naming
                 '{surname} {modern}',
                 // Location-based
-                '{location} {type}'
+                '{location} {type}',
             ]);
 
             $name = str_replace(
@@ -136,7 +136,7 @@ class LawFirmSeeder extends Seeder
                     $faker->randomElement($surnames),
                     $faker->randomElement($firmNames),
                     $faker->randomElement(['Legal', 'Law', 'Legal Services']),
-                    $faker->randomElement($ukLocations)
+                    $faker->randomElement($ukLocations),
                 ],
                 $namePattern
             );
@@ -150,17 +150,17 @@ class LawFirmSeeder extends Seeder
             $description = $faker->randomElement($descriptionTemplates[$primaryArea]);
 
             // Generate location
-            $location = $faker->randomElement($ukLocations) . ', UK';
+            $location = $faker->randomElement($ukLocations).', UK';
 
             // Generate UK phone number
             $areaCode = $faker->randomElement(['020', '0121', '0161', '0113', '0114', '0115', '0116', '0117', '0118', '0131', '029']);
-            $phone = '+44 ' . $areaCode . ' ' . $faker->numerify('### ####');
+            $phone = '+44 '.$areaCode.' '.$faker->numerify('### ####');
 
             // Generate email
             $emailDomain = strtolower(str_replace([' ', '&', ','], ['', 'and', ''], $name));
             $emailDomain = preg_replace('/[^a-z0-9]/', '', $emailDomain);
             $emailDomain = substr($emailDomain, 0, 20); // Limit length
-            $email = $faker->randomElement(['contact', 'info', 'hello', 'office']) . '@' . $emailDomain . '.com';
+            $email = $faker->randomElement(['contact', 'info', 'hello', 'office']).'@'.$emailDomain.'.com';
 
             // Create the law firm
             $lawFirm = LawFirm::create([
@@ -190,7 +190,7 @@ class LawFirmSeeder extends Seeder
         }
 
         $this->command->info('Successfully created 200 law firms!');
-        $this->command->info('Law firms created: ' . LawFirm::count());
+        $this->command->info('Law firms created: '.LawFirm::count());
     }
 
     /**
@@ -218,13 +218,13 @@ class LawFirmSeeder extends Seeder
             'Construction Law',
             'Environmental Law',
             'Healthcare Law',
-            'Education Law'
+            'Education Law',
         ];
 
         foreach ($practiceAreas as $area) {
             PracticeArea::firstOrCreate(['name' => $area]);
         }
 
-        $this->command->info('Practice areas ensured: ' . PracticeArea::count());
+        $this->command->info('Practice areas ensured: '.PracticeArea::count());
     }
 }

@@ -17,12 +17,12 @@ class DatabaseSeeder extends Seeder
         // User::factory(15)->create();
 
         // // Seed law firms, practice areas, reviews, and jobs
-        // $this->call([
-        //     PracticeAreaSeeder::class,
-        //     LawFirmSeeder::class,
-        //     ReviewSeeder::class,
-        //     // JobListingSeeder::class,
-        // ]);
+        $this->call([
+            PracticeAreaSeeder::class,
+            LawFirmSeeder::class,
+            ReviewSeeder::class,
+            JobListingSeeder::class,
+        ]);
 
         \App\Models\User::firstOrCreate(
             ['email' => 'admin@example.com'],

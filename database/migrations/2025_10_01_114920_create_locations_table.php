@@ -22,7 +22,7 @@ return new class extends Migration
             $table->decimal('longitude', 11, 8)->nullable();
             $table->boolean('is_remote')->default(false);
             $table->boolean('is_active')->default(true);
-            $table->integer('popularity')->default(0);  //Auto-calculated based on job count
+            $table->integer('popularity')->default(0);  // Auto-calculated based on job count
             $table->json('metadata')->nullable(); // Additional data like postcodes, time zones
             $table->timestamps();
         });

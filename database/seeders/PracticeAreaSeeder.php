@@ -39,6 +39,6 @@ class PracticeAreaSeeder extends Seeder
             PracticeArea::create(['name' => $area]);
         }
 
-        $this->command->info('Created ' . count($practiceAreas) . ' practice areas');
+        $this->command->info('Created '.count($practiceAreas).' practice areas');
     }
 }
