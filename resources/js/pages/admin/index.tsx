@@ -1,8 +1,8 @@
-import AdminLayout from '@/layouts/admin-layout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import AdminLayout from '@/layouts/admin-layout';
 import { Link, usePage } from '@inertiajs/react';
-import { Building2, Briefcase, MessageSquare, Users } from 'lucide-react';
+import { Bell, Briefcase, Building2, MessageSquare, Users } from 'lucide-react';
 
 interface DashboardStats {
     lawFirms: {
@@ -19,6 +19,12 @@ interface DashboardStats {
     };
     users: {
         total: number;
+        newThisMonth: number;
+    };
+    jobAlerts: {
+        totalSubscriptions: number;
+        activeSubscriptions: number;
+        peopleWithActiveAlerts: number;
         newThisMonth: number;
     };
 }
@@ -42,9 +48,7 @@ const AdminDashboard = () => {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{stats.lawFirms.total}</div>
-                        <p className="text-xs text-muted-foreground">
-                            {stats.lawFirms.active} active firms
-                        </p>
+                        <p className="text-xs text-muted-foreground">{stats.lawFirms.active} active firms</p>
                         <Button variant="link" asChild className="mt-4 p-0">
                             <Link href="/admin/law-firms">View all firms →</Link>
                         </Button>
@@ -58,9 +62,7 @@ const AdminDashboard = () => {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{stats.jobs.total}</div>
-                        <p className="text-xs text-muted-foreground">
-                            {stats.jobs.active} active listings
-                        </p>
+                        <p className="text-xs text-muted-foreground">{stats.jobs.active} active listings</p>
                         <Button variant="link" asChild className="mt-4 p-0">
                             <Link href="/admin/job-listings">Manage jobs →</Link>
                         </Button>
@@ -74,9 +76,7 @@ const AdminDashboard = () => {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{stats.reviews.total}</div>
-                        <p className="text-xs text-muted-foreground">
-                            {stats.reviews.pending} pending review
-                        </p>
+                        <p className="text-xs text-muted-foreground">{stats.reviews.pending} pending review</p>
                         <Button variant="link" asChild className="mt-4 p-0">
                             <Link href="/admin/reviews">Manage reviews →</Link>
                         </Button>
@@ -90,11 +90,26 @@ const AdminDashboard = () => {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{stats.users.total}</div>
-                        <p className="text-xs text-muted-foreground">
-                            {stats.users.newThisMonth} new this month
-                        </p>
+                        <p className="text-xs text-muted-foreground">{stats.users.newThisMonth} new this month</p>
                         <Button variant="link" asChild className="mt-4 p-0">
                             <Link href="/admin/users">View all users →</Link>
+                        </Button>
+                    </CardContent>
+                </Card>
+
+                {/* Job Alerts card (added) */}
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium">Job Alerts</CardTitle>
+                        <Bell className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{stats.jobAlerts.totalSubscriptions}</div>
+                        <p className="text-xs text-muted-foreground">{stats.jobAlerts.activeSubscriptions} active subscriptions</p>
+                        <p className="mt-1 text-xs text-muted-foreground">{stats.jobAlerts.peopleWithActiveAlerts} people with active alerts</p>
+                        <p className="mt-1 text-xs text-muted-foreground">{stats.jobAlerts.newThisMonth} new this month</p>
+                        <Button variant="link" asChild className="mt-4 p-0">
+                            <Link href="/admin/job-alerts">Manage job alerts →</Link>
                         </Button>
                     </CardContent>
                 </Card>
