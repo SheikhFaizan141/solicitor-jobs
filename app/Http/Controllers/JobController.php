@@ -57,15 +57,15 @@ class JobController extends Controller
         $jobs = $query->latest()->paginate(20);
 
         // Get filter options
-        $locations = JobListing::active()
-            ->published()
-            ->whereNotNull('location')
-            ->distinct()
-            ->orderBy('location')
-            ->pluck('location')
-            ->filter()
-            ->values()
-            ->toArray();
+        // $locations = JobListing::active()
+        //     ->published()
+        //     ->whereNotNull('location')
+        //     ->distinct()
+        //     ->orderBy('location')
+        //     ->pluck('location')
+        //     ->filter()
+        //     ->values()
+        //     ->toArray();
 
         $employmentTypes = JobListing::active()
             ->published()
@@ -87,7 +87,7 @@ class JobController extends Controller
         return Inertia::render('jobs/index', [
             'jobs' => $jobs,
             'filters' => [
-                'locations' => $locations,
+                'locations' => [],
                 'employment_types' => $employmentTypes,
                 'experience_levels' => $experienceLevels,
             ],

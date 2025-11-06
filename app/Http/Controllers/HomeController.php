@@ -33,17 +33,17 @@ class HomeController extends Controller
             ->get();
 
         // Get filter options
-        $locations = JobListing::active()
-            ->published()
-            ->whereNotNull('location')
-            ->distinct()
-            ->orderBy('location')
-            ->pluck('location')
-            ->filter()
-            ->unique()
-            ->take(20)
-            ->values()
-            ->toArray();
+        // $locations = JobListing::active()
+        //     ->published()
+        //     ->whereNotNull('location')
+        //     ->distinct()
+        //     ->orderBy('location')
+        //     ->pluck('location')
+        //     ->filter()
+        //     ->unique()
+        //     ->take(20)
+        //     ->values()
+        //     ->toArray();
 
         $practiceAreas = PracticeArea::orderBy('name')->get(['id', 'name']);
 
@@ -54,7 +54,7 @@ class HomeController extends Controller
             'featuredJobs' => $featuredJobs,
             'filters' => $filters,
             'filterOptions' => [
-                'locations' => $locations,
+                'locations' => [],
                 'practiceAreas' => $practiceAreas,
             ],
             'totalJobs' => $totalJobs,
