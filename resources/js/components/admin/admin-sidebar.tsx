@@ -1,6 +1,6 @@
 import { SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { Briefcase, Building2, ChevronRight, LayoutDashboard, MessageSquare, Tags, Users } from 'lucide-react';
+import { Briefcase, Building2, ChevronRight, LayoutDashboard, MapPin, MessageSquare, Tags, Users } from 'lucide-react';
 import React, { useState } from 'react';
 
 type IconType = React.ComponentType<React.SVGProps<SVGSVGElement>>;
@@ -67,7 +67,11 @@ const AdminSidebar: React.FC = () => {
                     <li>
                         <NavLink href="/admin/reviews" icon={MessageSquare} label="Reviews" isActive={isActive('/admin/reviews')} />
                     </li>
-
+                   
+                   <li>
+                        <NavLink href="/admin/locations" icon={MapPin} label="Locations" isActive={isActive('/admin/locations')} />
+                    </li>
+                    
                     {/* Users */}
                     {props.auth.user.role === 'admin' && (
                         <li>

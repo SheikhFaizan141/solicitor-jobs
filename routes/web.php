@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminJobListingController;
 use App\Http\Controllers\Admin\AdminLawFirmController;
+use App\Http\Controllers\Admin\AdminLocationController;
 use App\Http\Controllers\Admin\AdminReviewController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\HomeController;
@@ -94,6 +95,11 @@ Route::middleware(['auth'])->group(function () {
             Route::resource('job-listings', AdminJobListingController::class)
                 ->names('job-listings')
                 ->except(['show']);
+
+            // Locations
+            Route::resource('locations', AdminLocationController::class)
+                ->names('locations')
+                ->except(['show', 'create', 'edit']);
 
             // Reviews
             Route::prefix('reviews')->name('reviews.')->group(function () {
