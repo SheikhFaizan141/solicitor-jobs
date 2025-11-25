@@ -1,8 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import AdminLayout from '@/layouts/admin-layout';
 import { useForm, usePage } from '@inertiajs/react';
 import React from 'react';
@@ -19,16 +19,26 @@ type PracticeArea = {
     children?: PracticeArea[];
 };
 
+type Location = {
+    id: number;
+    name: string;
+    region: string | null;
+    country: string;
+    is_remote: boolean;
+};
+
 const CreateJobListing = () => {
-    const { firms, practiceAreas } = usePage().props as {
+    const { firms, practiceAreas, locations } = usePage().props as {
         firms: LawFirm[];
         practiceAreas: PracticeArea[];
+        locations: Location[];
     };
 
     const { data, setData, post, processing, errors } = useForm({
         title: '',
         law_firm_id: '',
-        location: '',
+        location_id: '',
+        location: '', // Legacy field
         workplace_type: 'onsite',
         employment_type: 'full_time',
         experience_level: '',
@@ -43,13 +53,19 @@ const CreateJobListing = () => {
         practice_areas: [] as number[],
     });
 
+    const handleSelectChange = (name: keyof typeof data, value: string) => {
+        setData(name, value);
+    };
+
+    const getLocationDisplay = (location: Location): string => {
+        if (location.is_remote) return `${location.name} (Remote)`;
+        if (location.region) return `${location.name}, ${location.region}`;
+        return location.name;
+    };
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setData(name as keyof typeof data, value);
-    };
-
-    const handleSelectChange = (name: keyof typeof data, value: string) => {
-        setData(name, value);
     };
 
     const handleArrayChange = (field: 'requirements' | 'benefits', index: number, value: string) => {
@@ -65,12 +81,22 @@ const CreateJobListing = () => {
 
     const removeArrayItem = (field: 'requirements' | 'benefits', index: number) => {
         const current = data[field] as string[];
-        setData(field, current.filter((_, i) => i !== index));
+        setData(
+            field,
+            current.filter((_, i) => i !== index),
+        );
     };
 
     const togglePracticeArea = (id: number) => {
         const current = data.practice_areas;
-        setData('practice_areas', current.includes(id) ? current.filter(x => x !== id) : [...current, id]);
+        setData('practice_areas', current.includes(id) ? current.filter((x) => x !== id) : [...current, id]);
+    };
+
+    // Helper function to get array field errors
+    const getArrayFieldError = (field: 'requirements' | 'benefits', index: number): string | undefined => {
+        const errorKey = `${field}.${index}`;
+
+        return errors[errorKey as keyof typeof errors] as string | undefined;
     };
 
     // Build practice area tree
@@ -82,9 +108,7 @@ const CreateJobListing = () => {
             byParent[key].push(pa);
         });
         const build = (parentKey: string): PracticeArea[] =>
-            (byParent[parentKey] || [])
-                .sort((a, b) => a.name.localeCompare(b.name))
-                .map((n) => ({ ...n, children: build(n.id.toString()) }));
+            (byParent[parentKey] || []).sort((a, b) => a.name.localeCompare(b.name)).map((n) => ({ ...n, children: build(n.id.toString()) }));
         return build('root');
     }, [practiceAreas]);
 
@@ -114,6 +138,8 @@ const CreateJobListing = () => {
         });
     };
 
+    console.log('errors', errors);
+
     return (
         <div className="mx-auto w-full max-w-2xl px-4 py-3">
             <header className="mb-6">
@@ -125,7 +151,7 @@ const CreateJobListing = () => {
                 {/* Basic Information */}
                 <div className="space-y-4">
                     <h2 className="text-lg font-medium">Basic Information</h2>
-                    
+
                     <div>
                         <Label htmlFor="title">Job Title</Label>
                         <Input
@@ -141,7 +167,10 @@ const CreateJobListing = () => {
 
                     <div>
                         <Label htmlFor="law_firm_id">Law Firm (Optional)</Label>
-                        <Select value={data.law_firm_id || "none"} onValueChange={(value) => handleSelectChange('law_firm_id', value === "none" ? '' : value)}>
+                        <Select
+                            value={data.law_firm_id || 'none'}
+                            onValueChange={(value) => handleSelectChange('law_firm_id', value === 'none' ? '' : value)}
+                        >
                             <SelectTrigger>
                                 <SelectValue placeholder="Select a law firm (leave empty for independent posting)" />
                             </SelectTrigger>
@@ -157,16 +186,41 @@ const CreateJobListing = () => {
                         {errors.law_firm_id && <p className="mt-1 text-sm text-red-600">{errors.law_firm_id}</p>}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Location Information */}
+                    <div className="space-y-4">
+                        <h2 className="text-lg font-medium">Location Information</h2>
+
                         <div>
-                            <Label htmlFor="location">Location</Label>
+                            <Label htmlFor="location_id">Location</Label>
+                            <Select
+                                value={data.location_id || 'none'}
+                                onValueChange={(value) => handleSelectChange('location_id', value === 'none' ? '' : value)}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a location..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">No specific location</SelectItem>
+                                    {locations.map((location) => (
+                                        <SelectItem key={location.id} value={location.id.toString()}>
+                                            {getLocationDisplay(location)}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {errors.location_id && <p className="mt-1 text-sm text-red-600">{errors.location_id}</p>}
+                        </div>
+
+                        <div>
+                            <Label htmlFor="location">Location (Text) - Fallback</Label>
                             <Input
                                 id="location"
                                 name="location"
                                 value={data.location}
                                 onChange={handleChange}
-                                placeholder="e.g. London, UK"
+                                placeholder="e.g. London, UK (used if no structured location selected)"
                             />
+                            <p className="mt-1 text-xs text-gray-500">This field is used as a fallback when no structured location is selected.</p>
                             {errors.location && <p className="mt-1 text-sm text-red-600">{errors.location}</p>}
                         </div>
 
@@ -181,9 +235,7 @@ const CreateJobListing = () => {
                             />
                             {errors.experience_level && <p className="mt-1 text-sm text-red-600">{errors.experience_level}</p>}
                         </div>
-                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <Label htmlFor="workplace_type">Workplace Type</Label>
                             <Select value={data.workplace_type} onValueChange={(value) => handleSelectChange('workplace_type', value)}>
@@ -220,8 +272,8 @@ const CreateJobListing = () => {
                 {/* Salary Information */}
                 <div className="space-y-4">
                     <h2 className="text-lg font-medium">Salary Information</h2>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div>
                             <Label htmlFor="salary_min">Minimum Salary</Label>
                             <Input
@@ -268,7 +320,7 @@ const CreateJobListing = () => {
                 {/* Job Details */}
                 <div className="space-y-4">
                     <h2 className="text-lg font-medium">Job Details</h2>
-                    
+
                     <div>
                         <Label htmlFor="description">Job Description</Label>
                         <Textarea
@@ -284,13 +336,7 @@ const CreateJobListing = () => {
 
                     <div>
                         <Label htmlFor="closing_date">Application Closing Date</Label>
-                        <Input
-                            id="closing_date"
-                            name="closing_date"
-                            type="date"
-                            value={data.closing_date}
-                            onChange={handleChange}
-                        />
+                        <Input id="closing_date" name="closing_date" type="date" value={data.closing_date} onChange={handleChange} />
                         {errors.closing_date && <p className="mt-1 text-sm text-red-600">{errors.closing_date}</p>}
                     </div>
                 </div>
@@ -303,7 +349,7 @@ const CreateJobListing = () => {
                             Add Requirement
                         </Button>
                     </div>
-                    
+
                     <div className="space-y-3">
                         {data.requirements.map((requirement, index) => (
                             <div key={index} className="flex gap-3">
@@ -314,11 +360,7 @@ const CreateJobListing = () => {
                                     className="flex-1"
                                 />
                                 {data.requirements.length > 1 && (
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={() => removeArrayItem('requirements', index)}
-                                    >
+                                    <Button type="button" variant="outline" onClick={() => removeArrayItem('requirements', index)}>
                                         Remove
                                     </Button>
                                 )}
@@ -336,7 +378,7 @@ const CreateJobListing = () => {
                             Add Benefit
                         </Button>
                     </div>
-                    
+
                     <div className="space-y-3">
                         {data.benefits.map((benefit, index) => (
                             <div key={index} className="flex gap-3">
@@ -347,11 +389,7 @@ const CreateJobListing = () => {
                                     className="flex-1"
                                 />
                                 {data.benefits.length > 1 && (
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={() => removeArrayItem('benefits', index)}
-                                    >
+                                    <Button type="button" variant="outline" onClick={() => removeArrayItem('benefits', index)}>
                                         Remove
                                     </Button>
                                 )}
@@ -364,7 +402,7 @@ const CreateJobListing = () => {
                 {/* Practice Areas */}
                 <div className="space-y-4">
                     <h2 className="text-lg font-medium">Practice Areas</h2>
-                    <div className="rounded border p-4 max-h-64 overflow-y-auto">
+                    <div className="max-h-64 overflow-y-auto rounded border p-4">
                         {tree.length ? renderTree(tree) : <p className="text-sm text-gray-500">No practice areas available.</p>}
                     </div>
                     {errors.practice_areas && <p className="mt-1 text-sm text-red-600">{errors.practice_areas}</p>}

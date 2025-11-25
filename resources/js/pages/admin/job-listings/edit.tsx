@@ -11,6 +11,9 @@ type JobListing = {
     id: number;
     title: string;
     law_firm_id: number | null;
+
+    location_id: number | null;
+
     location: string | null;
     workplace_type: string;
     employment_type: string;
@@ -38,17 +41,27 @@ type PracticeArea = {
     children?: PracticeArea[];
 };
 
+type Location = {
+    id: number;
+    name: string;
+    region: string | null;
+    country: string;
+    is_remote: boolean;
+};
+
 const EditJobListing = () => {
-    const { job, firms, practiceAreas } = usePage().props as {
-        job: JobListing;
+    const { job, firms, practiceAreas, locations } = usePage().props as {
+        job: JobListing & { location?: Location };
         firms: LawFirm[];
         practiceAreas: PracticeArea[];
+        locations: Location[];
     };
 
     const { data, setData, put, processing, errors } = useForm({
         title: job.title,
         law_firm_id: job.law_firm_id?.toString() || '',
-        location: job.location || '',
+        location_id: job.location_id?.toString() || '',
+        // location: job.location || '',
         workplace_type: job.workplace_type,
         employment_type: job.employment_type,
         experience_level: job.experience_level || '',
@@ -62,6 +75,12 @@ const EditJobListing = () => {
         benefits: job.benefits || [''],
         practice_areas: job.practice_areas.map((pa) => pa.id),
     });
+
+    console.log("form", data);
+    
+    console.log('errors', errors);
+
+    console.log(job);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -135,6 +154,12 @@ const EditJobListing = () => {
         });
     };
 
+    const getLocationDisplay = (location: Location): string => {
+        if (location.is_remote) return `${location.name} (Remote)`;
+        if (location.region) return `${location.name}, ${location.region}`;
+        return location.name;
+    };
+
     return (
         <div className="mx-auto w-full max-w-2xl px-4 py-3">
             <header className="mb-6">
@@ -181,8 +206,19 @@ const EditJobListing = () => {
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div>
                             <Label htmlFor="location">Location</Label>
-                            <Input id="location" name="location" value={data.location} onChange={handleChange} placeholder="e.g. London, UK" />
-                            {errors.location && <p className="mt-1 text-sm text-red-600">{errors.location}</p>}
+                            <Select value={data.location_id} onValueChange={(value) => handleSelectChange('location_id', value)}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a location" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {locations.map((location) => (
+                                        <SelectItem key={location.id} value={location.id.toString()}>
+                                            {getLocationDisplay(location)}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {errors.location_id && <p className="mt-1 text-sm text-red-600">{errors.location_id}</p>}
                         </div>
 
                         <div>

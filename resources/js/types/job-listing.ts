@@ -1,3 +1,5 @@
+// import { Location } from './types';
+
 export type WorkplaceType = 'onsite' | 'remote' | 'hybrid';
 export type EmploymentType = 'full_time' | 'part_time' | 'contract' | 'intership';
 
@@ -18,6 +20,8 @@ export interface JobListing {
     title: string;
     slug: string;
     law_firm_id: number | null;
+    location_id: number | null;
+
     location: string | null;
     workplace_type: WorkplaceType;
     employment_type: EmploymentType;
@@ -36,6 +40,7 @@ export interface JobListing {
     updated_at: string;
     deleted_at: string | null;
     law_firm: LawFirm | null;
+    // location?: Location;
 }
 
 export interface PaginatedResponse<T> {
@@ -57,4 +62,3 @@ export interface PaginatedResponse<T> {
     to: number;
     total: number;
 }
-

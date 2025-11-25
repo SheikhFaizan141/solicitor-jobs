@@ -18,7 +18,9 @@ return new class extends Migration
             $table->foreignId('law_firm_id')->nullable()->constrained('law_firms')->nullOnDelete();
 
             $table->foreignId('location_id')->nullable()->constrained('locations')->nullOnDelete();
-            // $table->string('location')->nullable();
+
+            // Legacy text field for backward compatibility
+            $table->string('location')->nullable();
 
             $table->enum('workplace_type', ['onsite', 'remote', 'hybrid'])->default('onsite');
             $table->enum('employment_type', ['full_time', 'part_time', 'contract', 'internship'])->default('full_time');

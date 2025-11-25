@@ -64,7 +64,6 @@ class AdminLocationController extends Controller
         if (empty($data['slug'])) {
             $data['slug'] = Str::slug($data['name']);
         }
-
         Location::create($data);
 
         return back()->with('success', 'Location created successfully.');
