@@ -27,8 +27,7 @@ class AdminJobListingController extends Controller
 
         $jobs = JobListing::query()
             ->when($search, function ($query, $search) {
-                $query->where('title', 'like', '%' . $search . '%')
-                    ->orWhere('location', 'like', '%' . $search . '%');
+                $query->where('title', 'like', '%' . $search . '%');
             })
             ->when($status === 'active', function ($query) {
                 $query->where('is_active', true);
@@ -41,11 +40,11 @@ class AdminJobListingController extends Controller
             ->paginate(20)
             ->withQueryString();
 
+
+        // return response()->json($jobs);
+
         return Inertia::render('admin/job-listings/index', [
             'jobs' => $jobs,
-            // 'can' => [
-            //     'create' => $request->user()->can('create', JobListing::class),
-            // ]
         ]);
     }
 
@@ -75,12 +74,8 @@ class AdminJobListingController extends Controller
             'slug' => ['nullable', 'string', 'max:255', 'unique:job_listings,slug'],
             'law_firm_id' => ['nullable', 'integer', Rule::exists('law_firms', 'id')],
             'location_id' => ['nullable', 'integer', Rule::exists('locations', 'id')],
-
-            'location' => ['nullable', 'string', 'max:255'], // Legacy field
-
             'workplace_type' => ['required', Rule::in(['onsite', 'remote', 'hybrid'])],
             'employment_type' => ['required', Rule::in(['full_time', 'part_time', 'contract', 'internship'])],
-
             'experience_level' => ['nullable', 'string', 'max:255'],
             'salary_min' => ['nullable', 'integer', 'min:0'],
             'salary_max' => ['nullable', 'integer', 'gte:salary_min'],
@@ -140,14 +135,9 @@ class AdminJobListingController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', Rule::unique('job_listings')->ignore($jobListing)],
             'law_firm_id' => ['nullable', 'integer', Rule::exists('law_firms', 'id')],
-
             'location_id' => ['nullable', 'integer', Rule::exists('locations', 'id')],
-
-            'location' => ['nullable', 'string', 'max:255'],
-
             'workplace_type' => ['required', 'in:onsite,remote,hybrid'],
             'employment_type' => ['required', 'in:full_time,part_time,contract,internship'],
-
             'experience_level' => ['nullable', 'string', 'max:255'],
             'salary_min' => ['nullable', 'integer', 'min:0'],
             'salary_max' => ['nullable', 'integer', 'gte:salary_min'],

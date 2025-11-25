@@ -49,7 +49,7 @@ class JobListing extends Model
                 $slug = $base;
                 $i = 2;
                 while (static::withTrashed()->where('slug', $slug)->exists()) {
-                    $slug = $base.'-'.$i++;
+                    $slug = $base . '-' . $i++;
                 }
                 $job->slug = $slug;
             }
@@ -95,13 +95,13 @@ class JobListing extends Model
         $currency = $this->salary_currency === 'GBP' ? '£' : $this->salary_currency;
 
         if ($this->salary_min && $this->salary_max) {
-            return $currency.number_format($this->salary_min).' - '.$currency.number_format($this->salary_max);
+            return $currency . number_format($this->salary_min) . ' - ' . $currency . number_format($this->salary_max);
         }
 
         if ($this->salary_min) {
-            return 'From '.$currency.number_format($this->salary_min);
+            return 'From ' . $currency . number_format($this->salary_min);
         }
 
-        return 'Up to '.$currency.number_format($this->salary_max);
+        return 'Up to ' . $currency . number_format($this->salary_max);
     }
 }
