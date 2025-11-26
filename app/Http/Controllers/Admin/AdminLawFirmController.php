@@ -87,14 +87,6 @@ class AdminLawFirmController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(LawFirm $lawFirm)
-    {
-        //
-    }
-
-    /**
      * Show the form for editing the specified resource.
      */
     public function edit(LawFirm $lawFirm)
