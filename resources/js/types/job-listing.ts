@@ -1,4 +1,5 @@
-// import { Location } from './types';
+import { PracticeArea } from '@/pages/home-old';
+import { Location } from './locations';
 
 export type WorkplaceType = 'onsite' | 'remote' | 'hybrid';
 export type EmploymentType = 'full_time' | 'part_time' | 'contract' | 'intership';
@@ -22,7 +23,6 @@ export interface JobListing {
     law_firm_id: number | null;
     location_id: number | null;
 
-    location: string | null;
     workplace_type: WorkplaceType;
     employment_type: EmploymentType;
     experience_level: string | null;
@@ -35,30 +35,16 @@ export interface JobListing {
     requirements: string[] | null;
     benefits: string[] | null;
     posted_by: number | null;
+    // location?: Location;
+
     published_at: string | null;
+    deleted_at: string | null;
     created_at: string;
     updated_at: string;
-    deleted_at: string | null;
-    law_firm: LawFirm | null;
-    // location?: Location;
 }
 
-export interface PaginatedResponse<T> {
-    current_page: number;
-    data: T[];
-    first_page_url: string;
-    from: number;
-    last_page: number;
-    last_page_url: string;
-    links: {
-        url: string | null;
-        label: string;
-        active: boolean;
-    }[];
-    next_page_url: string | null;
-    path: string;
-    per_page: number;
-    prev_page_url: string | null;
-    to: number;
-    total: number;
+export interface JobListingWithRelations extends JobListing {
+    law_firm: LawFirm | null;
+    location: Location;
+    practice_areas: PracticeArea[];
 }

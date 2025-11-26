@@ -12,7 +12,7 @@ class JobController extends Controller
 {
     public function index(Request $request)
     {
-        $filters = $request->only(['q', 'type', 'experience', 'location', 'practice_area', 'firm']);
+        $filters = $request->only(['q', 'type', 'experience', 'location_id', 'practice_area_id', 'firm']);
 
         $query = JobListing::query()
             ->active()
@@ -47,7 +47,7 @@ class JobController extends Controller
 
         if ($filters['practice_area_id'] ?? null) {
             $query->whereHas('practiceAreas', function ($query) use ($filters) {
-                $query->where('id', $filters['practice_area_id']);
+                $query->where('practice_areas.id', $filters['practice_area_id']);
             });
         }
 
@@ -55,6 +55,7 @@ class JobController extends Controller
             $query->where('law_firm_id', $filters['firm']);
         }
 
+        // dd($filters);
         $jobs = $query->latest()->paginate(20)->withQueryString();
 
         // Get filter options
