@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\JobListing;
+use App\Models\Location;
 use App\Models\PracticeArea;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -40,13 +41,13 @@ class JobController extends Controller
             $query->where('experience_level', $filters['experience']);
         }
 
-        if ($filters['location'] ?? null) {
-            $query->where('location', $filters['location']);
+        if ($filters['location_id'] ?? null) {
+            $query->where('location_id', $filters['location_id']);
         }
 
-        if ($filters['practice_area'] ?? null) {
+        if ($filters['practice_area_id'] ?? null) {
             $query->whereHas('practiceAreas', function ($query) use ($filters) {
-                $query->where('id', $filters['practice_area']);
+                $query->where('id', $filters['practice_area_id']);
             });
         }
 
@@ -54,7 +55,7 @@ class JobController extends Controller
             $query->where('law_firm_id', $filters['firm']);
         }
 
-        $jobs = $query->latest()->paginate(20);
+        $jobs = $query->latest()->paginate(20)->withQueryString();
 
         // Get filter options
         // $locations = JobListing::active()
@@ -66,6 +67,15 @@ class JobController extends Controller
         //     ->filter()
         //     ->values()
         //     ->toArray();
+
+        $locations = Location::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'region', 'country', 'is_remote']);
+
+        $practiceAreas = PracticeArea::orderBy('name')
+            ->get(['id', 'name']);
+
+        // dd($practiceAreas->toArray());
 
         $employmentTypes = JobListing::active()
             ->published()
@@ -87,10 +97,12 @@ class JobController extends Controller
         return Inertia::render('jobs/index', [
             'jobs' => $jobs,
             'filters' => [
-                'locations' => [],
+                'locations' => $locations,
                 'employment_types' => $employmentTypes,
                 'experience_levels' => $experienceLevels,
+                'practiceAreas' => $practiceAreas,
             ],
+            'appliedFilters' => $filters
         ]);
     }
 

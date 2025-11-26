@@ -1,17 +1,23 @@
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Layout from '@/layouts/main-layout';
-import { LawFirm } from '@/types/job-listing';
-import { PracticeArea } from '@/types/practice-area';
-import { Head, Link, router } from '@inertiajs/react';
-import { X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { useState, useEffect } from 'react';
 
 interface Job {
     id: number;
     title: string;
     slug: string;
-    law_firm: LawFirm;
-    location: string | null;
+    law_firm: {
+        id: number;
+        name: string;
+        slug: string;
+    } | null;
+    location: {
+        id: number;
+        name: string;
+        region: string | null;
+        country: string;
+        is_remote: boolean;
+    } | null;
     workplace_type: string;
     employment_type: string;
     experience_level: string | null;
@@ -20,18 +26,24 @@ interface Job {
     salary_currency: string;
     is_active: boolean;
     description: string | null;
-    practice_areas: PracticeArea;
-
+    practice_areas: Array<{
+        id: number;
+        name: string;
+    }>;
     created_at: string;
-    updated_at: string;
 }
 
-interface AppliedFilters {
-    q?: string;
-    location_id?: string;
-    practice_area_id?: string;
-    type?: string;
-    experience: string;
+interface Location {
+    id: number;
+    name: string;
+    region: string | null;
+    country: string;
+    is_remote: boolean;
+}
+
+interface PracticeArea {
+    id: number;
+    name: string;
 }
 
 interface JobsPageProps {
@@ -41,34 +53,56 @@ interface JobsPageProps {
         last_page: number;
         per_page: number;
         total: number;
+        links: Array<{
+            url: string | null;
+            label: string;
+            active: boolean;
+        }>;
     };
     filters: {
-        locations: string[];
+        locations: Location[];
         employment_types: string[];
         experience_levels: string[];
+        practiceAreas: PracticeArea[];
     };
-    appliedFilters: AppliedFilters;
+    activeFilters: {
+        q?: string;
+        location_id?: string;
+        practice_area_id?: string;
+        type?: string;
+        experience?: string;
+    };
 }
 
-// interface JobsIndexProps {}
+export default function JobsIndex() {
+    const { jobs, filters, activeFilters } = usePage<JobsPageProps>().props;
 
-export default function JobsIndex({ jobs, filters, appliedFilters }: JobsPageProps) {
-    const [searchTerm, setSearchTerm] = useState(appliedFilters.q || '');
-    const [selectedLocationId, setSelectedLocationId] = useState(appliedFilters.location_id || '');
-    const [selectedPracticeAreaId, setSelectedPracticeAreaId] = useState(appliedFilters.practice_area_id || '');
-    const [selectedType, setSelectedType] = useState(appliedFilters.type || '');
-    const [selectedExperience, setSelectedExperience] = useState(appliedFilters.experience || '');
-    // const [selectedLocation, setSelectedLocation] = useState('All');
+    const [searchTerm, setSearchTerm] = useState(activeFilters.q || '');
+    const [selectedType, setSelectedType] = useState(activeFilters.type || '');
+    const [selectedExperience, setSelectedExperience] = useState(activeFilters.experience || '');
+    const [selectedLocation, setSelectedLocation] = useState(activeFilters.location_id || '');
+    const [selectedPracticeArea, setSelectedPracticeArea] = useState(activeFilters.practice_area_id || '');
 
-    // Update state when URL params change
     useEffect(() => {
-        setSearchTerm(appliedFilters.q || '');
-        setSelectedLocationId(appliedFilters.location_id || '');
-    }, [appliedFilters]);
+        const params: Record<string, string> = {};
+        
+        if (searchTerm) params.q = searchTerm;
+        if (selectedLocation) params.location_id = selectedLocation;
+        if (selectedPracticeArea) params.practice_area_id = selectedPracticeArea;
+        if (selectedType) params.type = selectedType;
+        if (selectedExperience) params.experience = selectedExperience;
 
-    const hasActiveFilters = !!(searchTerm || selectedLocationId || selectedPracticeAreaId || selectedType || selectedExperience);
+        const timeoutId = setTimeout(() => {
+            router.get('/jobs', params, {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+            });
+        }, 300);
 
-    // Format salary display
+        return () => clearTimeout(timeoutId);
+    }, [searchTerm, selectedLocation, selectedPracticeArea, selectedType, selectedExperience]);
+
     const formatSalary = (job: Job) => {
         if (!job.salary_min && !job.salary_max) return 'Salary not disclosed';
 
@@ -83,12 +117,10 @@ export default function JobsIndex({ jobs, filters, appliedFilters }: JobsPagePro
         }
     };
 
-    // Format employment type
     const formatEmploymentType = (type: string) => {
         return type.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase());
     };
 
-    // Format posted date
     const formatPostedDate = (dateString: string) => {
         const date = new Date(dateString);
         const now = new Date();
@@ -102,21 +134,19 @@ export default function JobsIndex({ jobs, filters, appliedFilters }: JobsPagePro
         return `${Math.ceil(diffDays / 30)} months ago`;
     };
 
+    const getLocationDisplay = (location: Location): string => {
+        const parts = [location.name];
+        if (location.region) parts.push(location.region);
+        if (location.is_remote) parts.push('(Remote)');
+        return parts.join(', ');
+    };
+
     const clearAllFilters = () => {
         setSearchTerm('');
-        setSelectedLocationId('');
-        setSelectedPracticeAreaId('');
         setSelectedType('');
         setSelectedExperience('');
-
-        router.get(
-            '/jobs',
-            {},
-            {
-                preserveState: true,
-                preserveScroll: true,
-            },
-        );
+        setSelectedLocation('');
+        setSelectedPracticeArea('');
     };
 
     return (
@@ -139,18 +169,7 @@ export default function JobsIndex({ jobs, filters, appliedFilters }: JobsPagePro
                         {/* Filters Sidebar */}
                         <div className="lg:w-1/4">
                             <div className="sticky top-24 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-                                <div className="mb-4 flex items-center justify-between">
-                                    <h2 className="text-lg font-semibold text-gray-900">Filter Jobs</h2>
-                                    {hasActiveFilters && (
-                                        <button
-                                            onClick={clearAllFilters}
-                                            className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900"
-                                        >
-                                            <X className="h-4 w-4" />
-                                            Clear
-                                        </button>
-                                    )}
-                                </div>
+                                <h2 className="mb-4 text-lg font-semibold text-gray-900">Filter Jobs</h2>
 
                                 {/* Search */}
                                 <div className="mb-6">
@@ -164,6 +183,40 @@ export default function JobsIndex({ jobs, filters, appliedFilters }: JobsPagePro
                                     />
                                 </div>
 
+                                {/* Location */}
+                                <div className="mb-6">
+                                    <label className="mb-2 block text-sm font-medium text-gray-700">Location</label>
+                                    <select
+                                        value={selectedLocation}
+                                        onChange={(e) => setSelectedLocation(e.target.value)}
+                                        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-amber-500 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                                    >
+                                        <option value="">All Locations</option>
+                                        {filters.locations.map((location) => (
+                                            <option key={location.id} value={location.id.toString()}>
+                                                {getLocationDisplay(location)}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Practice Area */}
+                                <div className="mb-6">
+                                    <label className="mb-2 block text-sm font-medium text-gray-700">Practice Area</label>
+                                    <select
+                                        value={selectedPracticeArea}
+                                        onChange={(e) => setSelectedPracticeArea(e.target.value)}
+                                        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-amber-500 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                                    >
+                                        <option value="">All Practice Areas</option>
+                                        {filters.practiceAreas.map((area) => (
+                                            <option key={area.id} value={area.id.toString()}>
+                                                {area.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
                                 {/* Job Type */}
                                 <div className="mb-6">
                                     <label className="mb-2 block text-sm font-medium text-gray-700">Job Type</label>
@@ -172,9 +225,9 @@ export default function JobsIndex({ jobs, filters, appliedFilters }: JobsPagePro
                                         onChange={(e) => setSelectedType(e.target.value)}
                                         className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-amber-500 focus:ring-2 focus:ring-amber-500 focus:outline-none"
                                     >
-                                        <option value="All">All Types</option>
+                                        <option value="">All Types</option>
                                         {filters.employment_types.map((type) => (
-                                            <option key={type} value={formatEmploymentType(type)}>
+                                            <option key={type} value={type}>
                                                 {formatEmploymentType(type)}
                                             </option>
                                         ))}
@@ -189,7 +242,7 @@ export default function JobsIndex({ jobs, filters, appliedFilters }: JobsPagePro
                                         onChange={(e) => setSelectedExperience(e.target.value)}
                                         className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-amber-500 focus:ring-2 focus:ring-amber-500 focus:outline-none"
                                     >
-                                        <option value="All">All Levels</option>
+                                        <option value="">All Levels</option>
                                         {filters.experience_levels.map((level) => (
                                             <option key={level} value={level}>
                                                 {level}
@@ -198,63 +251,12 @@ export default function JobsIndex({ jobs, filters, appliedFilters }: JobsPagePro
                                     </select>
                                 </div>
 
-                                {/* Location */}
-                                <div className="mb-6">
-                                    <label className="mb-2 block text-sm font-medium text-gray-700">Location</label>
-                                    <select
-                                        value={selectedLocationId}
-                                        onChange={(e) => setSelectedLocationId(e.target.value)}
-                                        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-amber-500 focus:ring-2 focus:ring-amber-500 focus:outline-none"
-                                    >
-                                        <option value="All">All Locations</option>
-                                        {filters.locations.map((location) => (
-                                            <option key={location.id} value={location.id}>
-                                                {location.name}
-                                            </option>
-                                        ))}
-                                    </select>
-
-                                    {/* <Label>Location</Label> */}
-                                    {/* <Select>
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Select a fruit" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectGroup>
-                                                <SelectLabel>Fruits</SelectLabel>
-                                                <SelectItem value="apple">Apple</SelectItem>
-                                                <SelectItem value="banana">Banana</SelectItem>
-                                                <SelectItem value="blueberry">Blueberry</SelectItem>
-                                                <SelectItem value="grapes">Grapes</SelectItem>
-                                                <SelectItem value="pineapple">Pineapple</SelectItem>
-                                            </SelectGroup>
-                                        </SelectContent>
-                                    </Select> */}
-                                </div>
-
-                                {/* Practice Area */}
-                                <div className="mb-6">
-                                    <label className="mb-2 block text-sm font-medium text-gray-700">Practice Area</label>
-                                    <select
-                                        value={selectedPracticeAreaId}
-                                        onChange={(e) => setSelectedPracticeAreaId(e.target.value)}
-                                        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-amber-500 focus:ring-2 focus:ring-amber-500 focus:outline-none"
-                                    >
-                                        <option value="">All Practice Areas</option>
-                                        {filters.practiceAreas.map((area) => (
-                                            <option key={area.id} value={area.id.toString()}>
-                                                {area.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                {/* Apply Filters Button */}
+                                {/* Clear Filters */}
                                 <button
-                                    type="submit"
-                                    className="w-full rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-700"
+                                    onClick={clearAllFilters}
+                                    className="w-full rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
                                 >
-                                    Apply Filters
+                                    Clear All Filters
                                 </button>
                             </div>
                         </div>
@@ -266,16 +268,6 @@ export default function JobsIndex({ jobs, filters, appliedFilters }: JobsPagePro
                                 <h2 className="text-xl font-semibold text-gray-900">
                                     {jobs.total} {jobs.total === 1 ? 'Job' : 'Jobs'} Found
                                 </h2>
-                                <Select>
-                                    <SelectTrigger className="w-[180px]">
-                                        <SelectValue placeholder="Sort by" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="apple">Most Recent</SelectItem>
-                                        <SelectItem value="banana">Salary: High to Low</SelectItem>
-                                        <SelectItem value="blueberry">Salary: Low to High</SelectItem>
-                                    </SelectContent>
-                                </Select>
                             </div>
 
                             {/* Job Cards */}
@@ -329,7 +321,7 @@ export default function JobsIndex({ jobs, filters, appliedFilters }: JobsPagePro
                                                                 d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                                                             />
                                                         </svg>
-                                                        {job.location}
+                                                        {getLocationDisplay(job.location)}
                                                     </div>
                                                 )}
                                                 <div className="flex items-center text-sm text-gray-600">
@@ -388,9 +380,6 @@ export default function JobsIndex({ jobs, filters, appliedFilters }: JobsPagePro
                                                     </span>
                                                 </div>
                                                 <div className="flex space-x-3">
-                                                    <button className="rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200">
-                                                        Save Job
-                                                    </button>
                                                     <Link
                                                         href={`/jobs/${job.slug}`}
                                                         className="rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-700"
@@ -421,13 +410,15 @@ export default function JobsIndex({ jobs, filters, appliedFilters }: JobsPagePro
                             )}
 
                             {/* Pagination */}
-                            {jobs.links && (
+                            {jobs.links && jobs.data.length > 0 && (
                                 <div className="mt-8 flex justify-center">
                                     <div className="flex space-x-1">
                                         {jobs.links.map((link, index) => (
-                                            <a
+                                            <Link
                                                 key={index}
-                                                href={link.url}
+                                                href={link.url || '#'}
+                                                preserveState
+                                                preserveScroll
                                                 className={`rounded border px-3 py-2 text-sm ${
                                                     link.active
                                                         ? 'border-blue-500 bg-blue-500 text-white'
@@ -439,6 +430,7 @@ export default function JobsIndex({ jobs, filters, appliedFilters }: JobsPagePro
                                     </div>
                                 </div>
                             )}
+                            
                         </div>
                     </div>
                 </div>
