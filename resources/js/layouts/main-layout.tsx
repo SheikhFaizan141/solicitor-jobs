@@ -76,7 +76,7 @@ function MainHeader() {
                     <div className="flex items-center space-x-4">
                         {auth.user ? (
                             <div className="flex items-center space-x-4">
-                                <span className="text-sm text-gray-700">Welcome, {auth.user.name}</span>
+                                <span className="text-sm text-gray-200">Welcome, {auth.user.name}</span>
                                 <Link
                                     href={dashboard()}
                                     className="inline-flex items-center rounded-md border border-transparent bg-amber-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-700 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:outline-none"
