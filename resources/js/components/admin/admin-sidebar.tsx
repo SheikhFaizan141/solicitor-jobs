@@ -5,89 +5,161 @@ import React, { useState } from 'react';
 
 type IconType = React.ComponentType<React.SVGProps<SVGSVGElement>>;
 
+interface NavItem {
+    href: string;
+    icon: IconType;
+    label: string;
+    adminOnly?: boolean;
+}
+
+interface NavGroup {
+    label: string;
+    icon: IconType;
+    children: NavItem[];
+}
+
+type NavConfig = (NavItem | NavGroup)[];
+
+const isNavGroup = (item: NavItem | NavGroup): item is NavGroup => {
+    return 'children' in item;
+};
+
 const AdminSidebar: React.FC = () => {
     const { props, url } = usePage<SharedData>();
+    const isAdmin = props.auth.user.role === 'admin';
 
-    console.log(props.auth.user.role);
+    // Get the current path without query parameters
+    const currentPath = url.split('?')[0].replace(/\/$/, '');
 
-    const current = url || '';
-    const isActive = (href: string) => current === href || current.startsWith(href + '/');
+    // Check if a given path is active
+    const isActive = (href: string): boolean => {
+        const normalizedHref = href.replace(/\/$/, '');
 
-    const [lawFirmsOpen, setLawFirmsOpen] = useState(true);
+        // Exact match
+        if (currentPath === normalizedHref) return true;
+
+        // For non-dashboard routes, check if current path starts with href
+        if (normalizedHref !== '/admin' && currentPath.startsWith(normalizedHref + '/')) {
+            return true;
+        }
+
+        return false;
+    };
+
+    // Navigation configuration
+    const navConfig: NavConfig = [
+        {
+            href: '/admin',
+            icon: LayoutDashboard,
+            label: 'Dashboard',
+        },
+        {
+            label: 'Law Firms',
+            icon: Building2,
+            children: [
+                {
+                    href: '/admin/law-firms',
+                    icon: Building2,
+                    label: 'All Law Firms',
+                },
+                {
+                    href: '/admin/practice-areas',
+                    icon: Tags,
+                    label: 'Practice Areas',
+                },
+            ],
+        },
+        {
+            href: '/admin/job-listings',
+            icon: Briefcase,
+            label: 'Job Listings',
+        },
+        {
+            href: '/admin/reviews',
+            icon: MessageSquare,
+            label: 'Reviews',
+        },
+        {
+            href: '/admin/locations',
+            icon: MapPin,
+            label: 'Locations',
+        },
+        {
+            href: '/admin/users',
+            icon: Users,
+            label: 'Users',
+            adminOnly: true,
+        },
+    ];
 
     return (
         <aside className="min-h-screen w-64 bg-gray-900 p-4 text-white">
             <nav className="space-y-1">
                 <ul className="m-0 list-none space-y-1 p-0">
-                    {/* Dashboard */}
-                    <li>
-                        <NavLink href="/admin" icon={LayoutDashboard} label="Dashboard" isActive={isActive('/admin/dashboard')} />
-                    </li>
+                    {navConfig.map((item, index) => {
+                        // Skip admin-only items if user is not admin
+                        if (!isNavGroup(item) && item.adminOnly && !isAdmin) {
+                            return null;
+                        }
 
-                    {/* Law Firms (collapsible group) */}
-                    <li>
-                        <button
-                            type="button"
-                            onClick={() => setLawFirmsOpen((o) => !o)}
-                            aria-expanded={lawFirmsOpen}
-                            className={[
-                                'flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm',
-                                'text-gray-200 transition-colors hover:bg-gray-700 hover:text-white',
-                            ].join(' ')}
-                        >
-                            <span className="flex items-center gap-2">
-                                <Building2 className="h-4 w-4 opacity-90" />
-                                Law Firms
-                            </span>
-                            <ChevronRight className={['h-4 w-4 transition-transform', lawFirmsOpen ? 'rotate-90' : 'rotate-0'].join(' ')} />
-                        </button>
-                        {lawFirmsOpen && (
-                            <ul className="mt-1 ml-2 space-y-1 border-l border-gray-700 pl-2">
-                                <li>
-                                    <NavLink href="/admin/law-firms" icon={Building2} label="All Law Firms" isActive={isActive('/admin/law-firms')} />
-                                </li>
-                                <li>
-                                    <NavLink
-                                        href="/admin/practice-areas"
-                                        icon={Tags}
-                                        label="Practice Areas"
-                                        isActive={isActive('/admin/practice-areas')}
-                                    />
-                                </li>
-                            </ul>
-                        )}
-                    </li>
+                        if (isNavGroup(item)) {
+                            return <NavGroupItem key={index} group={item} isActive={isActive} />;
+                        }
 
-                    {/* Jobs */}
-                    <li>
-                        <NavLink href="/admin/job-listings" icon={Briefcase} label="Job Listings" isActive={isActive('/admin/job-listings')} />
-                    </li>
-
-                    {/* Reviews */}
-                    <li>
-                        <NavLink href="/admin/reviews" icon={MessageSquare} label="Reviews" isActive={isActive('/admin/reviews')} />
-                    </li>
-                   
-                   <li>
-                        <NavLink href="/admin/locations" icon={MapPin} label="Locations" isActive={isActive('/admin/locations')} />
-                    </li>
-                    
-                    {/* Users */}
-                    {props.auth.user.role === 'admin' && (
-                        <li>
-                            <NavLink href="/admin/users" icon={Users} label="Users" isActive={isActive('/admin/users')} />
-                        </li>
-                    )}
-
-                    {/* Logout */}
-                    {/* <li className="pt-2">
-                        <NavLink href="/logout" icon={LogOut} label="Logout" isActive={false} className="text-red-300 hover:text-white" />
-                    </li> */}
+                        return (
+                            <li key={index}>
+                                <NavLink href={item.href} icon={item.icon} label={item.label} isActive={isActive(item.href)} />
+                            </li>
+                        );
+                    })}
                 </ul>
             </nav>
         </aside>
     );
 };
+
+function NavGroupItem({ group, isActive }: { group: NavGroup; isActive: (href: string) => boolean }) {
+    // Check if any child is active
+    const hasActiveChild = group.children.some((child) => isActive(child.href));
+
+    // Keep the section open if any child is active
+    const [isOpen, setIsOpen] = useState(hasActiveChild);
+
+    React.useEffect(() => {
+        if (hasActiveChild) {
+            setIsOpen(true);
+        }
+    }, [hasActiveChild]);
+
+    return (
+        <li>
+            <button
+                type="button"
+                onClick={() => setIsOpen((prev) => !prev)}
+                aria-expanded={isOpen}
+                className={[
+                    'flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm',
+                    hasActiveChild ? 'bg-gray-800 text-white' : 'text-gray-200 transition-colors hover:bg-gray-700 hover:text-white',
+                ].join(' ')}
+            >
+                <span className="flex items-center gap-2">
+                    <group.icon className="h-4 w-4 opacity-90" />
+                    {group.label}
+                </span>
+                <ChevronRight className={['h-4 w-4 transition-transform', isOpen ? 'rotate-90' : 'rotate-0'].join(' ')} />
+            </button>
+            {isOpen && (
+                <ul className="mt-1 ml-2 space-y-1 border-l border-gray-700 pl-2">
+                    {group.children.map((child, index) => (
+                        <li key={index}>
+                            <NavLink href={child.href} icon={child.icon} label={child.label} isActive={isActive(child.href)} />
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </li>
+    );
+}
 
 function NavLink({
     href,
