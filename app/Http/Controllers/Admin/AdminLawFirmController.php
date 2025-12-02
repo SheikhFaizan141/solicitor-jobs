@@ -15,14 +15,50 @@ class AdminLawFirmController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Inertia::render(
-            'admin/law-firms/index',
-            [
-                'lawFirms' => LawFirm::with('contacts')->get(),
-            ]
-        );
+        $search = $request->input('search', '');
+        $sortBy = $request->input('sort_by', 'created_at');
+        $statusFilter = $request->input('status');
+
+        $query = LawFirm::query()
+            ->with('contacts')
+            ->when($search, function ($query, $search) {
+                $query->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhere('website', 'like', '%' . $search . '%');
+            })
+            ->when($statusFilter === 'active', function ($query) {
+                // Add your active condition if you have an is_active column
+                // $query->where('is_active', true);
+            })
+            ->when($statusFilter === 'inactive', function ($query) {
+                // Add your inactive condition
+                // $query->where('is_active', false);
+            });
+
+
+        // Sorting
+        switch ($sortBy) {
+            case 'name':
+                $query->orderBy('name', 'asc');
+                break;
+            case '-name':
+                $query->orderBy('name', 'desc');
+                break;
+            case 'location':
+                // Assuming you have a location column
+                $query->orderBy('location', 'asc');
+                break;
+            default:
+                $query->latest();
+        }
+
+        $lawFirms = $query->paginate(20)->withQueryString();
+        
+        return Inertia::render('admin/law-firms/index', [
+            'lawFirms' => $lawFirms,
+        ]);
     }
 
     /**
