@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\PracticeArea;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class PracticeAreaController extends Controller
@@ -11,10 +13,37 @@ class PracticeAreaController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->input('search');
+        $sortBy = $request->input('sort_by', 'name');
+
+        $query = PracticeArea::query()
+            ->with(['parent'])
+            ->withCount('lawFirms')
+            ->when($search, function (Builder $query, $search) {
+                $query->where('name', 'like', '%' . $search . '%');
+            });
+
+
+        // Sorting
+        switch ($sortBy) {
+            case 'name':
+                $query->orderBy('name', 'asc');
+                break;
+            case '-name':
+                $query->orderBy('name', 'desc');
+                break;
+            case 'firms':
+                $query->orderBy('law_firms_count', 'desc');
+                break;
+            default:
+                $query->orderBy('name', 'asc');
+        }
+
+        $areas = $query->paginate(10)->withQueryString();
         return Inertia::render('admin/practice-areas/index', [
-            'areas' => PracticeArea::with(['parent'])->withCount('lawFirms')->orderBy('name')->get(),
+            'areas' => $areas,
         ]);
     }
 
@@ -34,7 +63,7 @@ class PracticeAreaController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:practice_areas,name'],
+            'name' => ['required', 'string', 'max:255', Rule::unique('practice_areas', 'name')],
             'parent_id' => ['nullable', 'integer', 'exists:practice_areas,id'],
         ]);
 
@@ -68,7 +97,7 @@ class PracticeAreaController extends Controller
     public function update(Request $request, PracticeArea $practiceArea)
     {
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:practice_areas,name,'.$practiceArea->id],
+            'name' => ['required', 'string', 'max:255', 'unique:practice_areas,name,' . $practiceArea->id],
             'parent_id' => ['nullable', 'integer', 'different:id', 'exists:practice_areas,id'],
         ]);
 
