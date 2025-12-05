@@ -39,12 +39,28 @@ export default function Show() {
 
     console.log(lawFirm);
 
-    const [activeTab, setActiveTab] = React.useState<'reviews' | 'jobs' | 'contacts'>('reviews');
+    //    console.log(lawFirm);
 
+    // Get tab from URL query parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialTab = (urlParams.get('tab') as 'reviews' | 'jobs' | 'contacts') || 'reviews';
+    
+    const [activeTab, setActiveTab] = React.useState<'reviews' | 'jobs' | 'contacts'>(initialTab);
+
+    // Update URL when tab changes
+    React.useEffect(() => {
+        const url = new URL(window.location.href);
+        if (activeTab !== 'reviews') {
+            url.searchParams.set('tab', activeTab);
+        } else {
+            url.searchParams.delete('tab');
+        }
+        window.history.replaceState({}, '', url.toString());
+    }, [activeTab]);
     return (
         <>
             <Head title={lawFirm?.name ?? 'Listing'} />
-            <article className="mx-auto my-12 w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+               <article className="mx-auto my-12 w-full max-w-7xl px-4 sm:px-6 lg:px-8">
                 {/* Header Section */}
                 <header className="mb-12 flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
                     <div className="flex items-start gap-6">

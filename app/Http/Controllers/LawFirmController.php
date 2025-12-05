@@ -15,35 +15,60 @@ class LawFirmController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
-        $practiceArea = $request->input('practice_area');
-        $sort = $request->input('sort');
+        $practiceAreaId = $request->input('practice_area');
+        $sort = $request->input('sort', 'latest');
 
-        $query = LawFirm::with(['contacts', 'reviews', 'practiceAreas']);
+        $query = LawFirm::with(['contacts', 'practiceAreas'])
+            ->withCount('activeReviews as reviews_count')
+            ->withAvg('activeReviews as average_rating', 'rating')
+            ->withCount('jobs as jobs_count');
 
+        // Search filter
         if ($search) {
-            $query->where('name', 'like', "%{$search}%")
-                ->orWhere('description', 'like', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+                    // ->orWhere('location', 'like', "%{$search}%");
+            });
         }
 
-        // if ($practiceArea) {
-        //     $lawFirm = $lawFirm->whereHas('practiceAreas', fn($query) => $query->where('id', $practiceArea));
-        // }
+        // Practice area filter
+        if ($practiceAreaId) {
+            $query->whereHas('practiceAreas', function ($q) use ($practiceAreaId) {
+                $q->where('practice_areas.id', $practiceAreaId);
+            });
+        }
 
-        // if ($sort) {
-        //     $lawFirm = $lawFirm->orderBy('rating', $sort === 'high' ? 'desc' : 'asc');
-        // }
-
-        // $lawFirm = LawFirm::latest()->with(['contacts', 'reviews', 'practiceAreas'])->paginate(18);
+        // Sorting
+        switch ($sort) {
+            case 'high':
+                $query->orderByDesc('average_rating');
+                break;
+            case 'low':
+                $query->orderBy('average_rating');
+                break;
+            case 'name':
+                $query->orderBy('name');
+                break;
+            default: // 'latest'
+                $query->latest();
+                break;
+        }
 
         $lawFirms = $query->paginate(18)->withQueryString();
 
         return Inertia::render('law-firms/index', [
             'lawFirms' => $lawFirms,
-            'practiceAreas' => PracticeArea::whereNull('parent_id')->orderBy('name')->get(),
-            'filters' => $request->only(['search', 'practice_area', 'sort']), // Pass current filters back
+            'practiceAreas' => PracticeArea::whereNull('parent_id')
+                ->orderBy('name')
+                ->get(['id', 'name']),
+            'filters' => [
+                'search' => $request->input('search'),
+                'practice_area' => $request->input('practice_area'),
+                'sort' => $request->input('sort'),
+            ],
         ]);
     }
-
     /**
      * Display the specified resource.
      */

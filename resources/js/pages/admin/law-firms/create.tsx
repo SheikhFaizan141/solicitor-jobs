@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import AdminLayout from '@/layouts/admin-layout';
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import React from 'react';
 
 type Contact = {
@@ -15,8 +15,11 @@ type Contact = {
 
 type PracticeArea = { id: number; name: string; parent_id: number | null };
 
-const CreateFirm = () => {
-    const { practiceAreas } = usePage().props as { practiceAreas: PracticeArea[] };
+interface CreateLawFirmProps { 
+    practiceAreas: PracticeArea[];
+}
+
+const CreateFirm = ({ practiceAreas }: CreateLawFirmProps) => {
 
     const { data, setData, post, processing, reset, errors } = useForm({
         name: '',
