@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useState, FormEvent } from 'react';
 import { Location } from '@/types/locations';
 import { PracticeArea } from '@/types/practice-area';
+import { CreateJobAlertDialog } from '@/components/job-alerts/create-job-alert-dialog';
 
 interface Job {
     id: number;
@@ -174,6 +175,22 @@ export default function Home({ featuredJobs, filterOptions, totalJobs }: HomePag
                                 )}
                             </div>
                         </form>
+
+                        {/* Job Alert CTA */}
+                        <div className="mt-8 text-center">
+                            <p className="mb-3 text-sm text-blue-100">Can't find what you're looking for?</p>
+                            <CreateJobAlertDialog
+                                prefilledFilters={{
+                                    locationId: locationId !== 'all' ? locationId : undefined,
+                                    practiceAreaId: practiceAreaId !== 'all' ? practiceAreaId : undefined,
+                                }}
+                                triggerButton={
+                                    <Button variant="outline" className="bg-white text-blue-900 hover:bg-gray-100 border-white">
+                                        Create a Job Alert
+                                    </Button>
+                                }
+                            />
+                        </div>
                     </div>
                 </div>
 

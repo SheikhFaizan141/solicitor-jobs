@@ -7,6 +7,7 @@ import { PaginatedResponse } from '@/types/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { X } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
+import { CreateJobAlertDialog } from '@/components/job-alerts/create-job-alert-dialog';
 
 type Job = JobListingWithRelations;
 
@@ -413,6 +414,20 @@ export default function JobsIndex({ jobs, filters, appliedFilters }: JobsPagePro
                                     </svg>
                                     <h3 className="mt-2 text-sm font-medium text-gray-900">No jobs found</h3>
                                     <p className="mt-1 text-sm text-gray-500">Try adjusting your search filters to find more results.</p>
+                                    
+                                    {/* Job Alert CTA */}
+                                    {hasActiveFilters && (
+                                        <div className="mt-6">
+                                            <p className="mb-3 text-sm text-gray-600">Don't want to miss out?</p>
+                                            <CreateJobAlertDialog
+                                                prefilledFilters={{
+                                                    locationId: selectedLocationId,
+                                                    practiceAreaId: selectedPracticeAreaId,
+                                                    employmentType: selectedType,
+                                                }}
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             )}
 

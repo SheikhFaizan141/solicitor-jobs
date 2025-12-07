@@ -40,6 +40,7 @@ class HomeController extends Controller
             'filterOptions' => [
                 'locations' => $locations,
                 'practiceAreas' => $practiceAreas,
+                'employment_types' => ['full_time', 'part_time', 'contract', 'internship'],
             ],
             'totalJobs' => $totalJobs,
         ]);

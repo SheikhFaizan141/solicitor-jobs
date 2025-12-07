@@ -103,6 +103,11 @@ class JobController extends Controller
                 'experience_levels' => $experienceLevels,
                 'practiceAreas' => $practiceAreas,
             ],
+            'filterOptions' => [
+                'locations' => $locations,
+                'employment_types' => $employmentTypes,
+                'practice_areas' => $practiceAreas,
+            ],
             'appliedFilters' => $filters
         ]);
     }
