@@ -42,6 +42,7 @@ interface HomePageProps {
     filterOptions: {
         locations: Location[];
         practiceAreas: PracticeArea[];
+        employment_types: string[];
     };
     totalJobs: number;
 }
@@ -180,6 +181,7 @@ export default function Home({ featuredJobs, filterOptions, totalJobs }: HomePag
                         <div className="mt-8 text-center">
                             <p className="mb-3 text-sm text-blue-100">Can't find what you're looking for?</p>
                             <CreateJobAlertDialog
+                                filterOptions={filterOptions}
                                 prefilledFilters={{
                                     locationId: locationId !== 'all' ? locationId : undefined,
                                     practiceAreaId: practiceAreaId !== 'all' ? practiceAreaId : undefined,

@@ -33,7 +33,53 @@ Route::get('/jobs/{job:slug}', [JobController::class, 'show'])->name('jobs.show'
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
+        $user = auth()->user();
+        
+        // Check if admin
+        if ($user->role === 'admin') {
+            return Inertia::render('dashboard', [
+                'isAdmin' => true,
+                'adminStats' => [
+                    'totalJobs' => \App\Models\JobListing::count(),
+                    'activeJobs' => \App\Models\JobListing::where('is_active', true)->count(),
+                    'totalUsers' => \App\Models\User::where('role', 'user')->count(),
+                    'totalFirms' => \App\Models\LawFirm::count(),
+                ],
+            ]);
+        }
+        
+        // Regular user dashboard
+        $activeAlerts = $user->jobAlertSubscriptions()->where('is_active', true);
+        
+        return Inertia::render('dashboard', [
+            'isAdmin' => false,
+            'stats' => [
+                'activeAlerts' => $activeAlerts->count(),
+                'savedJobs' => 0, // TODO: Implement saved jobs
+                'applications' => 0, // TODO: Implement applications  
+                'newMatches' => 0, // TODO: Calculate actual job matches
+            ],
+            'recentAlerts' => $activeAlerts
+                ->with('location')
+                ->limit(3)
+                ->get()
+                ->map(fn($alert) => [
+                    'id' => $alert->id,
+                    'frequency' => $alert->frequency,
+                    'location' => $alert->location?->name,
+                    'employment_types' => $alert->employment_types,
+                    'practice_area_count' => count($alert->practice_area_ids ?? []),
+                    'matchCount' => 0, // TODO: Calculate matches
+                ]),
+            'filterOptions' => [
+                'locations' => \App\Models\Location::where('is_active', true)
+                    ->orderBy('name')
+                    ->get(['id', 'name', 'region', 'country', 'is_remote']),
+                'practice_areas' => \App\Models\PracticeArea::orderBy('name')
+                    ->get(['id', 'name']),
+                'employment_types' => ['full_time', 'part_time', 'contract', 'internship'],
+            ],
+        ]);
     })->name('dashboard');
 });
 

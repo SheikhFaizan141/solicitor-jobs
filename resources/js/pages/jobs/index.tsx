@@ -27,12 +27,17 @@ interface JobsPageProps {
         experience_levels: string[];
         practiceAreas: PracticeArea[];
     };
+    filterOptions: {
+        locations: Location[];
+        employment_types: string[];
+        practice_areas: PracticeArea[];
+    };
     appliedFilters: AppliedFilters;
 }
 
 // interface JobsIndexProps {}
 
-export default function JobsIndex({ jobs, filters, appliedFilters }: JobsPageProps) {
+export default function JobsIndex({ jobs, filters, filterOptions, appliedFilters }: JobsPageProps) {
     const [searchTerm, setSearchTerm] = useState(appliedFilters.q || '');
     const [selectedLocationId, setSelectedLocationId] = useState(appliedFilters.location_id || '');
     const [selectedPracticeAreaId, setSelectedPracticeAreaId] = useState(appliedFilters.practice_area_id || '');
@@ -420,6 +425,7 @@ export default function JobsIndex({ jobs, filters, appliedFilters }: JobsPagePro
                                         <div className="mt-6">
                                             <p className="mb-3 text-sm text-gray-600">Don't want to miss out?</p>
                                             <CreateJobAlertDialog
+                                                filterOptions={filterOptions}
                                                 prefilledFilters={{
                                                     locationId: selectedLocationId,
                                                     practiceAreaId: selectedPracticeAreaId,

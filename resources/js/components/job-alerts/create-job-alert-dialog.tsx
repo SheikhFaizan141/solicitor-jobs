@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import { Bell } from 'lucide-react';
 import React, { useState } from 'react';
 
@@ -27,7 +27,15 @@ interface PracticeArea {
     name: string;
 }
 
+interface FilterOptions {
+    locations: Location[];
+    practice_areas?: PracticeArea[];
+    practiceAreas?: PracticeArea[];
+    employment_types: string[];
+}
+
 interface CreateJobAlertDialogProps {
+    filterOptions: FilterOptions;
     prefilledFilters?: {
         locationId?: string;
         practiceAreaId?: string;
@@ -36,15 +44,13 @@ interface CreateJobAlertDialogProps {
     triggerButton?: React.ReactNode;
 }
 
-export function CreateJobAlertDialog({ prefilledFilters, triggerButton }: CreateJobAlertDialogProps) {
+export function CreateJobAlertDialog({ filterOptions, prefilledFilters, triggerButton }: CreateJobAlertDialogProps) {
     const [open, setOpen] = useState(false);
-    const { props } = usePage<any>();
     
-    // Safely access filterOptions with fallbacks
-    const filterOptions = props.filterOptions || {};
-    const locations = (filterOptions.locations || []) as Location[];
-    const practiceAreas = (filterOptions.practiceAreas || filterOptions.practice_areas || []) as PracticeArea[];
-    const employmentTypes = ['full_time', 'part_time', 'contract', 'internship'];
+    // Extract filter options with fallbacks
+    const locations = filterOptions.locations || [];
+    const practiceAreas = filterOptions.practiceAreas || filterOptions.practice_areas || [];
+    const employmentTypes = filterOptions.employment_types || ['full_time', 'part_time', 'contract', 'internship'];
 
     const { data, setData, post, processing, errors, reset } = useForm({
         frequency: 'daily' as 'daily' | 'weekly',
