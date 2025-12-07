@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\JobListing;
+use App\Models\Location;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -143,7 +144,8 @@ class JobListingFactory extends Factory
         return [
             'title' => $this->faker->randomElement($jobTitles),
             'law_firm_id' => null, // Will be set in seeder
-            'location' => $this->faker->randomElement($ukLocations),
+            // 'location' => $this->faker->randomElement($ukLocations),
+            'location_id' => Location::inRandomOrder()->first()?->id,
             'workplace_type' => $this->faker->randomElement(['onsite', 'remote', 'hybrid']),
             'employment_type' => $this->faker->randomElement(['full_time', 'part_time', 'contract', 'internship']),
             'experience_level' => $this->faker->randomElement($experienceLevels),

@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             PracticeAreaSeeder::class,
             LawFirmSeeder::class,
             ReviewSeeder::class,
+            LocationSeeder::class,
             JobListingSeeder::class,
         ]);
 

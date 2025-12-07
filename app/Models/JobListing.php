@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -16,7 +17,7 @@ class JobListing extends Model
         'title',
         'slug',
         'law_firm_id',
-        'location',
+        'location_id',
         'workplace_type',
         'employment_type',
         'experience_level',
@@ -48,19 +49,19 @@ class JobListing extends Model
                 $slug = $base;
                 $i = 2;
                 while (static::withTrashed()->where('slug', $slug)->exists()) {
-                    $slug = $base.'-'.$i++;
+                    $slug = $base . '-' . $i++;
                 }
                 $job->slug = $slug;
             }
         });
     }
 
-    public function lawFirm()
+    public function lawFirm(): BelongsTo
     {
         return $this->belongsTo(LawFirm::class);
     }
 
-    public function practiceAreas()
+    public function practiceAreas(): BelongsToMany
     {
         return $this->belongsToMany(PracticeArea::class, 'job_listing_practice_areas');
     }
@@ -68,6 +69,11 @@ class JobListing extends Model
     public function postedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'posted_by');
+    }
+
+    public function location(): BelongsTo
+    {
+        return $this->belongsTo(Location::class);
     }
 
     public function scopeActive($query)
@@ -89,13 +95,13 @@ class JobListing extends Model
         $currency = $this->salary_currency === 'GBP' ? '£' : $this->salary_currency;
 
         if ($this->salary_min && $this->salary_max) {
-            return $currency.number_format($this->salary_min).' - '.$currency.number_format($this->salary_max);
+            return $currency . number_format($this->salary_min) . ' - ' . $currency . number_format($this->salary_max);
         }
 
         if ($this->salary_min) {
-            return 'From '.$currency.number_format($this->salary_min);
+            return 'From ' . $currency . number_format($this->salary_min);
         }
 
-        return 'Up to '.$currency.number_format($this->salary_max);
+        return 'Up to ' . $currency . number_format($this->salary_max);
     }
 }

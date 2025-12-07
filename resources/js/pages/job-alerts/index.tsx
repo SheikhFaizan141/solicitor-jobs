@@ -2,25 +2,38 @@ import Layout from '@/layouts/main-layout';
 import { destroy } from '@/routes/job-alerts';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import React from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Location } from '@/types/locations';
 
 type Subscription = {
     id: number;
     frequency: 'daily' | 'weekly';
     employment_types: string[] | null;
     practice_area_ids: number[] | null;
-    location: string | null;
+    location_id: number | null;
+    location: Location | null;
     is_active: boolean;
 };
 
 type PracticeArea = { id: number; name: string };
 
+interface JobAlertsPageProps {
+    subscriptions: Subscription[];
+    filterOptions: {
+        employment_types: string[];
+        practice_areas: PracticeArea[];
+        locations: Location[];
+    };
+    [key: string]: unknown;
+}
+
 export default function JobAlertsIndex() {
-    const { subscriptions = [], filterOptions } = usePage().props as any;
+    const { subscriptions = [], filterOptions } = usePage<JobAlertsPageProps>().props;
     const { data, setData, post, processing, errors, reset } = useForm({
         frequency: 'daily' as 'daily' | 'weekly',
         employment_types: [] as string[],
         practice_area_ids: [] as number[],
-        location: '',
+        location_id: null as number | null,
     });
 
     console.log(subscriptions);
@@ -30,13 +43,17 @@ export default function JobAlertsIndex() {
         e.preventDefault();
         post('/job-alerts', {
             preserveScroll: true,
-            onSuccess: () => reset('practice_area_ids', 'employment_types', 'location'),
+            onSuccess: () => reset('practice_area_ids', 'employment_types', 'location_id'),
         });
     };
 
     const toggleType = (type: string) => {
         const set = new Set(data.employment_types);
-        set.has(type) ? set.delete(type) : set.add(type);
+        if (set.has(type)) {
+            set.delete(type);
+        } else {
+            set.add(type);
+        }
         setData('employment_types', Array.from(set));
     };
 
@@ -48,6 +65,13 @@ export default function JobAlertsIndex() {
             set.add(id);
         }
         setData('practice_area_ids', Array.from(set));
+    };
+
+    const getLocationDisplay = (location: Location): string => {
+        const parts = [location.name];
+        if (location.region) parts.push(location.region);
+        if (location.is_remote) parts.push('(Remote)');
+        return parts.join(', ');
     };
 
     return (
@@ -113,14 +137,23 @@ export default function JobAlertsIndex() {
 
                     <div>
                         <label className="block text-sm font-medium">Location</label>
-                        <input
-                            type="text"
-                            value={data.location}
-                            onChange={(e) => setData('location', e.target.value)}
-                            placeholder="e.g. London"
-                            className="mt-1 w-full rounded border px-3 py-2"
-                        />
-                        {errors.location && <p className="mt-1 text-sm text-red-600">{errors.location}</p>}
+                        <Select
+                            value={data.location_id?.toString() || 'all'}
+                            onValueChange={(value) => setData('location_id', value === 'all' ? null : parseInt(value))}
+                        >
+                            <SelectTrigger className="mt-1 w-full">
+                                <SelectValue placeholder="All Locations" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Locations</SelectItem>
+                                {filterOptions.locations.map((location: Location) => (
+                                    <SelectItem key={location.id} value={location.id.toString()}>
+                                        {getLocationDisplay(location)}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        {errors.location_id && <p className="mt-1 text-sm text-red-600">{errors.location_id}</p>}
                     </div>
 
                     <button type="submit" disabled={processing} className="rounded bg-amber-600 px-4 py-2 font-medium text-white">
@@ -136,15 +169,11 @@ export default function JobAlertsIndex() {
                                 <div className="text-sm text-gray-700">
                                     <div className="font-medium capitalize">{s.frequency} digest</div>
                                     <div className="text-gray-500">
-                                        {s.location || 'Any location'} • types: {(s.employment_types || []).join(', ') || 'Any'} • areas:{' '}
+                                        {s.location ? getLocationDisplay(s.location) : 'Any location'} • types: {(s.employment_types || []).join(', ') || 'Any'} • areas:{' '}
                                         {(s.practice_area_ids || []).length || 'Any'}
                                     </div>
                                 </div>
-                                {/* <form method="post" action={`/job-alerts/${s.id}`}> */}
-
-                                    {/* <input type="hidden" name="_method" value="delete" /> */}
-                                    <button className="rounded bg-gray-100 px-3 py-1 text-sm hover:bg-gray-200" onClick={()=>  router.delete(destroy(s.id))}>Remove</button>
-                                {/* </form> */}
+                                <button className="rounded bg-gray-100 px-3 py-1 text-sm hover:bg-gray-200" onClick={()=>  router.delete(destroy(s.id))}>Remove</button>
                             </div>
                         ))}
                         {!subscriptions.length && <p className="text-sm text-gray-500">No subscriptions yet.</p>}

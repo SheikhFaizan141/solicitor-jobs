@@ -15,14 +15,50 @@ class AdminLawFirmController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Inertia::render(
-            'admin/law-firms/index',
-            [
-                'lawFirms' => LawFirm::with('contacts')->get(),
-            ]
-        );
+        $search = $request->input('search', '');
+        $sortBy = $request->input('sort_by', 'created_at');
+        $statusFilter = $request->input('status');
+
+        $query = LawFirm::query()
+            ->with('contacts')
+            ->when($search, function ($query, $search) {
+                $query->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhere('website', 'like', '%' . $search . '%');
+            })
+            ->when($statusFilter === 'active', function ($query) {
+                // Add your active condition if you have an is_active column
+                // $query->where('is_active', true);
+            })
+            ->when($statusFilter === 'inactive', function ($query) {
+                // Add your inactive condition
+                // $query->where('is_active', false);
+            });
+
+
+        // Sorting
+        switch ($sortBy) {
+            case 'name':
+                $query->orderBy('name', 'asc');
+                break;
+            case '-name':
+                $query->orderBy('name', 'desc');
+                break;
+            case 'location':
+                // Assuming you have a location column
+                $query->orderBy('location', 'asc');
+                break;
+            default:
+                $query->latest();
+        }
+
+        $lawFirms = $query->paginate(20)->withQueryString();
+
+        return Inertia::render('admin/law-firms/index', [
+            'lawFirms' => $lawFirms,
+        ]);
     }
 
     /**
@@ -45,7 +81,7 @@ class AdminLawFirmController extends Controller
             'slug' => ['nullable', 'string', 'max:255', 'unique:law_firms,slug'],
             'description' => ['nullable', 'string'],
             'website' => ['nullable', 'url', 'max:255'],
-            'logo' => ['nullable', 'image', 'max:5120'],
+            'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,svg,webp', 'max:512'], // 512KB
             'practice_areas' => ['nullable', 'array'],
             'practice_areas.*' => ['integer', 'exists:practice_areas,id'],
             'contacts' => ['nullable', 'array'],
@@ -60,7 +96,7 @@ class AdminLawFirmController extends Controller
         }
 
         if ($request->hasFile('logo')) {
-            $data['logo_path'] = $request->file('logo')->store('law_firm_logos', 'public');
+            $data['logo_path'] = $request->file('logo')->store('firm_logos', 'public');
         }
 
         $practiceAreas = $data['practice_areas'] ?? [];
@@ -87,20 +123,15 @@ class AdminLawFirmController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(LawFirm $lawFirm)
-    {
-        //
-    }
-
-    /**
      * Show the form for editing the specified resource.
      */
     public function edit(LawFirm $lawFirm)
     {
+        $lawFirm->load('contacts', 'practiceAreas');
+
         return Inertia::render('admin/law-firms/edit', [
             'lawFirm' => $lawFirm,
+            'practiceAreas' => PracticeArea::orderBy('name')->get(),
         ]);
     }
 
@@ -113,14 +144,11 @@ class AdminLawFirmController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', Rule::unique('law_firms', 'slug')->ignore($lawFirm->id)],
             'description' => ['nullable', 'string'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('law_firms', 'email')->ignore($lawFirm->id)],
-            'location' => ['required', 'string', 'max:255'],
-            'phone' => ['required', 'string', 'max:255'],
-
-            // logo upload
-            'logo' => ['nullable', 'image', 'max:5120'],
-
-            // contacts
+            'website' => ['nullable', 'url', 'max:255'],
+            'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,svg,webp', 'max:512'], // 512KB
+            'remove_logo' => ['nullable', 'boolean'], // flag to remove existing logo
+            'practice_areas' => ['nullable', 'array'],
+            'practice_areas.*' => ['integer', 'exists:practice_areas,id'],
             'contacts' => ['nullable', 'array'],
             'contacts.*.label' => ['nullable', 'string', 'max:255'],
             'contacts.*.address' => ['nullable', 'string'],
@@ -129,23 +157,35 @@ class AdminLawFirmController extends Controller
         ]);
 
         if (blank($data['slug'] ?? null)) {
-            unset($data['slug']); // preserve existing slug if field cleared
+            unset($data['slug']);
         }
 
-        // Handle logo upload and removal of previous
+        // Handle logo removal
+        if ($request->boolean('remove_logo') && $lawFirm->logo_path) {
+            Storage::disk('public')->delete($lawFirm->logo_path);
+            $data['logo_path'] = null;
+        }
+
+        // Handle new logo upload
         if ($request->hasFile('logo')) {
             if ($lawFirm->logo_path) {
                 Storage::disk('public')->delete($lawFirm->logo_path);
             }
-            $data['logo_path'] = $request->file('logo')->store('law_firm_logos', 'public');
+            $data['logo_path'] = $request->file('logo')->store('firm_logos', 'public');
         }
 
+        $practiceAreas = $data['practice_areas'] ?? [];
         $contacts = $data['contacts'] ?? [];
-        unset($data['contacts'], $data['logo']);
+        unset($data['practice_areas'], $data['contacts'], $data['logo'], $data['remove_logo']);
 
         $lawFirm->update($data);
 
-        // Replace contacts: simple strategy delete all and recreate
+        // Sync practice areas
+        if (isset($practiceAreas)) {
+            $lawFirm->practiceAreas()->sync($practiceAreas);
+        }
+
+        // Replace contacts
         if (! empty($contacts)) {
             $lawFirm->contacts()->delete();
             foreach ($contacts as $c) {

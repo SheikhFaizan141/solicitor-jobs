@@ -12,7 +12,7 @@ class JobAlertSubscription extends Model
         'frequency',
         'employment_types',
         'practice_area_ids',
-        'location',
+        'location_id',
         'is_active',
         'last_sent_at',
     ];
@@ -27,5 +27,10 @@ class JobAlertSubscription extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function location(): BelongsTo
+    {
+        return $this->belongsTo(Location::class);
     }
 }

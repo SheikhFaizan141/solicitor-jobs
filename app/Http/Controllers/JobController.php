@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\JobListing;
+use App\Models\Location;
 use App\Models\PracticeArea;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -11,7 +12,7 @@ class JobController extends Controller
 {
     public function index(Request $request)
     {
-        $filters = $request->only(['q', 'type', 'experience', 'location', 'practice_area', 'firm']);
+        $filters = $request->only(['q', 'type', 'experience', 'location_id', 'practice_area_id', 'firm']);
 
         $query = JobListing::query()
             ->active()
@@ -40,13 +41,13 @@ class JobController extends Controller
             $query->where('experience_level', $filters['experience']);
         }
 
-        if ($filters['location'] ?? null) {
-            $query->where('location', $filters['location']);
+        if ($filters['location_id'] ?? null) {
+            $query->where('location_id', $filters['location_id']);
         }
 
-        if ($filters['practice_area'] ?? null) {
+        if ($filters['practice_area_id'] ?? null) {
             $query->whereHas('practiceAreas', function ($query) use ($filters) {
-                $query->where('id', $filters['practice_area']);
+                $query->where('practice_areas.id', $filters['practice_area_id']);
             });
         }
 
@@ -54,18 +55,28 @@ class JobController extends Controller
             $query->where('law_firm_id', $filters['firm']);
         }
 
-        $jobs = $query->latest()->paginate(20);
+        // dd($filters);
+        $jobs = $query->latest()->paginate(20)->withQueryString();
 
         // Get filter options
-        $locations = JobListing::active()
-            ->published()
-            ->whereNotNull('location')
-            ->distinct()
-            ->orderBy('location')
-            ->pluck('location')
-            ->filter()
-            ->values()
-            ->toArray();
+        // $locations = JobListing::active()
+        //     ->published()
+        //     ->whereNotNull('location')
+        //     ->distinct()
+        //     ->orderBy('location')
+        //     ->pluck('location')
+        //     ->filter()
+        //     ->values()
+        //     ->toArray();
+
+        $locations = Location::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'region', 'country', 'is_remote']);
+
+        $practiceAreas = PracticeArea::orderBy('name')
+            ->get(['id', 'name']);
+
+        // dd($practiceAreas->toArray());
 
         $employmentTypes = JobListing::active()
             ->published()
@@ -90,7 +101,14 @@ class JobController extends Controller
                 'locations' => $locations,
                 'employment_types' => $employmentTypes,
                 'experience_levels' => $experienceLevels,
+                'practiceAreas' => $practiceAreas,
             ],
+            'filterOptions' => [
+                'locations' => $locations,
+                'employment_types' => $employmentTypes,
+                'practice_areas' => $practiceAreas,
+            ],
+            'appliedFilters' => $filters
         ]);
     }
 

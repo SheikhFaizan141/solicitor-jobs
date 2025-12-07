@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\JobAlertSubscription;
+use App\Models\Location;
 use App\Models\PracticeArea;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -15,11 +16,11 @@ class JobAlertSubscriptionController extends Controller
         $user = $request->user();
 
         return Inertia::render('job-alerts/index', [
-            'subscriptions' => $user->jobAlertSubscriptions()->get(),
+            'subscriptions' => $user->jobAlertSubscriptions()->with('location')->get(),
             'filterOptions' => [
                 'employment_types' => ['full_time', 'part_time', 'contract', 'internship'],
-                'practice_areas' => PracticeArea::orderBy('name')->get(),
-                'locations' => ['remote', 'onsite', 'hybrid'],
+                'practice_areas' => PracticeArea::orderBy('name')->get(['id', 'name']),
+                'locations' => Location::where('is_active', true)->orderBy('name')->get(['id', 'name', 'region', 'country', 'is_remote']),
             ]
         ]);
     }
@@ -34,7 +35,7 @@ class JobAlertSubscriptionController extends Controller
             'employment_types.*' => ['in:full_time,part_time,contract,internship'],
             'practice_area_ids' => ['nullable', 'array'],
             'practice_area_ids.*' => ['integer', 'exists:practice_areas,id'],
-            'location' => ['nullable', 'string', 'max:255']
+            'location_id' => ['nullable', 'integer', 'exists:locations,id']
         ]);
 
         // dd($data);
@@ -43,7 +44,7 @@ class JobAlertSubscriptionController extends Controller
             'frequency' => $data['frequency'],
             'employment_types' => $data['employment_types'] ?? [],
             'practice_area_ids' => $data['practice_area_ids'] ?? [],
-            'location' => $data['location'] ?? null,
+            'location_id' => $data['location_id'] ?? null,
             'is_active' => true
         ]);
 

@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import AdminLayout from '@/layouts/admin-layout';
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import React from 'react';
 
 type Contact = {
@@ -15,8 +15,11 @@ type Contact = {
 
 type PracticeArea = { id: number; name: string; parent_id: number | null };
 
-const CreateFirm = () => {
-    const { practiceAreas } = usePage().props as { practiceAreas: PracticeArea[] };
+interface CreateLawFirmProps { 
+    practiceAreas: PracticeArea[];
+}
+
+const CreateFirm = ({ practiceAreas }: CreateLawFirmProps) => {
 
     const { data, setData, post, processing, reset, errors } = useForm({
         name: '',
@@ -169,6 +172,31 @@ const CreateFirm = () => {
                         <Input id="website" name="website" type="url" value={data.website} onChange={handleChange} placeholder="Enter website URL" />
                         {errors.website && <p className="mt-1 text-sm text-red-600">{errors.website}</p>}
                     </div>
+
+                    {/* Firm Logo */}
+                    <div>
+                        <Label htmlFor="logo">Firm Logo (optional)</Label>
+                        <Input
+                            id="logo"
+                            name="logo"
+                            type="file"
+                            accept="image/jpeg,image/jpg,image/png,image/svg+xml,image/webp"
+                            onChange={handleFileChange}
+                            ref={fileInputRef}
+                        />
+                        <p className="mt-1 text-sm text-muted-foreground">Max 512KB. Accepted formats: JPG, PNG, SVG, WebP</p>
+                        {errors.logo && <p className="mt-1 text-sm text-red-600">{errors.logo}</p>}
+
+                        {logoPreview && (
+                            <div className="mt-3 flex items-center gap-3">
+                                <img src={logoPreview} alt="Logo preview" className="h-20 w-20 rounded border bg-gray-50 object-contain" />
+                                <Button type="button" variant="outline" size="sm" onClick={handleRemoveLogo}>
+                                    Remove
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+
                     {/* Contact Details */}
                     <ContactDetails
                         contacts={(data.contacts ?? []) as Contact[]}
@@ -186,21 +214,6 @@ const CreateFirm = () => {
                         {errors.practice_areas && <p className="mt-1 text-sm text-red-600">{errors.practice_areas}</p>}
                     </div>
 
-                    {/* Optional file upload */}
-                    <div>
-                        <Label htmlFor="logo">Firm Logo</Label>
-                        <Input id="logo" name="logo" type="file" accept="image/*" onChange={handleFileChange} ref={fileInputRef} />
-                        {errors.logo && <p className="mt-1 text-sm text-red-600">{errors.logo}</p>}
-
-                        {logoPreview && (
-                            <div className="mt-3 flex items-center gap-3">
-                                <img src={logoPreview} alt="Logo preview" className="h-16 w-16 rounded border object-cover" />
-                                <Button type="button" variant="secondary" onClick={handleRemoveLogo}>
-                                    Remove logo
-                                </Button>
-                            </div>
-                        )}
-                    </div>
                     <Button type="submit" disabled={processing}>
                         {processing ? 'Creating...' : 'Create Firm'}
                     </Button>

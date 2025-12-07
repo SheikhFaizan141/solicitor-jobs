@@ -1,96 +1,122 @@
-import { Firm } from '@/pages/home';
+import { Firm } from '@/pages/law-firms/index';
 import { Link } from '@inertiajs/react';
+import { Briefcase, Building2, MapPin, Star } from 'lucide-react';
 
-export function FirmCard({ firm }: { firm: Firm }) {
-    const practiceAreasCount = firm.practice_areas.length;
+interface FirmCardProps {
+    firm: Firm;
+}
+
+export function FirmCard({ firm }: FirmCardProps) {
+    const renderStars = (rating: number) => {
+        const stars = [];
+        const fullStars = Math.floor(rating);
+        const hasHalfStar = rating % 1 >= 0.5;
+
+        for (let i = 0; i < 5; i++) {
+            stars.push(
+                <Star
+                    key={i}
+                    className={`h-4 w-4 ${
+                        i < fullStars
+                            ? 'fill-amber-400 text-amber-400'
+                            : i === fullStars && hasHalfStar
+                              ? 'fill-amber-200 text-amber-400'
+                              : 'fill-gray-200 text-gray-200'
+                    }`}
+                />,
+            );
+        }
+        return stars;
+    };
+
+    const getInitials = (name: string) => {
+        return name
+            .split(' ')
+            .map((word) => word[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2);
+    };
+
+    console.log(firm);
+    
     return (
-        <div
-            key={firm.id}
-            className="cursor-pointer rounded-lg border border-gray-300 bg-white p-6 shadow-md transition-shadow duration-200 ease-in-out hover:shadow-lg"
-        >
-            {/* Header */}
-            <div className="mb-4 flex items-start gap-4">
+        <div className="group relative rounded-lg border bg-white p-6 shadow-sm transition-all hover:shadow-md">
+            <Link href={`/law-firms/${firm.slug}`} className="absolute inset-0 z-0" aria-label={`View ${firm.name} profile`} />
+
+            <div className="relative z-10 flex gap-4">
                 {/* Logo */}
-                <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-gray-300 bg-gray-100">
-                    <img
-                        src={firm.logo_url}
-                        alt={`${firm.name} logo`}
-                        className="block h-16 w-16 object-contain"
-                        onError={(e) => {
-                            // Fallback to initials if image fails to load
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                            const fallback = target.nextElementSibling as HTMLDivElement;
-                            if (fallback) fallback.style.display = 'flex';
-                        }}
-                    />
-                    {/* Fallback initials */}
-                    <div className="hidden h-16 w-16 items-center justify-center rounded-lg border-2 border-gray-300 bg-gray-800 text-xl font-semibold text-white">
-                        {firm.name
-                            .split(' ')
-                            .map((word) => word[0])
-                            .join('')
-                            .slice(0, 2)}
-                    </div>
+                <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-gray-50">
+                    {firm.logo_url ? (
+                        <img src={firm.logo_url} alt={`${firm.name} logo`} className="h-full w-full object-contain" />
+                    ) : (
+                        <span className="text-lg font-semibold text-gray-600">{getInitials(firm.name)}</span>
+                    )}
                 </div>
 
-                {/* Firm Info */}
-                <div className="min-w-0 flex-1">
-                    <h2 className="m-0 mb-1 text-xl font-medium">{firm.name}</h2>
-                    <a
-                        href={firm.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mb-2 text-sm text-amber-800 underline underline-offset-2"
-                    >
-                        Visit Website
-                    </a>
-                </div>
+                {/* Content */}
+                <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900 group-hover:text-amber-600">{firm.name}</h3>
 
-                {/* Visit Website Button */}
-                <div className="flex-shrink-0 flex flex-col items-end gap-y-5">
-                    <Link
-                        href={`/law-firms/${(firm as any).slug ?? firm.id}`}
-                        className="inline-block rounded border border-orange-700 px-4 py-2 text-sm text-orange-600 no-underline transition-all duration-200 hover:bg-orange-600 hover:text-white"
-                    >
-                        View listing
-                    </Link>
-
-                    {/* PracticeAreas */}
-                    <div className="mt-2">
-                        {practiceAreasCount > 0 ? (
-                            <span className="inline-block rounded bg-gray-200 px-2 py-1 text-xs font-semibold text-blue-800">
-                                {firm['practice_areas'][0].name}
+                    {/* Rating */}
+                    {firm.average_rating > 0 && (
+                        <div className="mt-1 flex items-center gap-2">
+                            <div className="flex gap-0.5">{renderStars(firm.average_rating)}</div>
+                            <span className="text-sm text-gray-600">
+                                {/* {firm.average_rating.toFixed(1)} ({firm.reviews_count} reviews) */}
                             </span>
-                        ) : null}
+                        </div>
+                    )}
 
-                        {practiceAreasCount > 1 ? (
-                            <span className="ml-1 inline-block rounded bg-gray-200 px-2 py-1 text-xs font-semibold text-blue-800">
-                                +{practiceAreasCount - 1}
-                            </span>
-                        ) : null}
+                    {/* Location */}
+                    {firm.location && (
+                        <div className="mt-2 flex items-center gap-1.5 text-sm text-gray-600">
+                            <MapPin className="h-4 w-4" />
+                            <span>{firm.location}</span>
+                        </div>
+                    )}
+
+                    {/* Stats */}
+                    <div className="mt-3 flex items-center gap-4 text-sm text-gray-600">
+                        {firm.practice_areas && firm.practice_areas.length > 0 && (
+                            <div className="flex items-center gap-1.5">
+                                <Building2 className="h-4 w-4" />
+                                <span>{firm.practice_areas.length} practice areas</span>
+                            </div>
+                        )}
+                        {firm.jobs_count > 0 && (
+                            <Link
+                                href={`/law-firms/${firm.slug}?tab=jobs`}
+                                className="relative z-20 flex items-center gap-1.5 transition-colors hover:text-amber-600"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <Briefcase className="h-4 w-4" />
+                                <span className="underline decoration-dotted underline-offset-2">
+                                    {firm.jobs_count} {firm.jobs_count === 1 ? 'job' : 'jobs'}
+                                </span>
+                            </Link>
+                        )}
                     </div>
-                </div>
-            </div>
 
-            {/* Details */}
-            <div className="grid grid-cols-2 gap-3">
-                {/* <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500">📍 Location:</span>
-                    <span className="text-sm font-medium">{firm.location}</span>
+                    {/* Practice Areas Tags */}
+                    {firm.practice_areas && firm.practice_areas.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                            {firm.practice_areas.slice(0, 3).map((area) => (
+                                <span
+                                    key={area.id}
+                                    className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800"
+                                >
+                                    {area.name}
+                                </span>
+                            ))}
+                            {firm.practice_areas.length > 3 && (
+                                <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
+                                    +{firm.practice_areas.length - 3} more
+                                </span>
+                            )}
+                        </div>
+                    )}
                 </div>
-                <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500">💼 Jobs:</span>
-                    <span className="text-sm font-medium">{firm.jobs} open positions</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500">📅 Established:</span>
-                    <span className="text-sm font-medium">{firm.established}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500">⭐ Rating:</span>
-                    <span className="text-sm font-medium">{firm.rating}/5.0</span>
-                </div> */}
             </div>
         </div>
     );
