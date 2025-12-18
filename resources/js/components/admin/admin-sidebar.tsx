@@ -1,6 +1,6 @@
 import { SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { Briefcase, Building2, ChevronRight, LayoutDashboard, MapPin, MessageSquare, Tags, Users } from 'lucide-react';
+import { Bell, Briefcase, Building2, ChevronRight, LayoutDashboard, MapPin, MessageSquare, Tags, Users } from 'lucide-react';
 import React, { useState } from 'react';
 
 type IconType = React.ComponentType<React.SVGProps<SVGSVGElement>>;
@@ -73,6 +73,11 @@ const AdminSidebar: React.FC = () => {
             href: '/admin/job-listings',
             icon: Briefcase,
             label: 'Job Listings',
+        },
+        {
+            href: '/admin/job-alerts',
+            icon: Bell,
+            label: 'Job Alerts',
         },
         {
             href: '/admin/reviews',

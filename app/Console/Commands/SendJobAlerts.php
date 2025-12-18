@@ -34,20 +34,18 @@ class SendJobAlerts extends Command
         if ($arg) {
             if (! in_array($arg, $frequencies)) {
                 $this->error('Invalid frequency. Allowed values are: daily, weekly.');
-
                 return self::FAILURE;
-                // TODO
             }
             $frequencies = [$arg];
         }
 
         foreach ($frequencies as $freq) {
             $since = $freq === 'daily' ? now()->subDay() : now()->subWeek();
-            
+
             JobAlertSubscription::query()
                 ->where('is_active', true)
                 ->where('frequency', $freq)
-                ->with('user')
+                ->with(['user', 'practiceAreas'])
                 ->chunkById(200, function ($subs) use ($since) {
                     foreach ($subs as $sub) {
                         $user = $sub->user;
@@ -60,9 +58,13 @@ class SendJobAlerts extends Command
                             ->active()
                             ->published()
                             ->with('lawFirm')
-                            ->when($sub->employment_types && count($sub->employment_types) > 0, fn ($q) => $q->whereIn('employment_type', $sub->employment_types)
+                            ->when(
+                                $sub->employment_types && count($sub->employment_types) > 0,
+                                fn($q) => $q->whereIn('employment_type', $sub->employment_types)
                             )
-                            ->when($sub->practice_area_ids && count($sub->practice_area_ids) > 0, fn ($q) => $q->whereHas('practiceAreas', fn ($qq) => $qq->whereIn('practice_areas.id', $sub->practice_area_ids))
+                            ->when(
+                                $sub->practice_area_ids && count($sub->practice_area_ids) > 0,
+                                fn($q) => $q->whereHas('practiceAreas', fn($qq) => $qq->whereIn('practice_areas.id', $sub->practice_area_ids))
                             )
                             // ->when($sub->location, fn ($q) => $q->where('location', $sub->location)
                             // )
@@ -74,7 +76,10 @@ class SendJobAlerts extends Command
                         if ($jobs->isNotEmpty()) {
                             // Queue the email to the user's email
                             Mail::to($user->email)->queue(new JobAlertDigestMail($sub, $jobs));
-                            $sub->forceFill(['last_sent_at' => now()])->save();
+                            $sub->forceFill([
+                                'last_sent_at' => now(),
+                                'sent_count' => $sub->sent_count + 1,
+                            ])->save();
                         }
                     }
                 });

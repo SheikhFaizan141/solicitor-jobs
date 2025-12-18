@@ -37,11 +37,8 @@ Up to £{{ number_format($job->salary_max) }}
 🏛️ {{ $job->practiceAreas->pluck('name')->join(', ') }}
 @endif
 
-@component('mail::button', ['url' => url('/jobs/'.$job->slug), 'color' => 'primary'])
-View Job Details
+@component('mail::button', ['url' => route('job-alert.click', ['alert_id' => $subscription->id, 'job_id' => $job->id]), 'color' => 'primary'])
 @endcomponent
-@endcomponent
-
 @endforeach
 
 {{-- Summary Stats --}}

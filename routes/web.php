@@ -1,12 +1,14 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminJobAlertController;
 use App\Http\Controllers\Admin\AdminJobListingController;
 use App\Http\Controllers\Admin\AdminLawFirmController;
 use App\Http\Controllers\Admin\AdminLocationController;
 use App\Http\Controllers\Admin\AdminReviewController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\JobAlertClickController;
 use App\Http\Controllers\JobAlertSubscriptionController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\LawFirmController;
@@ -21,20 +23,20 @@ Route::get('/law-firms', [LawFirmController::class, 'index'])->name('law-firms.i
 
 Route::get('/law-firms/{lawFirm:slug}', [LawFirmController::class, 'show'])->name('law-firms.show');
 
-// Review submission route for authenticated users
 Route::middleware('auth')->group(function () {
     Route::post('/law-firms/{lawFirm:slug}/reviews', [LawFirmController::class, 'storeReview'])->name('law-firms.reviews.store');
 });
 
-/* JOBS */
 Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
 
 Route::get('/jobs/{job:slug}', [JobController::class, 'show'])->name('jobs.show');
 
+Route::get('/job-alert/click', [JobAlertClickController::class, 'track'])->name('job-alert.click');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
         $user = auth()->user();
-        
+
         // Check if admin
         if ($user->role === 'admin') {
             return Inertia::render('dashboard', [
@@ -47,10 +49,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ],
             ]);
         }
-        
+
         // Regular user dashboard
         $activeAlerts = $user->jobAlertSubscriptions()->where('is_active', true);
-        
+
         return Inertia::render('dashboard', [
             'isAdmin' => false,
             'stats' => [
@@ -115,6 +117,37 @@ Route::middleware(['auth'])->group(function () {
         });
      */
 
+    Route::get('/dev/preview-job-alert', function () {
+        $user = \App\Models\User::first(); // Or create a test user
+
+        // Create or get a subscription
+        $subscription = \App\Models\JobAlertSubscription::firstOrCreate([
+            'user_id' => $user->id,
+            'frequency' => 'daily',
+        ], [
+            'employment_types' => ['full_time', 'contract'],
+            'location_id' => \App\Models\Location::first()?->id,
+            'is_active' => true,
+        ]);
+
+        // Attach practice areas if needed
+        if ($subscription->practiceAreas()->count() === 0) {
+            $subscription->practiceAreas()->attach(
+                \App\Models\PracticeArea::limit(2)->pluck('id')
+            );
+        }
+
+        // Get some test jobs
+        $jobs = \App\Models\JobListing::with(['lawFirm', 'location', 'practiceAreas'])
+            ->where('is_active', true)
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        // Return the email view (for browser preview)
+        return new \App\Mail\JobAlertDigestMail($subscription, $jobs);
+    })->middleware('auth');
+
     // Route
     Route::get('/job-alerts', [JobAlertSubscriptionController::class, 'index'])->name('job-alerts.index');
     Route::post('/job-alerts', [JobAlertSubscriptionController::class, 'store'])->name('job-alerts.store');
@@ -165,9 +198,13 @@ Route::middleware(['auth'])->group(function () {
             Route::resource('users', AdminUserController::class)
                 ->names('users')
                 ->except(['show']);
+
+            Route::resource('job-alerts', AdminJobAlertController::class)->only(['index', 'update', 'destroy']);
+            Route::post('job-alerts/bulk-destroy', [AdminJobAlertController::class, 'bulkDestroy'])->name('job-alerts.bulk-destroy');
+            Route::post('job-alerts/bulk-toggle', [AdminJobAlertController::class, 'bulkToggle'])->name('job-alerts.bulk-toggle');
         });
     });
 });
 
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
+require __DIR__ . '/settings.php';
+require __DIR__ . '/auth.php';
