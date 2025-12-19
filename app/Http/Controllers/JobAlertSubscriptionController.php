@@ -7,6 +7,7 @@ use App\Models\Location;
 use App\Models\PracticeArea;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class JobAlertSubscriptionController extends Controller
@@ -27,28 +28,27 @@ class JobAlertSubscriptionController extends Controller
 
     public function store(Request $request)
     {
-        // $this->authorize('update', $request->user());
-
         $data = $request->validate([
-            'frequency' => ['required', 'in:daily,weekly'],
+            'frequency' => ['required', Rule::in(['daily', 'weekly'])],
             'employment_types' => ['nullable', 'array'],
-            'employment_types.*' => ['in:full_time,part_time,contract,internship'],
+            'employment_types.*' => [Rule::in(['full_time', 'part_time', 'contract', 'internship'])],
             'practice_area_ids' => ['nullable', 'array'],
-            'practice_area_ids.*' => ['integer', 'exists:practice_areas,id'],
-            'location_id' => ['nullable', 'integer', 'exists:locations,id']
+            'practice_area_ids.*' => ['integer', Rule::exists('practice_areas', 'id')],
+            'location_id' => ['nullable', 'integer', Rule::exists('locations', 'id')],
         ]);
 
-        // dd($data);
-
-        $request->user()->jobAlertSubscriptions()->create([
+        $subscription = $request->user()->jobAlertSubscriptions()->create([
             'frequency' => $data['frequency'],
-            'employment_types' => $data['employment_types'] ?? [],
-            'practice_area_ids' => $data['practice_area_ids'] ?? [],
+            'employment_types' => $data['employment_types'] ?? null,
             'location_id' => $data['location_id'] ?? null,
             'is_active' => true
         ]);
 
-        return back()->with('success', 'Job alert created.');
+        if (!empty($data['practice_area_ids'])) {
+            $subscription->practiceAreas()->sync($data['practice_area_ids']);
+        }
+
+        return back()->with('success', 'Job alert created successfully!');
     }
 
     public function destroy(Request $request, JobAlertSubscription $subscription)
