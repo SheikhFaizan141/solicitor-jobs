@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -25,7 +24,6 @@ class JobAlertSubscription extends Model
 
     protected $casts = [
         'employment_types' => 'array',
-        'practice_area_ids' => 'array',
         'is_active' => 'boolean',
         'last_sent_at' => 'datetime',
         'sent_count' => 'integer',

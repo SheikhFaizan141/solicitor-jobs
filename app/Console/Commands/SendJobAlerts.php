@@ -45,10 +45,11 @@ class SendJobAlerts extends Command
             JobAlertSubscription::query()
                 ->where('is_active', true)
                 ->where('frequency', $freq)
-                ->with(['user', 'practiceAreas'])
+                ->with(['user', 'practiceAreas', 'location'])
                 ->chunkById(200, function ($subs) use ($since) {
                     foreach ($subs as $sub) {
                         $user = $sub->user;
+
                         // Respect user-level prefs (must exist, allow emails, allow job alerts)
                         if (! $user || ! $user->email_notifications || ! $user->job_alerts) {
                             continue;
@@ -63,11 +64,13 @@ class SendJobAlerts extends Command
                                 fn($q) => $q->whereIn('employment_type', $sub->employment_types)
                             )
                             ->when(
-                                $sub->practice_area_ids && count($sub->practice_area_ids) > 0,
-                                fn($q) => $q->whereHas('practiceAreas', fn($qq) => $qq->whereIn('practice_areas.id', $sub->practice_area_ids))
+                                $sub->practiceAreas->isNotEmpty(),
+                                fn($q) => $q->whereHas('practiceAreas', fn($qq) => $qq->whereIn('practice_areas.id', $sub->practiceAreas->pluck('id')))
                             )
-                            // ->when($sub->location, fn ($q) => $q->where('location', $sub->location)
-                            // )
+                            ->when(
+                                $sub->location_id,
+                                fn($q) => $q->where('location_id', $sub->location_id)
+                            )
                             ->where('published_at', '>=', $since)
                             ->latest('published_at')
                             ->limit(50)

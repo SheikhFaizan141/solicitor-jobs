@@ -73,21 +73,6 @@ class User extends Authenticatable
         return in_array($this->role, [self::ROLE_ADMIN, self::ROLE_EDITOR]);
     }
 
-    // public function jobListings(): HasMany
-    // {
-    //     return $this->hasMany(JobListing::class, 'posted_by');
-    // }
-
-    // public function canManageUsers(): bool
-    // {
-    //     return $this->isAdmin();
-    // }
-
-    // public function canCreateJobListings(): bool
-    // {
-    //     return $this->isStaff();
-    // }
-
     public function jobAlertSubscriptions(): HasMany
     {
         return $this->hasMany(JobAlertSubscription::class);

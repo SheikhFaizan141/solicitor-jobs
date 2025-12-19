@@ -1,15 +1,16 @@
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Layout from '@/layouts/main-layout';
 import { destroy } from '@/routes/job-alerts';
+import { Location } from '@/types/locations';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import React from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Location } from '@/types/locations';
 
 type Subscription = {
     id: number;
     frequency: 'daily' | 'weekly';
     employment_types: string[] | null;
-    practice_area_ids: number[] | null;
+    // practice_area_ids: number[] | null;
+    practice_areas: PracticeArea[];
     location_id: number | null;
     location: Location | null;
     is_active: boolean;
@@ -37,7 +38,6 @@ export default function JobAlertsIndex() {
     });
 
     console.log(subscriptions);
-    
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -123,11 +123,7 @@ export default function JobAlertsIndex() {
                         <div className="mt-2 grid grid-cols-2 gap-2">
                             {filterOptions.practice_areas.map((pa: PracticeArea) => (
                                 <label key={pa.id} className="inline-flex items-center gap-2">
-                                    <input
-                                        type="checkbox"
-                                        checked={data.practice_area_ids.includes(pa.id)}
-                                        onChange={() => toggleArea(pa.id)}
-                                    />
+                                    <input type="checkbox" checked={data.practice_area_ids.includes(pa.id)} onChange={() => toggleArea(pa.id)} />
                                     {pa.name}
                                 </label>
                             ))}
@@ -169,11 +165,16 @@ export default function JobAlertsIndex() {
                                 <div className="text-sm text-gray-700">
                                     <div className="font-medium capitalize">{s.frequency} digest</div>
                                     <div className="text-gray-500">
-                                        {s.location ? getLocationDisplay(s.location) : 'Any location'} • types: {(s.employment_types || []).join(', ') || 'Any'} • areas:{' '}
-                                        {(s.practice_area_ids || []).length || 'Any'}
+                                        {s.location ? getLocationDisplay(s.location) : 'Any location'} • types:{' '}
+                                        {(s.employment_types || []).join(', ') || 'Any'} • areas: {(s.practice_area_ids || []).length || 'Any'}
                                     </div>
                                 </div>
-                                <button className="rounded bg-gray-100 px-3 py-1 text-sm hover:bg-gray-200" onClick={()=>  router.delete(destroy(s.id))}>Remove</button>
+                                <button
+                                    className="rounded bg-gray-100 px-3 py-1 text-sm hover:bg-gray-200"
+                                    onClick={() => router.delete(destroy(s.id))}
+                                >
+                                    Remove
+                                </button>
                             </div>
                         ))}
                         {!subscriptions.length && <p className="text-sm text-gray-500">No subscriptions yet.</p>}

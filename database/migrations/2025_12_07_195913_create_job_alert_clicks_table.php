@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('job_alert_clicks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('job_alert_subscription_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('job_listing_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('job_alert_subscription_id')->constrained('job_alert_subscriptions')->cascadeOnDelete();
+            $table->foreignId('job_listing_id')->constrained('job_listings')->cascadeOnDelete();
             $table->string('ip_address', 45)->nullable();
             $table->text('user_agent')->nullable();
             $table->timestamp('clicked_at');

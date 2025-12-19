@@ -39,6 +39,9 @@ class JobAlertDigestMail extends Mailable implements ShouldQueue
      */
     public function content(): Content
     {
+
+        // dd( 'jobs', $this->jobs, 'subscription', $this->subscription );
+
         return new Content(
             markdown: 'emails.job_alert_digest',
             with: [
