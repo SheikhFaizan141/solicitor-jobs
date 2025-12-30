@@ -1,8 +1,8 @@
+import { RichTextEditor } from '@/components/rich-text-editor';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import React from 'react';
 
@@ -56,17 +56,7 @@ interface JobListingFormProps {
     submitLabel: string;
 }
 
-export function JobListingForm({
-    data,
-    setData,
-    errors,
-    processing,
-    firms,
-    practiceAreas,
-    locations,
-    onSubmit,
-    submitLabel,
-}: JobListingFormProps) {
+export function JobListingForm({ data, setData, errors, processing, firms, practiceAreas, locations, onSubmit, submitLabel }: JobListingFormProps) {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setData(name as keyof FormData, value);
@@ -124,7 +114,7 @@ export function JobListingForm({
         <ul className={depth === 0 ? 'space-y-1' : 'mt-1 ml-4 space-y-1'}>
             {nodes.map((node) => (
                 <li key={node.id}>
-                    <label className="flex items-center gap-2 text-sm cursor-pointer hover:text-gray-700">
+                    <label className="flex cursor-pointer items-center gap-2 text-sm hover:text-gray-700">
                         <input
                             type="checkbox"
                             className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
@@ -339,7 +329,7 @@ export function JobListingForm({
                 <div className="space-y-4">
                     <div>
                         <Label htmlFor="description">Description</Label>
-                        <Textarea
+                        {/* <Textarea
                             id="description"
                             name="description"
                             value={data.description}
@@ -347,13 +337,26 @@ export function JobListingForm({
                             rows={6}
                             placeholder="Describe the role, responsibilities, and what makes this opportunity unique..."
                             className="mt-1.5"
+                        /> */}
+
+                        <RichTextEditor
+                            value={data.description}
+                            onChange={(html) => setData('description', html)}
+                            error={errors.description}
+                            placeholder="Enter job description with formatting..."
                         />
-                        {errors.description && <p className="mt-1.5 text-sm text-red-600">{errors.description}</p>}
                     </div>
 
                     <div>
                         <Label htmlFor="closing_date">Application Deadline</Label>
-                        <Input id="closing_date" name="closing_date" type="date" value={data.closing_date} onChange={handleChange} className="mt-1.5" />
+                        <Input
+                            id="closing_date"
+                            name="closing_date"
+                            type="date"
+                            value={data.closing_date}
+                            onChange={handleChange}
+                            className="mt-1.5"
+                        />
                         <p className="mt-1.5 text-xs text-gray-500">When should applications close?</p>
                         {errors.closing_date && <p className="mt-1.5 text-sm text-red-600">{errors.closing_date}</p>}
                     </div>
