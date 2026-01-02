@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
 import React from 'react';
 
 type LawFirm = {
@@ -39,6 +40,7 @@ type FormData = {
     closing_date: string;
     is_active: boolean;
     description: string;
+    excerpt: string;
     requirements: string[];
     benefits: string[];
     practice_areas: number[];
@@ -343,8 +345,30 @@ export function JobListingForm({ data, setData, errors, processing, firms, pract
                             value={data.description}
                             onChange={(html) => setData('description', html)}
                             error={errors.description}
-                            placeholder="Enter job description with formatting..."
+                            // placeholder="Enter job description with formatting..."
                         />
+                    </div>
+
+                    <div>
+                        <Label htmlFor="excerpt">
+                            Card Summary <span className="text-xs font-normal text-gray-400">(optional)</span>
+                        </Label>
+                        <Textarea
+                            id="excerpt"
+                            name="excerpt"
+                            value={data.excerpt}
+                            onChange={handleChange}
+                            rows={3}
+                            maxLength={300}
+                            placeholder="Brief summary shown on job cards (max 300 characters)"
+                            className="mt-1.5 bg-white"
+                        />
+
+                        <div className="mt-1.5 flex justify-between text-xs text-gray-500">
+                            <span>Shown in job listings and search results</span>
+                            <span>{data.excerpt?.length || 0}/300</span>
+                        </div>
+                        {errors.excerpt && <p className="mt-1.5 text-sm text-red-600">{errors.excerpt}</p>}
                     </div>
 
                     <div>

@@ -1,6 +1,7 @@
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
+import { Placeholder } from '@tiptap/extensions';
+import { EditorContent, useEditor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
 import React, { useEffect } from 'react';
 
 interface RichTextEditorProps {
@@ -24,6 +25,10 @@ export function RichTextEditor({ value, onChange, error, placeholder }: RichText
                     class: 'text-amber-600 underline hover:text-amber-700',
                 },
             }),
+            Placeholder.configure({
+                placeholder: placeholder ?? 'Start typing...',
+                emptyEditorClass: 'is-editor-empty',
+            }),
         ],
         content: value,
         editorProps: {
@@ -44,9 +49,7 @@ export function RichTextEditor({ value, onChange, error, placeholder }: RichText
     }, [value, editor]);
 
     if (!editor) {
-        return (
-            <div className="border-input min-h-[200px] animate-pulse rounded-md border bg-gray-50" />
-        );
+        return <div className="min-h-[200px] animate-pulse rounded-md border border-input bg-gray-50" />;
     }
 
     const addLink = () => {
@@ -64,19 +67,11 @@ export function RichTextEditor({ value, onChange, error, placeholder }: RichText
         <div className="space-y-1">
             {/* Toolbar */}
             <div className="flex flex-wrap gap-1 rounded-t-md border border-b-0 border-gray-300 bg-gray-50 p-2">
-                <ToolbarButton
-                    onClick={() => editor.chain().focus().toggleBold().run()}
-                    isActive={editor.isActive('bold')}
-                    title="Bold"
-                >
+                <ToolbarButton onClick={() => editor.chain().focus().toggleBold().run()} isActive={editor.isActive('bold')} title="Bold">
                     <strong>B</strong>
                 </ToolbarButton>
 
-                <ToolbarButton
-                    onClick={() => editor.chain().focus().toggleItalic().run()}
-                    isActive={editor.isActive('italic')}
-                    title="Italic"
-                >
+                <ToolbarButton onClick={() => editor.chain().focus().toggleItalic().run()} isActive={editor.isActive('italic')} title="Italic">
                     <em>I</em>
                 </ToolbarButton>
 
@@ -118,11 +113,7 @@ export function RichTextEditor({ value, onChange, error, placeholder }: RichText
 
                 <ToolbarDivider />
 
-                <ToolbarButton
-                    onClick={addLink}
-                    isActive={editor.isActive('link')}
-                    title="Add Link"
-                >
+                <ToolbarButton onClick={addLink} isActive={editor.isActive('link')} title="Add Link">
                     🔗 Link
                 </ToolbarButton>
 
@@ -141,13 +132,6 @@ export function RichTextEditor({ value, onChange, error, placeholder }: RichText
                 }`}
             />
 
-            {/* Placeholder text when empty */}
-            {editor.isEmpty && placeholder && (
-                <p className="pointer-events-none absolute top-[52px] left-3 text-sm text-gray-400">
-                    {placeholder}
-                </p>
-            )}
-
             {/* Error message */}
             {error && <p className="text-sm text-red-600">{error}</p>}
         </div>
@@ -155,26 +139,14 @@ export function RichTextEditor({ value, onChange, error, placeholder }: RichText
 }
 
 // Toolbar Button Component
-function ToolbarButton({
-    onClick,
-    isActive,
-    title,
-    children,
-}: {
-    onClick: () => void;
-    isActive: boolean;
-    title: string;
-    children: React.ReactNode;
-}) {
+function ToolbarButton({ onClick, isActive, title, children }: { onClick: () => void; isActive: boolean; title: string; children: React.ReactNode }) {
     return (
         <button
             type="button"
             onClick={onClick}
             title={title}
             className={`rounded px-2 py-1 text-sm font-medium transition-colors ${
-                isActive
-                    ? 'bg-amber-100 text-amber-800'
-                    : 'text-gray-700 hover:bg-gray-200'
+                isActive ? 'bg-amber-100 text-amber-800' : 'text-gray-700 hover:bg-gray-200'
             }`}
         >
             {children}

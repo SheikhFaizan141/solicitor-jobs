@@ -1,3 +1,4 @@
+import { CreateJobAlertDialog } from '@/components/job-alerts/create-job-alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Layout from '@/layouts/main-layout';
 import { JobListingWithRelations } from '@/types/job-listing';
@@ -7,7 +8,6 @@ import { PaginatedResponse } from '@/types/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { X } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
-import { CreateJobAlertDialog } from '@/components/job-alerts/create-job-alert-dialog';
 
 type Job = JobListingWithRelations;
 
@@ -377,7 +377,7 @@ export default function JobsIndex({ jobs, filters, filterOptions, appliedFilters
                                             )}
 
                                             {/* Description */}
-                                            {job.description && <p className="mb-4 line-clamp-2 text-gray-600">{job.description.split('\n')[0]}</p>}
+                                            {job.excerpt && <p className="mb-4 line-clamp-2 text-gray-600">{job.excerpt}</p>}
 
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center">
@@ -419,7 +419,7 @@ export default function JobsIndex({ jobs, filters, filterOptions, appliedFilters
                                     </svg>
                                     <h3 className="mt-2 text-sm font-medium text-gray-900">No jobs found</h3>
                                     <p className="mt-1 text-sm text-gray-500">Try adjusting your search filters to find more results.</p>
-                                    
+
                                     {/* Job Alert CTA */}
                                     {hasActiveFilters && (
                                         <div className="mt-6">
