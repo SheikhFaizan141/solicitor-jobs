@@ -27,6 +27,7 @@ class JobListing extends Model
         'closing_date',
         'is_active',
         'description',
+        'excerpt',
         'requirements',
         'benefits',
         'posted_by',

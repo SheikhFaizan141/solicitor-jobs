@@ -233,7 +233,10 @@ export default function JobShow() {
                             <section>
                                 <h2 className="mb-4 text-xl font-semibold text-gray-900">Job Description</h2>
                                 <div className="prose prose-gray max-w-none">
-                                    <p className="leading-relaxed whitespace-pre-line text-gray-700">{job.description}</p>
+                                    {/* <p className="leading-relaxed whitespace-pre-line text-gray-700">{job.description}</p> */}
+                                    {job.description && (
+                                        <div className="prose prose-gray max-w-none" dangerouslySetInnerHTML={{ __html: job.description }} />
+                                    )}
                                 </div>
                             </section>
 

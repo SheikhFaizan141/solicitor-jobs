@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Stevebauman\Purify\Facades\Purify;
 
 class AdminJobListingController extends Controller
 {
@@ -83,6 +84,7 @@ class AdminJobListingController extends Controller
             'closing_date' => ['nullable', 'date'],
             'is_active' => ['boolean'],
             'description' => ['nullable', 'string'],
+            'excerpt' => ['nullable', 'string', 'max:300'],
             'requirements' => ['nullable', 'array'],
             'requirements.*' => ['string'],
             'benefits' => ['nullable', 'array'],
@@ -90,6 +92,10 @@ class AdminJobListingController extends Controller
             'practice_areas' => ['nullable', 'array'],
             'practice_areas.*' => ['integer', Rule::exists('practice_areas', 'id')],
         ]);
+
+        if (!empty($data['description'])) {
+            $data['description'] = Purify::clean($data['description']);
+        }
 
         $jobListing = JobListing::create([
             ...$data,
@@ -133,11 +139,10 @@ class AdminJobListingController extends Controller
 
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
-            'slug' => ['nullable', 'string', 'max:255', Rule::unique('job_listings')->ignore($jobListing)],
             'law_firm_id' => ['nullable', 'integer', Rule::exists('law_firms', 'id')],
             'location_id' => ['nullable', 'integer', Rule::exists('locations', 'id')],
-            'workplace_type' => ['required', 'in:onsite,remote,hybrid'],
-            'employment_type' => ['required', 'in:full_time,part_time,contract,internship'],
+            'workplace_type' => ['required', Rule::in(['onsite', 'remote', 'hybrid'])],
+            'employment_type' => ['required', Rule::in(['full_time', 'part_time', 'contract', 'internship'])],
             'experience_level' => ['nullable', 'string', 'max:255'],
             'salary_min' => ['nullable', 'integer', 'min:0'],
             'salary_max' => ['nullable', 'integer', 'gte:salary_min'],
@@ -145,6 +150,7 @@ class AdminJobListingController extends Controller
             'closing_date' => ['nullable', 'date'],
             'is_active' => ['boolean'],
             'description' => ['nullable', 'string'],
+            'excerpt' => ['nullable', 'string', 'max:300'],
             'requirements' => ['nullable', 'array'],
             'requirements.*' => ['string'],
             'benefits' => ['nullable', 'array'],
@@ -152,6 +158,10 @@ class AdminJobListingController extends Controller
             'practice_areas' => ['nullable', 'array'],
             'practice_areas.*' => ['integer', Rule::exists('practice_areas', 'id')],
         ]);
+
+        if (!empty($data['description'])) {
+            $data['description'] = Purify::clean($data['description']);
+        }
 
         $jobListing->update($data);
         $jobListing->practiceAreas()->sync($data['practice_areas'] ?? []);

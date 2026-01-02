@@ -17,6 +17,7 @@ type JobListing = {
     closing_date: string | null;
     is_active: boolean;
     description: string | null;
+    excerpt: string | null;
     requirements: string[] | null;
     benefits: string[] | null;
     practice_areas: Array<{ id: number; name: string }>;
@@ -63,6 +64,7 @@ const EditJobListing = () => {
         closing_date: job.closing_date || '',
         is_active: job.is_active,
         description: job.description || '',
+        excerpt: job.excerpt || '',
         requirements: job.requirements || [''],
         benefits: job.benefits || [''],
         practice_areas: job.practice_areas.map((pa) => pa.id),

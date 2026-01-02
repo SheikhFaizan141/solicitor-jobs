@@ -33,6 +33,7 @@ export interface JobListing {
     closing_date: string | null;
     is_active: boolean;
     description: string | null;
+    excerpt: string | null;
     requirements: string[] | null;
     benefits: string[] | null;
     posted_by: number | null;

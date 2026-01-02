@@ -43,6 +43,7 @@ const CreateJobListing = () => {
         closing_date: '',
         is_active: true,
         description: '',
+        excerpt: '',
         requirements: [''],
         benefits: [''],
         practice_areas: [] as number[],
