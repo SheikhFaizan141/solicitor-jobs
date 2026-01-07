@@ -58,7 +58,7 @@ const CreateJobListing = () => {
     };
 
     return (
-        <div className="mx-auto w-full max-w-3xl px-4 py-6">
+        <div className="mx-auto w-full max-w-6xl px-4 py-6">
             <header className="mb-8">
                 <h1 className="text-3xl font-bold text-gray-900">Create Job Listing</h1>
                 <p className="mt-2 text-base text-gray-600">Add a new job listing to the platform</p>

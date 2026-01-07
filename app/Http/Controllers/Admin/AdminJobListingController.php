@@ -109,7 +109,7 @@ class AdminJobListingController extends Controller
         $jobListing = JobListing::create([
             ...$data,
             'posted_by' => $request->user()->id,
-            'published_at' => now(),
+            'published_at' => ($data['is_active'] ?? false) ? now() : null,
         ]);
 
         $jobListing->practiceAreas()->sync($data['practice_areas'] ?? []);
@@ -171,6 +171,10 @@ class AdminJobListingController extends Controller
 
         if (!empty($data['description'])) {
             $data['description'] = Purify::clean($data['description']);
+        }
+
+        if (($data['is_active'] ?? false) && is_null($jobListing->published_at)) {
+            $data['published_at'] = now();
         }
 
         $jobListing->update($data);

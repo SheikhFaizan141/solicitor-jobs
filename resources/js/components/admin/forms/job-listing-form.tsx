@@ -1,10 +1,13 @@
 import { RichTextEditor } from '@/components/rich-text-editor';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { Plus, Trash2 } from 'lucide-react';
 import React from 'react';
 
 type LawFirm = {
@@ -59,7 +62,17 @@ interface JobListingFormProps {
     submitLabel: string;
 }
 
-export function JobListingForm({ data, setData, errors, processing, firms, practiceAreas, locations, onSubmit, submitLabel }: JobListingFormProps) {
+export function JobListingForm({
+    data,
+    setData,
+    errors,
+    processing,
+    firms,
+    practiceAreas,
+    locations,
+    onSubmit,
+    submitLabel,
+}: JobListingFormProps) {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setData(name as keyof FormData, value);
@@ -133,403 +146,365 @@ export function JobListingForm({ data, setData, errors, processing, firms, pract
     );
 
     return (
-        <form onSubmit={onSubmit} className="space-y-8">
-            {/* Basic Information */}
-            <div className="space-y-6">
-                <div>
-                    <h2 className="text-lg font-semibold text-gray-900">Basic Information</h2>
-                    <p className="mt-1 text-sm text-gray-600">Essential details about the job position</p>
-                </div>
-
-                <div className="space-y-4">
-                    <div>
-                        <Label htmlFor="title">
-                            Job Title <span className="text-red-500">*</span>
-                        </Label>
-                        <Input
-                            id="title"
-                            name="title"
-                            value={data.title}
-                            onChange={handleChange}
-                            required
-                            placeholder="e.g. Senior Corporate Lawyer"
-                            className="mt-1.5"
-                        />
-                        {errors.title && <p className="mt-1.5 text-sm text-red-600">{errors.title}</p>}
-                    </div>
-
-                    <div>
-                        <Label htmlFor="law_firm_id">Law Firm</Label>
-                        <Select
-                            value={data.law_firm_id || 'none'}
-                            onValueChange={(value) => handleSelectChange('law_firm_id', value === 'none' ? '' : value)}
-                        >
-                            <SelectTrigger className="mt-1.5">
-                                <SelectValue placeholder="Select a law firm" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="none">— No firm (Independent) —</SelectItem>
-                                {firms.map((firm) => (
-                                    <SelectItem key={firm.id} value={firm.id.toString()}>
-                                        {firm.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <p className="mt-1.5 text-xs text-gray-500">Leave empty for independent job postings</p>
-                        {errors.law_firm_id && <p className="mt-1.5 text-sm text-red-600">{errors.law_firm_id}</p>}
-                    </div>
-                </div>
-            </div>
-
-            <Separator />
-
-            {/* Location & Work Details */}
-            <div className="space-y-6">
-                <div>
-                    <h2 className="text-lg font-semibold text-gray-900">Location & Work Details</h2>
-                    <p className="mt-1 text-sm text-gray-600">Where and how the work will be performed</p>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="sm:col-span-2">
-                        <Label htmlFor="location_id">Location</Label>
-                        <Select
-                            value={data.location_id || 'none'}
-                            onValueChange={(value) => handleSelectChange('location_id', value === 'none' ? '' : value)}
-                        >
-                            <SelectTrigger className="mt-1.5">
-                                <SelectValue placeholder="Select a location" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="none">— No specific location —</SelectItem>
-                                {locations.map((location) => (
-                                    <SelectItem key={location.id} value={location.id.toString()}>
-                                        {getLocationDisplay(location)}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        {errors.location_id && <p className="mt-1.5 text-sm text-red-600">{errors.location_id}</p>}
-                    </div>
-
-                    <div>
-                        <Label htmlFor="workplace_type">
-                            Workplace Type <span className="text-red-500">*</span>
-                        </Label>
-                        <Select value={data.workplace_type} onValueChange={(value) => handleSelectChange('workplace_type', value)}>
-                            <SelectTrigger className="mt-1.5">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="onsite">On-site</SelectItem>
-                                <SelectItem value="remote">Remote</SelectItem>
-                                <SelectItem value="hybrid">Hybrid</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        {errors.workplace_type && <p className="mt-1.5 text-sm text-red-600">{errors.workplace_type}</p>}
-                    </div>
-
-                    <div>
-                        <Label htmlFor="employment_type">
-                            Employment Type <span className="text-red-500">*</span>
-                        </Label>
-                        <Select value={data.employment_type} onValueChange={(value) => handleSelectChange('employment_type', value)}>
-                            <SelectTrigger className="mt-1.5">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="full_time">Full-time</SelectItem>
-                                <SelectItem value="part_time">Part-time</SelectItem>
-                                <SelectItem value="contract">Contract</SelectItem>
-                                <SelectItem value="internship">Internship</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        {errors.employment_type && <p className="mt-1.5 text-sm text-red-600">{errors.employment_type}</p>}
-                    </div>
-
-                    <div className="sm:col-span-2">
-                        <Label htmlFor="experience_level">Experience Level</Label>
-                        <Input
-                            id="experience_level"
-                            name="experience_level"
-                            value={data.experience_level}
-                            onChange={handleChange}
-                            placeholder="e.g. 3-5 years, Junior, Senior"
-                            className="mt-1.5"
-                        />
-                        {errors.experience_level && <p className="mt-1.5 text-sm text-red-600">{errors.experience_level}</p>}
-                    </div>
-                </div>
-            </div>
-
-            <Separator />
-
-            {/* External Job Link */}
-            <div className="space-y-6">
-                <div>
-                    <h2 className="text-lg font-semibold text-gray-900">External Job Link</h2>
-                    <p className="mt-1 text-sm text-gray-600">Provide the external link where this job was posted</p>
-                </div>
-
-                <div className="space-y-4">
-                    <div>
-                        <Label htmlFor="external_link">External Link</Label>
-                        <Input
-                            id="external_link"
-                            name="external_link"
-                            value={data.external_link}
-                            onChange={handleChange}
-                            placeholder="e.g. https://example.com/jobs/123 or mailto:jobs@example.com"
-                            className="mt-1.5"
-                        />
-                        <p className="mt-1.5 text-xs text-gray-500">Enter the URL or email where candidates can apply (https:// or mailto: links)</p>
-                        {errors.external_link && <p className="mt-1.5 text-sm text-red-600">{errors.external_link}</p>}
-                    </div>
-                </div>
-            </div>
-
-            <Separator />
-
-            {/* Compensation */}
-            <div className="space-y-6">
-                <div>
-                    <h2 className="text-lg font-semibold text-gray-900">Compensation</h2>
-                    <p className="mt-1 text-sm text-gray-600">Salary range and currency</p>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-3">
-                    <div>
-                        <Label htmlFor="salary_min">Minimum Salary</Label>
-                        <Input
-                            id="salary_min"
-                            name="salary_min"
-                            type="number"
-                            value={data.salary_min}
-                            onChange={handleChange}
-                            placeholder="50000"
-                            className="mt-1.5"
-                        />
-                        {errors.salary_min && <p className="mt-1.5 text-sm text-red-600">{errors.salary_min}</p>}
-                    </div>
-
-                    <div>
-                        <Label htmlFor="salary_max">Maximum Salary</Label>
-                        <Input
-                            id="salary_max"
-                            name="salary_max"
-                            type="number"
-                            value={data.salary_max}
-                            onChange={handleChange}
-                            placeholder="80000"
-                            className="mt-1.5"
-                        />
-                        {errors.salary_max && <p className="mt-1.5 text-sm text-red-600">{errors.salary_max}</p>}
-                    </div>
-
-                    <div>
-                        <Label htmlFor="salary_currency">
-                            Currency <span className="text-red-500">*</span>
-                        </Label>
-                        <Select value={data.salary_currency} onValueChange={(value) => handleSelectChange('salary_currency', value)}>
-                            <SelectTrigger className="mt-1.5">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="GBP">GBP (£)</SelectItem>
-                                <SelectItem value="USD">USD ($)</SelectItem>
-                                <SelectItem value="EUR">EUR (€)</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        {errors.salary_currency && <p className="mt-1.5 text-sm text-red-600">{errors.salary_currency}</p>}
-                    </div>
-                </div>
-            </div>
-
-            <Separator />
-
-            {/* Job Description */}
-            <div className="space-y-6">
-                <div>
-                    <h2 className="text-lg font-semibold text-gray-900">Job Description</h2>
-                    <p className="mt-1 text-sm text-gray-600">Detailed information about the role</p>
-                </div>
-
-                <div className="space-y-4">
-                    <div>
-                        <Label htmlFor="description">Description</Label>
-                        {/* <Textarea
-                            id="description"
-                            name="description"
-                            value={data.description}
-                            onChange={handleChange}
-                            rows={6}
-                            placeholder="Describe the role, responsibilities, and what makes this opportunity unique..."
-                            className="mt-1.5"
-                        /> */}
-
-                        <RichTextEditor
-                            value={data.description}
-                            onChange={(html) => setData('description', html)}
-                            error={errors.description}
-                            // placeholder="Enter job description with formatting..."
-                        />
-                    </div>
-
-                    <div>
-                        <Label htmlFor="excerpt">
-                            Card Summary <span className="text-xs font-normal text-gray-400">(optional)</span>
-                        </Label>
-                        <Textarea
-                            id="excerpt"
-                            name="excerpt"
-                            value={data.excerpt}
-                            onChange={handleChange}
-                            rows={3}
-                            maxLength={300}
-                            placeholder="Brief summary shown on job cards (max 300 characters)"
-                            className="mt-1.5 bg-white"
-                        />
-
-                        <div className="mt-1.5 flex justify-between text-xs text-gray-500">
-                            <span>Shown in job listings and search results</span>
-                            <span>{data.excerpt?.length || 0}/300</span>
-                        </div>
-                        {errors.excerpt && <p className="mt-1.5 text-sm text-red-600">{errors.excerpt}</p>}
-                    </div>
-
-                    <div>
-                        <Label htmlFor="closing_date">Application Deadline</Label>
-                        <Input
-                            id="closing_date"
-                            name="closing_date"
-                            type="date"
-                            value={data.closing_date}
-                            onChange={handleChange}
-                            className="mt-1.5"
-                        />
-                        <p className="mt-1.5 text-xs text-gray-500">When should applications close?</p>
-                        {errors.closing_date && <p className="mt-1.5 text-sm text-red-600">{errors.closing_date}</p>}
-                    </div>
-                </div>
-            </div>
-
-            <Separator />
-
-            {/* Requirements */}
-            <div className="space-y-6">
-                <div className="flex items-start justify-between">
-                    <div>
-                        <h2 className="text-lg font-semibold text-gray-900">Requirements</h2>
-                        <p className="mt-1 text-sm text-gray-600">Qualifications and skills needed</p>
-                    </div>
-                    <Button type="button" variant="outline" size="sm" onClick={() => addArrayItem('requirements')}>
-                        Add Requirement
-                    </Button>
-                </div>
-
-                <div className="space-y-3">
-                    {data.requirements.map((requirement, index) => (
-                        <div key={index} className="flex gap-2">
+        <form onSubmit={onSubmit} className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            {/* Main Column */}
+            <div className="space-y-6 lg:col-span-2">
+                {/* Job Details Card */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Job Details</CardTitle>
+                        <CardDescription>Essential details about the job position.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="title">Job Title</Label>
                             <Input
-                                value={requirement}
-                                onChange={(e) => handleArrayChange('requirements', index, e.target.value)}
-                                placeholder="e.g. 3+ years experience in corporate law"
-                                className="flex-1"
+                                id="title"
+                                name="title"
+                                value={data.title}
+                                onChange={handleChange}
+                                placeholder="e.g. Senior Corporate Lawyer"
+                                required
                             />
-                            {data.requirements.length > 1 && (
-                                <Button type="button" variant="outline" size="sm" onClick={() => removeArrayItem('requirements', index)}>
-                                    Remove
-                                </Button>
-                            )}
+                            {errors.title && <p className="text-sm text-red-500">{errors.title}</p>}
                         </div>
-                    ))}
-                </div>
-                {errors.requirements && <p className="mt-1.5 text-sm text-red-600">{errors.requirements}</p>}
-            </div>
 
-            <Separator />
+                        <div className="space-y-2">
+                            <Label htmlFor="description">Full Description</Label>
+                            <RichTextEditor
+                                value={data.description}
+                                onChange={(val) => setData('description', val)}
+                                placeholder="Describe the role, responsibilities, and company culture..."
+                            />
+                            {errors.description && <p className="text-sm text-red-500">{errors.description}</p>}
+                        </div>
 
-            {/* Benefits */}
-            <div className="space-y-6">
-                <div className="flex items-start justify-between">
-                    <div>
-                        <h2 className="text-lg font-semibold text-gray-900">Benefits</h2>
-                        <p className="mt-1 text-sm text-gray-600">What's offered with this position</p>
-                    </div>
-                    <Button type="button" variant="outline" size="sm" onClick={() => addArrayItem('benefits')}>
-                        Add Benefit
-                    </Button>
-                </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="excerpt">Short Excerpt</Label>
+                            <Textarea
+                                id="excerpt"
+                                name="excerpt"
+                                value={data.excerpt}
+                                onChange={handleChange}
+                                placeholder="A brief summary for search results (optional)"
+                                className="h-20"
+                            />
+                            {errors.excerpt && <p className="text-sm text-red-500">{errors.excerpt}</p>}
+                        </div>
+                    </CardContent>
+                </Card>
 
-                <div className="space-y-3">
-                    {data.benefits.map((benefit, index) => (
-                        <div key={index} className="flex gap-2">
+                {/* Requirements & Benefits Card */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Requirements & Benefits</CardTitle>
+                        <CardDescription>List specific qualifications and perks.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        {/* Requirements */}
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <Label>Requirements</Label>
+                                <Button type="button" variant="outline" size="sm" onClick={() => addArrayItem('requirements')}>
+                                    <Plus className="h-4 w-4" />
+                                    {/* Add Requirement */}
+                                </Button>
+                            </div>
+                            <div className="space-y-2">
+                                {data.requirements.map((req, index) => (
+                                    <div key={index} className="flex gap-2">
+                                        <Input
+                                            value={req}
+                                            onChange={(e) => handleArrayChange('requirements', index, e.target.value)}
+                                            placeholder="e.g. 5+ years experience in Family Law"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => removeArrayItem('requirements', index)}
+                                        >
+                                            <Trash2 className="h-4 w-4 text-gray-500 hover:text-red-600" />
+                                        </Button>
+                                    </div>
+                                ))}
+                                {data.requirements.length === 0 && <p className="text-sm italic text-gray-400">No requirements added yet.</p>}
+                            </div>
+                        </div>
+
+                        <Separator />
+
+                        {/* Benefits */}
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <Label>Benefits</Label>
+                                <Button type="button" variant="outline" size="sm" onClick={() => addArrayItem('benefits')}>
+                                    <Plus className="h-4 w-4" />
+                                    {/* Add Benefit */}
+                                </Button>
+                            </div>
+                            <div className="space-y-2">
+                                {data.benefits.map((benefit, index) => (
+                                    <div key={index} className="flex gap-2">
+                                        <Input
+                                            value={benefit}
+                                            onChange={(e) => handleArrayChange('benefits', index, e.target.value)}
+                                            placeholder="e.g. Remote work options, Health insurance"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => removeArrayItem('benefits', index)}
+                                        >
+                                            <Trash2 className="h-4 w-4 text-gray-500 hover:text-red-600" />
+                                        </Button>
+                                    </div>
+                                ))}
+                                {data.benefits.length === 0 && <p className="text-sm italic text-gray-400">No benefits added yet.</p>}
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* External Link Card */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>External Application</CardTitle>
+                        <CardDescription>Where should candidates apply?</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-2">
+                            <Label htmlFor="external_link">External Link</Label>
                             <Input
-                                value={benefit}
-                                onChange={(e) => handleArrayChange('benefits', index, e.target.value)}
-                                placeholder="e.g. Competitive pension scheme"
-                                className="flex-1"
+                                id="external_link"
+                                name="external_link"
+                                value={data.external_link}
+                                onChange={handleChange}
+                                placeholder="https://example.com/apply or mailto:hr@firm.com"
                             />
-                            {data.benefits.length > 1 && (
-                                <Button type="button" variant="outline" size="sm" onClick={() => removeArrayItem('benefits', index)}>
-                                    Remove
-                                </Button>
-                            )}
+                            <p className="text-xs text-gray-500">Enter a URL or mailto: link.</p>
+                            {errors.external_link && <p className="text-sm text-red-500">{errors.external_link}</p>}
                         </div>
-                    ))}
-                </div>
-                {errors.benefits && <p className="mt-1.5 text-sm text-red-600">{errors.benefits}</p>}
+                    </CardContent>
+                </Card>
             </div>
 
-            <Separator />
+            {/* Sidebar Column */}
+            <div className="space-y-6 lg:col-span-1">
+                {/* Status Card */}
+                <Card className="bg-slate-50">
+                    <CardHeader>
+                        <CardTitle>Publication Status</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <Label htmlFor="is_active" className="cursor-pointer">
+                                Active Status
+                            </Label>
+                            <Badge variant={data.is_active ? 'default' : 'secondary'}>{data.is_active ? 'Published' : 'Draft'}</Badge>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <input
+                                type="checkbox"
+                                id="is_active"
+                                checked={data.is_active}
+                                onChange={(e) => setData('is_active', e.target.checked)}
+                                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            />
+                            <Label htmlFor="is_active" className="cursor-pointer font-normal">
+                                Publish this job listing
+                            </Label>
+                        </div>
 
-            {/* Practice Areas */}
-            <div className="space-y-6">
-                <div>
-                    <h2 className="text-lg font-semibold text-gray-900">Practice Areas</h2>
-                    <p className="mt-1 text-sm text-gray-600">Select relevant legal practice areas</p>
-                </div>
+                        <Separator className="my-2" />
 
-                <div className="max-h-80 overflow-y-auto rounded-lg border border-gray-200 bg-gray-50 p-4">
-                    {tree.length ? renderTree(tree) : <p className="text-sm text-gray-500">No practice areas available.</p>}
-                </div>
-                {errors.practice_areas && <p className="mt-1.5 text-sm text-red-600">{errors.practice_areas}</p>}
-            </div>
+                        <Button type="submit" className="w-full" disabled={processing}>
+                            {processing ? 'Saving...' : submitLabel}
+                        </Button>
+                    </CardContent>
+                </Card>
 
-            <Separator />
+                {/* Organization Card */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Organization</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-2">
+                            <Label htmlFor="law_firm_id">Law Firm</Label>
+                            <Select
+                                value={data.law_firm_id || 'none'}
+                                onValueChange={(value) => handleSelectChange('law_firm_id', value === 'none' ? '' : value)}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select firm" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">— Independent —</SelectItem>
+                                    {firms.map((firm) => (
+                                        <SelectItem key={firm.id} value={firm.id.toString()}>
+                                            {firm.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {errors.law_firm_id && <p className="text-sm text-red-500">{errors.law_firm_id}</p>}
+                        </div>
+                    </CardContent>
+                </Card>
 
-            {/* Status */}
-            <div className="space-y-6">
-                <div>
-                    <h2 className="text-lg font-semibold text-gray-900">Publication Status</h2>
-                    <p className="mt-1 text-sm text-gray-600">Control job listing visibility</p>
-                </div>
+                {/* Location & Type Card */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Location & Type</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="location_id">Location</Label>
+                            <Select
+                                value={data.location_id || 'none'}
+                                onValueChange={(value) => handleSelectChange('location_id', value === 'none' ? '' : value)}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select location" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">— Any —</SelectItem>
+                                    {locations.map((loc) => (
+                                        <SelectItem key={loc.id} value={loc.id.toString()}>
+                                            {getLocationDisplay(loc)}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {errors.location_id && <p className="text-sm text-red-500">{errors.location_id}</p>}
+                        </div>
 
-                <div className="flex items-start space-x-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
-                    <input
-                        id="is_active"
-                        type="checkbox"
-                        checked={data.is_active}
-                        onChange={(e) => setData('is_active', e.target.checked)}
-                        className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <div className="flex-1">
-                        <Label htmlFor="is_active" className="cursor-pointer font-medium">
-                            Active
-                        </Label>
-                        <p className="text-sm text-gray-600">Job is visible and accepting applications</p>
-                    </div>
-                </div>
-                {errors.is_active && <p className="mt-1.5 text-sm text-red-600">{errors.is_active}</p>}
-            </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="workplace_type">Workplace</Label>
+                            <Select value={data.workplace_type} onValueChange={(value) => handleSelectChange('workplace_type', value)}>
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="onsite">On-site</SelectItem>
+                                    <SelectItem value="remote">Remote</SelectItem>
+                                    <SelectItem value="hybrid">Hybrid</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            {errors.workplace_type && <p className="text-sm text-red-500">{errors.workplace_type}</p>}
+                        </div>
 
-            {/* Submit */}
-            <div className="flex items-center gap-4 pt-4">
-                <Button type="submit" disabled={processing} size="lg">
-                    {processing ? 'Saving...' : submitLabel}
-                </Button>
-                <p className="text-sm text-gray-500">All required fields are marked with *</p>
+                        <div className="space-y-2">
+                            <Label htmlFor="employment_type">Employment</Label>
+                            <Select value={data.employment_type} onValueChange={(value) => handleSelectChange('employment_type', value)}>
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="full_time">Full-time</SelectItem>
+                                    <SelectItem value="part_time">Part-time</SelectItem>
+                                    <SelectItem value="contract">Contract</SelectItem>
+                                    <SelectItem value="internship">Internship</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            {errors.employment_type && <p className="text-sm text-red-500">{errors.employment_type}</p>}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="experience_level">Experience</Label>
+                            <Input
+                                id="experience_level"
+                                name="experience_level"
+                                value={data.experience_level}
+                                onChange={handleChange}
+                                placeholder="e.g. 3-5 years"
+                            />
+                            {errors.experience_level && <p className="text-sm text-red-500">{errors.experience_level}</p>}
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Compensation Card */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Compensation</CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-2 gap-4">
+                        <div className="col-span-2 space-y-2">
+                            <Label htmlFor="salary_currency">Currency</Label>
+                            <Select value={data.salary_currency} onValueChange={(value) => handleSelectChange('salary_currency', value)}>
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="GBP">GBP (£)</SelectItem>
+                                    <SelectItem value="USD">USD ($)</SelectItem>
+                                    <SelectItem value="EUR">EUR (€)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="salary_min">Min</Label>
+                            <Input
+                                id="salary_min"
+                                name="salary_min"
+                                type="number"
+                                value={data.salary_min}
+                                onChange={handleChange}
+                                placeholder="0"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="salary_max">Max</Label>
+                            <Input
+                                id="salary_max"
+                                name="salary_max"
+                                type="number"
+                                value={data.salary_max}
+                                onChange={handleChange}
+                                placeholder="0"
+                            />
+                        </div>
+                        {(errors.salary_min || errors.salary_max) && (
+                            <p className="col-span-2 text-sm text-red-500">Check salary values</p>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* Dates Card */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Dates</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-2">
+                            <Label htmlFor="closing_date">Closing Date</Label>
+                            <Input
+                                id="closing_date"
+                                name="closing_date"
+                                type="date"
+                                value={data.closing_date}
+                                onChange={handleChange}
+                            />
+                            {errors.closing_date && <p className="text-sm text-red-500">{errors.closing_date}</p>}
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Practice Areas Card */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Practice Areas</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="max-h-80 overflow-y-auto rounded-md border p-2">
+                            {renderTree(tree)}
+                            {practiceAreas.length === 0 && <p className="p-2 text-sm text-gray-500">No practice areas available.</p>}
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         </form>
     );
