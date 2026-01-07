@@ -14,7 +14,6 @@ const JobAdminIndex: React.FC<JobAdminProps> & { layout?: (page: React.ReactNode
     const { delete: destroy, processing } = useForm();
 
     console.log(can);
-    
 
     const [search, setSearch] = useState('');
     const [sortBy, setSortBy] = useState('created_at');
@@ -134,13 +133,16 @@ const JobAdminIndex: React.FC<JobAdminProps> & { layout?: (page: React.ReactNode
                             {jobs.data.map((job) => (
                                 <tr key={job.id} className="transition-colors hover:bg-gray-50">
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div>
-                                            <div className="text-sm font-medium text-gray-900">{job.title}</div>
-                                            <div className="text-sm text-gray-500">
-                                                {job.published_at ? new Date(job.published_at).toLocaleDateString() : 'Draft'}
+                                        <Link href={`/admin/job-listings/${job.id}`} className="hover:underline">
+                                            <div>
+                                                <div className="text-sm font-medium text-blue-600 hover:text-blue-700">{job.title}</div>
+                                                <div className="text-sm text-gray-500">
+                                                    {job.published_at ? new Date(job.published_at).toLocaleDateString() : 'Draft'}
+                                                </div>
                                             </div>
-                                        </div>
+                                        </Link>
                                     </td>
+
                                     <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
                                         {job.law_firm?.name || <span className="text-gray-400 italic">Independent</span>}
                                     </td>

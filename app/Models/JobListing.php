@@ -28,6 +28,7 @@ class JobListing extends Model
         'is_active',
         'description',
         'excerpt',
+        'external_link',
         'requirements',
         'benefits',
         'posted_by',

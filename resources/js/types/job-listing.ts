@@ -34,6 +34,7 @@ export interface JobListing {
     is_active: boolean;
     description: string | null;
     excerpt: string | null;
+    external_link: string | null;
     requirements: string[] | null;
     benefits: string[] | null;
     posted_by: number | null;

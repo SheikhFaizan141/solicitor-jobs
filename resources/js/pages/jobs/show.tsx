@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button';
 import Layout from '@/layouts/main-layout';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
@@ -39,8 +40,13 @@ export default function JobShow() {
     };
 
     const handleApplyClick = () => {
-        if (job.application_url) {
-            window.open(job.application_url, '_blank', 'noopener,noreferrer');
+        const link = job.external_link || job.application_url;
+        if (link) {
+            if (link.startsWith('mailto:')) {
+                window.location.href = link;
+            } else {
+                window.open(link, '_blank', 'noopener,noreferrer');
+            }
         }
     };
 
@@ -182,10 +188,11 @@ export default function JobShow() {
                             {/* Apply Button */}
                             <div className="ml-6 flex-shrink-0">
                                 {job.is_active ? (
-                                    job.application_url ? (
-                                        <button
+                                    job.external_link || job.application_url ? (
+                                        <Button
                                             onClick={handleApplyClick}
-                                            className="inline-flex items-center rounded-md bg-amber-600 px-8 py-3 text-base font-medium text-white shadow-sm transition-colors hover:bg-amber-700 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:outline-none"
+                                            variant="default"
+                                            className="bg-amber-600 hover:bg-amber-700 focus:ring-amber-500"
                                         >
                                             Apply Now
                                             <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -196,7 +203,7 @@ export default function JobShow() {
                                                     d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
                                                 />
                                             </svg>
-                                        </button>
+                                        </Button>
                                     ) : (
                                         <div className="text-center">
                                             <div className="mb-2 text-sm text-gray-600">Contact employer directly</div>
@@ -232,10 +239,10 @@ export default function JobShow() {
                             {/* Job Description */}
                             <section>
                                 <h2 className="mb-4 text-xl font-semibold text-gray-900">Job Description</h2>
-                                <div className="prose prose-gray max-w-none">
+                                <div className="prose max-w-none prose-gray">
                                     {/* <p className="leading-relaxed whitespace-pre-line text-gray-700">{job.description}</p> */}
                                     {job.description && (
-                                        <div className="prose prose-gray max-w-none" dangerouslySetInnerHTML={{ __html: job.description }} />
+                                        <div className="prose max-w-none prose-gray" dangerouslySetInnerHTML={{ __html: job.description }} />
                                     )}
                                 </div>
                             </section>

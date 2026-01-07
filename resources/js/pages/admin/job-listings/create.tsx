@@ -44,6 +44,7 @@ const CreateJobListing = () => {
         is_active: true,
         description: '',
         excerpt: '',
+        external_link: '',
         requirements: [''],
         benefits: [''],
         practice_areas: [] as number[],

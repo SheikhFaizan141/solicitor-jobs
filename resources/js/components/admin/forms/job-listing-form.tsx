@@ -41,6 +41,7 @@ type FormData = {
     is_active: boolean;
     description: string;
     excerpt: string;
+    external_link: string;
     requirements: string[];
     benefits: string[];
     practice_areas: number[];
@@ -258,6 +259,32 @@ export function JobListingForm({ data, setData, errors, processing, firms, pract
                             className="mt-1.5"
                         />
                         {errors.experience_level && <p className="mt-1.5 text-sm text-red-600">{errors.experience_level}</p>}
+                    </div>
+                </div>
+            </div>
+
+            <Separator />
+
+            {/* External Job Link */}
+            <div className="space-y-6">
+                <div>
+                    <h2 className="text-lg font-semibold text-gray-900">External Job Link</h2>
+                    <p className="mt-1 text-sm text-gray-600">Provide the external link where this job was posted</p>
+                </div>
+
+                <div className="space-y-4">
+                    <div>
+                        <Label htmlFor="external_link">External Link</Label>
+                        <Input
+                            id="external_link"
+                            name="external_link"
+                            value={data.external_link}
+                            onChange={handleChange}
+                            placeholder="e.g. https://example.com/jobs/123 or mailto:jobs@example.com"
+                            className="mt-1.5"
+                        />
+                        <p className="mt-1.5 text-xs text-gray-500">Enter the URL or email where candidates can apply (https:// or mailto: links)</p>
+                        {errors.external_link && <p className="mt-1.5 text-sm text-red-600">{errors.external_link}</p>}
                     </div>
                 </div>
             </div>

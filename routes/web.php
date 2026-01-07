@@ -172,8 +172,8 @@ Route::middleware(['auth'])->group(function () {
 
             // Job Listings
             Route::resource('job-listings', AdminJobListingController::class)
-                ->names('job-listings')
-                ->except(['show']);
+                ->names('job-listings');
+                // ->except(['show']);
 
             // Locations
             Route::resource('locations', AdminLocationController::class)

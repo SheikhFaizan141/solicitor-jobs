@@ -49,6 +49,14 @@ class AdminJobListingController extends Controller
         ]);
     }
 
+
+    public function show(JobListing $jobListing)
+    {
+        return Inertia::render('admin/job-listings/show', [
+            'job' => $jobListing->load(['lawFirm', 'location', 'practiceAreas']),
+        ]);
+    }
+
     /**
      * Show the form for creating a new resource.
      */
@@ -85,6 +93,7 @@ class AdminJobListingController extends Controller
             'is_active' => ['boolean'],
             'description' => ['nullable', 'string'],
             'excerpt' => ['nullable', 'string', 'max:300'],
+            'external_link' => ['nullable', 'string', 'url', 'max:2048'],
             'requirements' => ['nullable', 'array'],
             'requirements.*' => ['string'],
             'benefits' => ['nullable', 'array'],
@@ -151,6 +160,7 @@ class AdminJobListingController extends Controller
             'is_active' => ['boolean'],
             'description' => ['nullable', 'string'],
             'excerpt' => ['nullable', 'string', 'max:300'],
+            'external_link' => ['nullable', 'string', 'url', 'max:2048'],
             'requirements' => ['nullable', 'array'],
             'requirements.*' => ['string'],
             'benefits' => ['nullable', 'array'],
