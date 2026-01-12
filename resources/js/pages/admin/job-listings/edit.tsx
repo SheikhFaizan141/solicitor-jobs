@@ -1,6 +1,7 @@
 import { JobListingForm } from '@/components/admin/forms/job-listing-form';
 import AdminLayout from '@/layouts/admin-layout';
 import { LawFirm } from '@/types/law-firms';
+import { Location } from '@/types/locations';
 import { useForm } from '@inertiajs/react';
 import React from 'react';
 
@@ -32,13 +33,13 @@ type PracticeArea = {
     children?: PracticeArea[];
 };
 
-type Location = {
-    id: number;
-    name: string;
-    region: string | null;
-    country: string;
-    is_remote: boolean;
-};
+// type Location = {
+//     id: number;
+//     name: string;
+//     region: string | null;
+//     country: string;
+//     is_remote: boolean;
+// };
 
 interface EditJobListingProps {
     job: JobListing;
