@@ -7,28 +7,11 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { LawFirm } from '@/types/law-firms';
+import { Location } from '@/types/locations';
+import { PracticeArea } from '@/types/practice-area';
 import { Plus, Trash2 } from 'lucide-react';
 import React from 'react';
-
-type LawFirm = {
-    id: number;
-    name: string;
-};
-
-type PracticeArea = {
-    id: number;
-    name: string;
-    parent_id: number | null;
-    children?: PracticeArea[];
-};
-
-type Location = {
-    id: number;
-    name: string;
-    region: string | null;
-    country: string;
-    is_remote: boolean;
-};
 
 type FormData = {
     title: string;

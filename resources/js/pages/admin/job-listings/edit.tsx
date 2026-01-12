@@ -1,6 +1,7 @@
 import { JobListingForm } from '@/components/admin/forms/job-listing-form';
 import AdminLayout from '@/layouts/admin-layout';
-import { useForm, usePage } from '@inertiajs/react';
+import { LawFirm } from '@/types/law-firms';
+import { useForm } from '@inertiajs/react';
 import React from 'react';
 
 type JobListing = {
@@ -18,14 +19,10 @@ type JobListing = {
     is_active: boolean;
     description: string | null;
     excerpt: string | null;
+    external_link: string | null;
     requirements: string[] | null;
     benefits: string[] | null;
     practice_areas: Array<{ id: number; name: string }>;
-};
-
-type LawFirm = {
-    id: number;
-    name: string;
 };
 
 type PracticeArea = {
@@ -43,14 +40,14 @@ type Location = {
     is_remote: boolean;
 };
 
-const EditJobListing = () => {
-    const { job, firms, practiceAreas, locations } = usePage().props as {
-        job: JobListing;
-        firms: LawFirm[];
-        practiceAreas: PracticeArea[];
-        locations: Location[];
-    };
+interface EditJobListingProps {
+    job: JobListing;
+    firms: LawFirm[];
+    practiceAreas: PracticeArea[];
+    locations: Location[];
+}
 
+const EditJobListing = ({ job, firms, practiceAreas, locations }: EditJobListingProps) => {
     const { data, setData, put, processing, errors } = useForm({
         title: job.title,
         law_firm_id: job.law_firm_id?.toString() || '',
@@ -65,6 +62,7 @@ const EditJobListing = () => {
         is_active: job.is_active,
         description: job.description || '',
         excerpt: job.excerpt || '',
+        external_link: job.external_link || '',
         requirements: job.requirements || [''],
         benefits: job.benefits || [''],
         practice_areas: job.practice_areas.map((pa) => pa.id),

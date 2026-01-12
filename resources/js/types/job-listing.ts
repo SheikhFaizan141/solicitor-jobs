@@ -51,3 +51,23 @@ export interface JobListingWithRelations extends JobListing {
     location: Location;
     practice_areas: PracticeArea[];
 }
+
+export interface JobListingFormData {
+    title: string;
+    law_firm_id: string;
+    location_id: string;
+    workplace_type: WorkplaceType;
+    employment_type: EmploymentType;
+    experience_level: string;
+    salary_min: string;
+    salary_max: string;
+    salary_currency: 'GBP' | 'USD' | 'EUR';
+    closing_date: string;
+    is_active: boolean;
+    description: string;
+    excerpt: string;
+    external_link: string;
+    requirements: string[];
+    benefits: string[];
+    practice_areas: number[];
+}

@@ -10,3 +10,11 @@ export interface Location {
     created_at: string;
     updated_at: string;
 }
+
+// type Location = {
+//     id: number;
+//     name: string;
+//     region: string | null;
+//     country: string;
+//     is_remote: boolean;
+// };

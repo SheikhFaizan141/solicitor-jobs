@@ -1,12 +1,13 @@
 import { JobListingForm } from '@/components/admin/forms/job-listing-form';
 import AdminLayout from '@/layouts/admin-layout';
-import { useForm, usePage } from '@inertiajs/react';
+import { LawFirm } from '@/types/law-firms';
+import { useForm } from '@inertiajs/react';
 import React from 'react';
 
-type LawFirm = {
-    id: number;
-    name: string;
-};
+// type LawFirm = {
+//     id: number;
+//     name: string;
+// };
 
 type PracticeArea = {
     id: number;
@@ -23,13 +24,13 @@ type Location = {
     is_remote: boolean;
 };
 
-const CreateJobListing = () => {
-    const { firms, practiceAreas, locations } = usePage().props as {
-        firms: LawFirm[];
-        practiceAreas: PracticeArea[];
-        locations: Location[];
-    };
+interface CreateJobListingProps {
+    firms: LawFirm[];
+    practiceAreas: PracticeArea[];
+    locations: Location[];
+}
 
+const CreateJobListing = ({ firms, practiceAreas, locations }: CreateJobListingProps) => {
     const { data, setData, post, processing, errors } = useForm({
         title: '',
         law_firm_id: '',
