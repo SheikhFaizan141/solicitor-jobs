@@ -1,6 +1,7 @@
-import { PracticeArea } from '@/pages/home-old';
+// import { PracticeArea } from '@/pages/home-old';
 import { LawFirm } from './law-firms';
 import { Location } from './locations';
+import { PracticeArea } from './practice-area';
 
 export type WorkplaceType = 'onsite' | 'remote' | 'hybrid';
 export type EmploymentType = 'full_time' | 'part_time' | 'contract' | 'intership';

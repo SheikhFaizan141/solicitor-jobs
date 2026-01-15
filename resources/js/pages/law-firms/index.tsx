@@ -2,6 +2,7 @@ import { FirmCard } from '@/components/law-firms/firm-card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Layout from '@/layouts/main-layout';
+import { LawFirm } from '@/types/law-firms';
 import { PracticeArea } from '@/types/practice-area';
 import { PaginatedResponse } from '@/types/types';
 import { queryParams } from '@/wayfinder';
@@ -9,22 +10,22 @@ import { Head, router } from '@inertiajs/react';
 import { X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-export type Firm = {
-    id: number;
-    name: string;
-    slug: string;
-    website: string;
-    logo_url: string | null;
-    location: string | null;
-    description: string | null;
-    average_rating: number;
-    reviews_count: number;
-    jobs_count: number;
-    practice_areas: PracticeArea[];
-};
+// export type Firm = {
+//     id: number;
+//     name: string;
+//     slug: string;
+//     website: string;
+//     logo_url: string | null;
+//     location: string | null;
+//     description: string | null;
+//     average_rating: number;
+//     reviews_count: number;
+//     jobs_count: number;
+//     practice_areas: PracticeArea[];
+// };
 
 interface LawFirmPageProps {
-    lawFirms: PaginatedResponse<Firm>;
+    lawFirms: PaginatedResponse<LawFirm>;
     practiceAreas: PracticeArea[];
     filters: {
         search?: string;
