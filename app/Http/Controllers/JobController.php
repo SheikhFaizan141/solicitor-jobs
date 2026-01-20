@@ -55,7 +55,6 @@ class JobController extends Controller
             $query->where('law_firm_id', $filters['firm']);
         }
 
-        // dd($filters);
         $jobs = $query->latest()->paginate(20)->withQueryString();
 
         // Get filter options
@@ -75,8 +74,6 @@ class JobController extends Controller
 
         $practiceAreas = PracticeArea::orderBy('name')
             ->get(['id', 'name']);
-
-        // dd($practiceAreas->toArray());
 
         $employmentTypes = JobListing::active()
             ->published()
@@ -114,9 +111,7 @@ class JobController extends Controller
 
     public function show(JobListing $job)
     {
-        $job->load(['lawFirm', 'practiceAreas', 'postedBy']);
-
-        // var_dump($job->toArray()); exit;
+        $job->load(['lawFirm', 'practiceAreas', 'location',  'postedBy']);
 
         return Inertia::render('jobs/show', [
             'job' => $job,

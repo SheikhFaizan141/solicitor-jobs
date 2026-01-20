@@ -1,15 +1,15 @@
 import { Button } from '@/components/ui/button';
 import Layout from '@/layouts/main-layout';
 import { cn } from '@/lib/utils';
-import { type SharedData } from '@/types';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { JobListingWithRelations } from '@/types/job-listing';
+import { Head, Link } from '@inertiajs/react';
 import React from 'react';
 
-export default function JobShow() {
-    const { auth, job } = usePage<SharedData>().props;
+interface JobShowProps {
+    job: JobListingWithRelations;
+}
 
-    console.log(job);
-
+export default function JobShow({ job }: JobShowProps) {
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-US', {
             year: 'numeric',
@@ -39,8 +39,14 @@ export default function JobShow() {
         }
     };
 
+    const EmploymentTypeMap: Record<string, string> = {
+        full_time: 'Full-time',
+        part_time: 'Part-time',
+        contract: 'Contract',
+    };
+
     const handleApplyClick = () => {
-        const link = job.external_link || job.application_url;
+        const link = job.external_link;
         if (link) {
             if (link.startsWith('mailto:')) {
                 window.location.href = link;
@@ -57,7 +63,7 @@ export default function JobShow() {
             <div className="min-h-screen bg-gray-50 pb-16">
                 {/* Header */}
                 <div className="border-b bg-white">
-                    <div className="mx-auto max-w-5xl px-6 py-6">
+                    <div className="mx-auto max-w-7xl px-6 py-6">
                         <Link href="/jobs" className="mb-6 inline-flex items-center text-sm text-gray-600 hover:text-gray-900">
                             <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -114,7 +120,7 @@ export default function JobShow() {
                                                     d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                                                 />
                                             </svg>
-                                            {job.location}
+                                            <span className=''>{job.location?.name}</span>
                                         </div>
                                     )}
 
@@ -134,9 +140,9 @@ export default function JobShow() {
                                         <div className="flex items-center">
                                             <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    stroke-width="2"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
                                                     d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
                                                 ></path>
                                             </svg>
@@ -147,13 +153,12 @@ export default function JobShow() {
                                     <span
                                         className={cn(
                                             'inline-flex items-center rounded-full px-3 py-1 text-xs font-medium',
-                                            job.type === 'Full-time' && 'bg-green-100 text-green-800',
-                                            job.type === 'Part-time' && 'bg-blue-100 text-blue-800',
-                                            job.type === 'Contract' && 'bg-yellow-100 text-yellow-800',
-                                            job.type === 'Internship' && 'bg-purple-100 text-purple-800',
+                                            job.employment_type === 'full_time' && 'bg-green-100 text-green-800',
+                                            job.employment_type === 'part_time' && 'bg-blue-100 text-blue-800',
+                                            job.employment_type === 'contract' && 'bg-yellow-100 text-yellow-800',
                                         )}
                                     >
-                                        {job.type}
+                                        {EmploymentTypeMap[job.employment_type]}
                                     </span>
 
                                     {!job.is_active && (
@@ -181,14 +186,14 @@ export default function JobShow() {
                                 <div className="flex items-center gap-6 text-sm text-gray-500">
                                     <span>Posted {formatDate(job.created_at)}</span>
                                     {job.closing_date && <span>Closes {formatDate(job.closing_date)}</span>}
-                                    {job.applications && <span>{job.applications} applications</span>}
+                                    {/* {job.applications && <span>{job.applications} applications</span>} */}
                                 </div>
                             </div>
 
                             {/* Apply Button */}
                             <div className="ml-6 flex-shrink-0">
                                 {job.is_active ? (
-                                    job.external_link || job.application_url ? (
+                                    job.external_link ? (
                                         <Button
                                             onClick={handleApplyClick}
                                             variant="default"
@@ -232,7 +237,7 @@ export default function JobShow() {
                 </div>
 
                 {/* Content */}
-                <div className="mx-auto max-w-5xl px-6 py-8">
+                <div className="mx-auto max-w-7xl px-6 py-8">
                     <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                         {/* Main Content */}
                         <div className="space-y-8 lg:col-span-2">
@@ -296,35 +301,19 @@ export default function JobShow() {
                             {job.is_active && (
                                 <div className="rounded-lg border bg-white p-6">
                                     <h3 className="mb-4 text-lg font-semibold text-gray-900">Ready to Apply?</h3>
-                                    {job.application_url ? (
-                                        <button
-                                            onClick={handleApplyClick}
-                                            className="inline-flex w-full items-center justify-center rounded-md bg-amber-600 px-6 py-3 text-base font-medium text-white shadow-sm transition-colors hover:bg-amber-700 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:outline-none"
-                                        >
-                                            Apply Now
-                                            <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                                                />
-                                            </svg>
-                                        </button>
-                                    ) : (
-                                        <div>
-                                            <p className="mb-4 text-sm text-gray-600">Contact the employer directly to apply for this position.</p>
-                                            {job.law_firm?.website && (
-                                                <Link
-                                                    href={job.law_firm.website}
-                                                    target="_blank"
-                                                    className="inline-flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-3 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-amber-500 focus:outline-none"
-                                                >
-                                                    Visit Website
-                                                </Link>
-                                            )}
-                                        </div>
-                                    )}
+
+                                    <div>
+                                        <p className="mb-4 text-sm text-gray-600">Contact the employer directly to apply for this position.</p>
+                                        {job.external_link && (
+                                            <a
+                                                href={job.external_link}
+                                                target="_blank"
+                                                className="inline-flex w-full items-center justify-center rounded-md border border-gray-300 bg-[#4db2ec] px-6 py-3 text-base font-medium text-white hover:bg-[#3a8bd1] focus:ring-2 focus:ring-[#3a8bd1] focus:outline-none"
+                                            >
+                                                Apply Now
+                                            </a>
+                                        )}
+                                    </div>
                                 </div>
                             )}
 
@@ -335,12 +324,12 @@ export default function JobShow() {
                                     {job.location && (
                                         <div>
                                             <dt className="text-sm font-medium text-gray-500">Location</dt>
-                                            <dd className="text-sm text-gray-900">{job.location}</dd>
+                                            <dd className="text-sm text-gray-900">{job.location?.name}</dd>
                                         </div>
                                     )}
                                     <div>
                                         <dt className="text-sm font-medium text-gray-500">Job Type</dt>
-                                        <dd className="text-sm text-gray-900">{job.type}</dd>
+                                        <dd className="text-sm text-gray-900">{job.workplace_type}</dd>
                                     </div>
                                     {job.experience_level && (
                                         <div>
