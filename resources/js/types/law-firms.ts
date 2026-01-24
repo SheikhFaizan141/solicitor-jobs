@@ -16,6 +16,8 @@ export interface LawFirm {
     // reviews_count: number;
     jobs_count: number;
 
+    contacts?: Contact[];
+
     locations?: Location[];
     practice_areas?: PracticeArea[];
 

@@ -1,6 +1,5 @@
 import { PracticeAreaTreeNode } from '@/types/practice-area';
 
-
 interface PracticeAreaProps {
     nodes: PracticeAreaTreeNode[];
     selected: number[];
@@ -9,9 +8,6 @@ interface PracticeAreaProps {
 }
 
 export default function PracticeAreaTree({ nodes, selected, onToggle, depth = 0 }: PracticeAreaProps) {
-
-    console.log(nodes);
-    
     return (
         <ul className={depth === 0 ? 'space-y-1' : 'mt-1 ml-4 space-y-1'}>
             {nodes.map((node) => (
