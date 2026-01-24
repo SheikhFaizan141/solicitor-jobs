@@ -5,25 +5,12 @@ import { Location } from '@/types/locations';
 import { useForm } from '@inertiajs/react';
 import React from 'react';
 
-// type LawFirm = {
-//     id: number;
-//     name: string;
-// };
-
 type PracticeArea = {
     id: number;
     name: string;
     parent_id: number | null;
     children?: PracticeArea[];
 };
-
-// type Location = {
-//     id: number;
-//     name: string;
-//     region: string | null;
-//     country: string;
-//     is_remote: boolean;
-// };
 
 interface CreateJobListingProps {
     firms: LawFirm[];

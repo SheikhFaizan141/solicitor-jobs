@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Stevebauman\Purify\Facades\Purify;
 
 class AdminLawFirmController extends Controller
 {
@@ -91,6 +92,11 @@ class AdminLawFirmController extends Controller
             'contacts.*.phone' => ['nullable', 'string', 'max:255'],
         ]);
 
+        // Sanitize HTML description
+        if (!empty($data['description'])) {
+            $data['description'] = Purify::clean($data['description']);
+        }
+
         if (blank($data['slug'] ?? null)) {
             unset($data['slug']);
         }
@@ -156,6 +162,10 @@ class AdminLawFirmController extends Controller
             'contacts.*.phone' => ['nullable', 'string', 'max:255'],
         ]);
 
+        // Sanitize HTML description
+        if (!empty($data['description'])) {
+            $data['description'] = Purify::clean($data['description']);
+        }
         if (blank($data['slug'] ?? null)) {
             unset($data['slug']);
         }

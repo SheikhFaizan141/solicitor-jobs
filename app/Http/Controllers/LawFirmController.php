@@ -28,7 +28,7 @@ class LawFirmController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%");
-                    // ->orWhere('location', 'like', "%{$search}%");
+                // ->orWhere('location', 'like', "%{$search}%");
             });
         }
 
@@ -69,7 +69,7 @@ class LawFirmController extends Controller
             ],
         ]);
     }
-    
+
     /**
      * Display the specified resource.
      */
