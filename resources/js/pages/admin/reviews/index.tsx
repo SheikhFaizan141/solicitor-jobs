@@ -1,37 +1,20 @@
+import ReviewFilters from '@/components/admin/reviews/review-filters';
+import ReviewStats from '@/components/admin/reviews/review-stats';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AdminLayout from '@/layouts/admin-layout';
 import { bulk, forceDelete, index, restore, spam, trash } from '@/routes/admin/reviews';
 import { mark } from '@/routes/admin/reviews/spam';
 import { move } from '@/routes/admin/reviews/trash';
-import { User } from '@/types';
 import { LawFirm } from '@/types/law-firms';
+import { Review, ReviewStatus } from '@/types/review';
 import { PaginatedResponse } from '@/types/types';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import React, { useState } from 'react';
-// import { router } from '@inertiajs/react';
-
-type ReviewStatus = 'active' | 'spam' | 'trashed';
-
-interface Review {
-    id: number;
-    rating: number;
-    comment: string | null;
-    status: ReviewStatus;
-    created_at: string;
-    user: User;
-    law_firm: {
-        id: number;
-        name: string;
-    };
-}
 
 interface ReviewsIndexProps {
     reviews: PaginatedResponse<Review>;
@@ -53,18 +36,11 @@ interface ReviewsIndexProps {
 }
 
 export default function ReviewsIndex({ reviews, activeTab, filters, lawFirms, stats }: ReviewsIndexProps) {
+    console.log(reviews);
+
     const [selectedReviews, setSelectedReviews] = useState<number[]>([]);
     const [bulkProcessing, setBulkProcessing] = useState(false);
     const [showFilters, setShowFilters] = useState(false);
-
-    const { data, setData, get, processing } = useForm({
-        rating: filters.rating || '',
-        law_firm: filters.law_firm || '',
-        start_date: filters.start_date || '',
-        end_date: filters.end_date || '',
-        search: filters.search || '',
-        sort: filters.sort || '',
-    });
 
     const handleBulkAction = (action: string) => {
         if (selectedReviews.length === 0) return;
@@ -99,13 +75,6 @@ export default function ReviewsIndex({ reviews, activeTab, filters, lawFirms, st
         setSelectedReviews(selectedReviews.length === reviews.data.length ? [] : reviews.data.map((review) => review.id));
     };
 
-    const handleFilter = () => {
-        get(`/admin/reviews/${activeTab === 'active' ? '' : activeTab}`, {
-            preserveState: true,
-            preserveScroll: true,
-        });
-    };
-
     const getStatusBadge = (status: ReviewStatus) => {
         const variants = {
             active: 'default',
@@ -124,22 +93,10 @@ export default function ReviewsIndex({ reviews, activeTab, filters, lawFirms, st
         ));
     };
 
-    // console.log(reviews);
-
-    const clearFilters = () => {
-        setData({
-            rating: 'all',
-            law_firm: 'all',
-            start_date: '',
-            end_date: '',
-            search: '',
-            sort: '',
-        });
-
-        get(`/admin/reviews/${activeTab === 'active' ? '' : activeTab}`, {
-            preserveState: true,
-            preserveScroll: true,
-        });
+    const getPaginationInfo = () => {
+        const start = (reviews.current_page - 1) * reviews.per_page + 1;
+        const end = Math.min(reviews.current_page * reviews.per_page, reviews.total);
+        return `Showing ${start}-${end} of ${reviews.total} results`;
     };
 
     return (
@@ -149,152 +106,39 @@ export default function ReviewsIndex({ reviews, activeTab, filters, lawFirms, st
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Review Management</h1>
-                    <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
-                        {showFilters ? 'Hide Filters' : 'Show Filters'}
-                    </Button>
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium">Active Reviews</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-green-600">{stats.active}</div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium">Spam Reviews</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-red-600">{stats.spam}</div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium">Trashed Reviews</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-gray-600">{stats.trash}</div>
-                        </CardContent>
-                    </Card>
-                </div>
+                <ReviewStats active={stats.active} spam={stats.spam} trash={stats.trash} />
 
-                {/* Filters */}
-                {showFilters && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Filters</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-6">
-                                <div>
-                                    <Label htmlFor="search">Search</Label>
-                                    <Input
-                                        id="search"
-                                        value={data.search}
-                                        onChange={(e) => setData('search', e.target.value)}
-                                        placeholder="Search reviews..."
-                                    />
-                                </div>
-
-                                <div>
-                                    <Label htmlFor="rating">Rating</Label>
-                                    <Select value={data.rating} onValueChange={(value) => setData('rating', value)}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="All ratings" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">All ratings</SelectItem>
-                                            <SelectItem value="5">5 stars</SelectItem>
-                                            <SelectItem value="4">4 stars</SelectItem>
-                                            <SelectItem value="3">3 stars</SelectItem>
-                                            <SelectItem value="2">2 stars</SelectItem>
-                                            <SelectItem value="1">1 star</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                <div>
-                                    <Label htmlFor="law_firm">Law Firm</Label>
-                                    <Select value={data.law_firm} onValueChange={(value) => setData('law_firm', value)}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="All firms" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">All firms</SelectItem>
-                                            {lawFirms.map((firm) => (
-                                                <SelectItem key={firm.id} value={firm.id.toString()}>
-                                                    {firm.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                <div>
-                                    <Label htmlFor="start_date">Start Date</Label>
-                                    <Input
-                                        id="start_date"
-                                        type="date"
-                                        value={data.start_date}
-                                        onChange={(e) => setData('start_date', e.target.value)}
-                                    />
-                                </div>
-
-                                <div>
-                                    <Label htmlFor="end_date">End Date</Label>
-                                    <Input id="end_date" type="date" value={data.end_date} onChange={(e) => setData('end_date', e.target.value)} />
-                                </div>
-
-                                <div>
-                                    <Label htmlFor="sort">Sort By</Label>
-                                    <Select value={data.sort} onValueChange={(value) => setData('sort', value)}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Newest first" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="latest">Newest first</SelectItem>
-                                            <SelectItem value="oldest">Oldest first</SelectItem>
-                                            <SelectItem value="rating_high">Rating: High to Low</SelectItem>
-                                            <SelectItem value="rating_low">Rating: Low to High</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-                            <div className="mt-4 flex gap-2">
-                                <Button onClick={handleFilter} disabled={processing}>
-                                    Apply Filters
-                                </Button>
-                                <Button variant="outline" onClick={clearFilters}>
-                                    Clear
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
+                {/* Review Filters */}
+                {showFilters && <ReviewFilters filters={filters} lawFirms={lawFirms} activeTab={activeTab} />}
 
                 {/* Tabs */}
                 <Tabs value={activeTab} className="space-y-4">
-                    <TabsList>
-                        <TabsTrigger value="active" asChild>
-                            <Link href={index.get()} preserveState>
-                                Active ({stats.active})
-                            </Link>
-                        </TabsTrigger>
-                        <TabsTrigger value="spam" asChild>
-                            <Link href={spam.get()} preserveState>
-                                Spam ({stats.spam})
-                            </Link>
-                        </TabsTrigger>
-                        <TabsTrigger value="trash" asChild>
-                            <Link href={trash.get()} preserveState>
-                                Trash ({stats.trash})
-                            </Link>
-                        </TabsTrigger>
-                    </TabsList>
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        {/* Tab Navigation */}
+                        <TabsList>
+                            <TabsTrigger value="active" asChild>
+                                <Link href={index.get()} preserveState>
+                                    Active ({stats.active})
+                                </Link>
+                            </TabsTrigger>
+                            <TabsTrigger value="spam" asChild>
+                                <Link href={spam.get()} preserveState>
+                                    Spam ({stats.spam})
+                                </Link>
+                            </TabsTrigger>
+                            <TabsTrigger value="trash" asChild>
+                                <Link href={trash.get()} preserveState>
+                                    Trash ({stats.trash})
+                                </Link>
+                            </TabsTrigger>
+                        </TabsList>
+
+                        {/* Filter Toggle Button */}
+                        <ReviewFilters.Toggle isOpen={showFilters} onToggle={() => setShowFilters(!showFilters)} />
+                    </div>
 
                     <TabsContent value={activeTab} className="space-y-4">
                         {/* Bulk Actions */}
@@ -375,7 +219,7 @@ export default function ReviewsIndex({ reviews, activeTab, filters, lawFirms, st
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead className="w-12">
+                                        <TableHead className="w-12 ps-3">
                                             <Checkbox
                                                 checked={selectedReviews.length === reviews.data.length && reviews.data.length > 0}
                                                 onCheckedChange={toggleSelectAll}
@@ -391,48 +235,84 @@ export default function ReviewsIndex({ reviews, activeTab, filters, lawFirms, st
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {reviews.data.map((review) => (
-                                        <TableRow key={review.id}>
-                                            <TableCell>
-                                                <Checkbox
-                                                    checked={selectedReviews.includes(review.id)}
-                                                    onCheckedChange={() => toggleReviewSelection(review.id)}
-                                                />
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex items-center gap-2">
-                                                    <div className="flex">{renderStars(review.rating)}</div>
-                                                    <span className="text-sm">{review.rating}/5</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="max-w-md">
-                                                <div className="truncate" title={review.comment || 'No comment'}>
-                                                    {review.comment || <em className="text-gray-500">No comment</em>}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div>
-                                                    <div className="font-medium">{review.user.name}</div>
-                                                    <div className="text-sm text-gray-500">{review.user.email}</div>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Link
-                                                    // href={route('admin.law-firms.show', review.law_firm.id)}
-                                                    className="text-blue-600 hover:underline"
-                                                >
-                                                    {review.law_firm.name}
-                                                </Link>
-                                            </TableCell>
-                                            <TableCell>{getStatusBadge(review.status)}</TableCell>
-                                            <TableCell>{new Date(review.created_at).toLocaleDateString()}</TableCell>
-                                            <TableCell>
-                                                <ReviewActions review={review} activeTab={activeTab} />
+                                    {reviews.data.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={8} className="h-24 text-center">
+                                                No results found.
                                             </TableCell>
                                         </TableRow>
-                                    ))}
+                                    ) : (
+                                        reviews.data.map((review) => (
+                                            <TableRow key={review.id}>
+                                                <TableCell className="ps-3">
+                                                    <Checkbox
+                                                        checked={selectedReviews.includes(review.id)}
+                                                        onCheckedChange={() => toggleReviewSelection(review.id)}
+                                                    />
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="flex">{renderStars(review.rating)}</div>
+                                                        <span className="text-sm">{review.rating}/5</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="max-w-md">
+                                                    <div className="truncate" title={review.comment || 'No comment'}>
+                                                        {review.comment || <em className="text-gray-500">No comment</em>}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div>
+                                                        <div className="font-medium">{review.user.name}</div>
+                                                        <div className="text-sm text-gray-500">{review.user.email}</div>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Link
+                                                        // href={route('admin.law-firms.show', review.law_firm.id)}
+                                                        className="text-blue-600 hover:underline"
+                                                    >
+                                                        {review.law_firm.name}
+                                                    </Link>
+                                                </TableCell>
+                                                <TableCell>{getStatusBadge(review.status)}</TableCell>
+                                                <TableCell>{new Date(review.created_at).toLocaleDateString()}</TableCell>
+                                                <TableCell>
+                                                    <ReviewActions review={review} activeTab={activeTab} />
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
                                 </TableBody>
                             </Table>
+
+                            {/* Pagination */}
+                            {reviews.links && (
+                                <div className="border-t border-gray-200 bg-white px-6 pt-4">
+                                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                        <div className="text-sm text-gray-700">{getPaginationInfo()}</div>
+
+                                        <nav className="flex items-center space-x-2">
+                                            {reviews.links.map((link, index) => (
+                                                <Link
+                                                    key={index}
+                                                    href={link.url || '#'}
+                                                    preserveState={true}
+                                                    preserveScroll={true}
+                                                    className={`rounded-md px-3 py-1 text-sm font-medium ${
+                                                        link.active
+                                                            ? 'bg-blue-600 text-white'
+                                                            : link.url
+                                                              ? 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+                                                              : 'cursor-not-allowed text-gray-300'
+                                                    }`}
+                                                    dangerouslySetInnerHTML={{ __html: link.label }}
+                                                />
+                                            ))}
+                                        </nav>
+                                    </div>
+                                </div>
+                            )}
                         </Card>
                     </TabsContent>
                 </Tabs>
@@ -440,9 +320,12 @@ export default function ReviewsIndex({ reviews, activeTab, filters, lawFirms, st
         </>
     );
 }
+interface ReviewActionsProps {
+    review: Review;
+    activeTab: 'active' | 'spam' | 'trash';
+}
 
-// Individual Review Actions Component
-function ReviewActions({ review, activeTab }: { review: Review; activeTab: string }) {
+function ReviewActions({ review, activeTab }: ReviewActionsProps) {
     const { post, processing } = useForm();
 
     const handleAction = (action: string, reviewId: number) => {

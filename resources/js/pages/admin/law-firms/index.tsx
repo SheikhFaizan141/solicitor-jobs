@@ -4,18 +4,6 @@ import { PaginatedResponse } from '@/types/types';
 import { Link, router, useForm } from '@inertiajs/react';
 import React, { useEffect, useState } from 'react';
 
-// interface LawFirm {
-//     id: number;
-//     name: string;
-//     slug: string;
-//     description: string;
-//     email: string;
-//     location: string;
-//     phone: string;
-//     created_at: string;
-//     is_active?: boolean;
-// }
-
 interface LawFirmsPageProps {
     lawFirms: PaginatedResponse<LawFirm>;
 }
