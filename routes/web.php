@@ -13,7 +13,6 @@ use App\Http\Controllers\JobAlertSubscriptionController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\LawFirmController;
 use App\Http\Controllers\PracticeAreaController;
-use App\Mail\JobAlertDigestMail;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 

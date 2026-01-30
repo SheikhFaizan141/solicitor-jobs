@@ -8,37 +8,33 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AdminLayout from '@/layouts/admin-layout';
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { bulk, forceDelete, index, restore, spam, trash } from '@/routes/admin/reviews';
+import { mark } from '@/routes/admin/reviews/spam';
+import { move } from '@/routes/admin/reviews/trash';
+import { User } from '@/types';
+import { LawFirm } from '@/types/law-firms';
+import { PaginatedResponse } from '@/types/types';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import React, { useState } from 'react';
+// import { router } from '@inertiajs/react';
+
+type ReviewStatus = 'active' | 'spam' | 'trashed';
 
 interface Review {
     id: number;
     rating: number;
     comment: string | null;
-    status: 'active' | 'spam' | 'trashed';
+    status: ReviewStatus;
     created_at: string;
-    user: {
-        id: number;
-        name: string;
-        email: string;
-    };
+    user: User;
     law_firm: {
         id: number;
         name: string;
     };
 }
 
-interface LawFirm {
-    id: number;
-    name: string;
-}
-
-interface PageProps {
-    reviews: {
-        data: Review[];
-        links: any[];
-        meta: any;
-    };
+interface ReviewsIndexProps {
+    reviews: PaginatedResponse<Review>;
     activeTab: 'active' | 'spam' | 'trash';
     filters: {
         rating?: string;
@@ -56,9 +52,9 @@ interface PageProps {
     };
 }
 
-export default function ReviewsIndex() {
-    const { reviews, activeTab, filters, lawFirms, stats } = usePage<PageProps>().props;
+export default function ReviewsIndex({ reviews, activeTab, filters, lawFirms, stats }: ReviewsIndexProps) {
     const [selectedReviews, setSelectedReviews] = useState<number[]>([]);
+    const [bulkProcessing, setBulkProcessing] = useState(false);
     const [showFilters, setShowFilters] = useState(false);
 
     const { data, setData, get, processing } = useForm({
@@ -70,18 +66,6 @@ export default function ReviewsIndex() {
         sort: filters.sort || '',
     });
 
-    const { post: bulkAction, processing: bulkProcessing } = useForm({
-        action: '',
-        reviews: selectedReviews,
-    });
-
-    const handleFilter = () => {
-        get(route(`admin.reviews.${activeTab}`), {
-            preserveState: true,
-            preserveScroll: true,
-        });
-    };
-
     const handleBulkAction = (action: string) => {
         if (selectedReviews.length === 0) return;
 
@@ -89,16 +73,22 @@ export default function ReviewsIndex() {
             return;
         }
 
-        bulkAction.setData({
-            action,
-            reviews: selectedReviews,
-        });
-
-        bulkAction.post(route('admin.reviews.bulk'), {
-            onSuccess: () => {
-                setSelectedReviews([]);
+        router.post(
+            bulk.url(),
+            {
+                action: action,
+                reviews: selectedReviews,
             },
-        });
+            {
+                onStart: () => setBulkProcessing(true),
+                onFinish: () => setBulkProcessing(false),
+                onSuccess: () => {
+                    setSelectedReviews([]);
+                },
+                preserveState: true,
+                preserveScroll: true,
+            },
+        );
     };
 
     const toggleReviewSelection = (reviewId: number) => {
@@ -109,7 +99,14 @@ export default function ReviewsIndex() {
         setSelectedReviews(selectedReviews.length === reviews.data.length ? [] : reviews.data.map((review) => review.id));
     };
 
-    const getStatusBadge = (status: string) => {
+    const handleFilter = () => {
+        get(`/admin/reviews/${activeTab === 'active' ? '' : activeTab}`, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+    };
+
+    const getStatusBadge = (status: ReviewStatus) => {
         const variants = {
             active: 'default',
             spam: 'destructive',
@@ -125,6 +122,24 @@ export default function ReviewsIndex() {
                 ★
             </span>
         ));
+    };
+
+    // console.log(reviews);
+
+    const clearFilters = () => {
+        setData({
+            rating: 'all',
+            law_firm: 'all',
+            start_date: '',
+            end_date: '',
+            search: '',
+            sort: '',
+        });
+
+        get(`/admin/reviews/${activeTab === 'active' ? '' : activeTab}`, {
+            preserveState: true,
+            preserveScroll: true,
+        });
     };
 
     return (
@@ -192,7 +207,7 @@ export default function ReviewsIndex() {
                                             <SelectValue placeholder="All ratings" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="22">All ratings</SelectItem>
+                                            <SelectItem value="all">All ratings</SelectItem>
                                             <SelectItem value="5">5 stars</SelectItem>
                                             <SelectItem value="4">4 stars</SelectItem>
                                             <SelectItem value="3">3 stars</SelectItem>
@@ -209,7 +224,7 @@ export default function ReviewsIndex() {
                                             <SelectValue placeholder="All firms" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="2">All firms</SelectItem>
+                                            <SelectItem value="all">All firms</SelectItem>
                                             {lawFirms.map((firm) => (
                                                 <SelectItem key={firm.id} value={firm.id.toString()}>
                                                     {firm.name}
@@ -241,7 +256,7 @@ export default function ReviewsIndex() {
                                             <SelectValue placeholder="Newest first" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="22">Newest first</SelectItem>
+                                            <SelectItem value="latest">Newest first</SelectItem>
                                             <SelectItem value="oldest">Oldest first</SelectItem>
                                             <SelectItem value="rating_high">Rating: High to Low</SelectItem>
                                             <SelectItem value="rating_low">Rating: Low to High</SelectItem>
@@ -253,19 +268,7 @@ export default function ReviewsIndex() {
                                 <Button onClick={handleFilter} disabled={processing}>
                                     Apply Filters
                                 </Button>
-                                <Button
-                                    variant="outline"
-                                    onClick={() => {
-                                        setData({
-                                            rating: '',
-                                            law_firm: '',
-                                            start_date: '',
-                                            end_date: '',
-                                            search: '',
-                                            sort: '',
-                                        });
-                                    }}
-                                >
+                                <Button variant="outline" onClick={clearFilters}>
                                     Clear
                                 </Button>
                             </div>
@@ -277,19 +280,19 @@ export default function ReviewsIndex() {
                 <Tabs value={activeTab} className="space-y-4">
                     <TabsList>
                         <TabsTrigger value="active" asChild>
-                            <Link preserveState>Active ({stats.active})</Link>
+                            <Link href={index.get()} preserveState>
+                                Active ({stats.active})
+                            </Link>
                         </TabsTrigger>
                         <TabsTrigger value="spam" asChild>
-                            {/* <Link href={route('admin.reviews.spam')} preserveState>
+                            <Link href={spam.get()} preserveState>
                                 Spam ({stats.spam})
-                            </Link> */}
-                            <Link preserveState>Spam ({stats.spam})</Link>
+                            </Link>
                         </TabsTrigger>
                         <TabsTrigger value="trash" asChild>
-                            {/* <Link href={route('admin.reviews.trash')} preserveState>
+                            <Link href={trash.get()} preserveState>
                                 Trash ({stats.trash})
-                            </Link> */}
-                            <Link preserveState>Trash ({stats.trash})</Link>
+                            </Link>
                         </TabsTrigger>
                     </TabsList>
 
@@ -458,10 +461,10 @@ function ReviewActions({ review, activeTab }: { review: Review; activeTab: strin
         }
 
         const routes = {
-            markAsSpam: route('admin.reviews.spam.mark', reviewId),
-            moveToTrash: route('admin.reviews.trash.move', reviewId),
-            restore: route('admin.reviews.restore', reviewId),
-            forceDelete: route('admin.reviews.force-delete', reviewId),
+            markAsSpam: mark.url(reviewId),
+            moveToTrash: move.url(reviewId),
+            restore: restore.url(reviewId),
+            forceDelete: forceDelete.url(reviewId),
         };
 
         post(routes[action as keyof typeof routes]);
