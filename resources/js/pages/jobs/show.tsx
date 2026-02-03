@@ -1,3 +1,4 @@
+import { ShareJobButton } from '@/components/jobs/share-job-button';
 import { Button } from '@/components/ui/button';
 import Layout from '@/layouts/main-layout';
 import { cn } from '@/lib/utils';
@@ -190,14 +191,14 @@ export default function JobShow({ job }: JobShowProps) {
                                 </div>
                             </div>
 
-                            {/* Apply Button */}
-                            <div className="ml-6 flex-shrink-0">
+                            {/* Apply / Share Actions */}
+                            <div className="ml-6 flex-shrink-0 space-y-3">
                                 {job.is_active ? (
                                     job.external_link ? (
                                         <Button
                                             onClick={handleApplyClick}
                                             variant="default"
-                                            className="bg-amber-600 hover:bg-amber-700 focus:ring-amber-500"
+                                            className="w-full bg-amber-600 hover:bg-amber-700 focus:ring-amber-500"
                                         >
                                             Apply Now
                                             <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -216,7 +217,7 @@ export default function JobShow({ job }: JobShowProps) {
                                                 <Link
                                                     href={job.law_firm.website}
                                                     target="_blank"
-                                                    className="inline-flex items-center rounded-md border border-gray-300 bg-white px-6 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                                                    className="inline-flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-amber-500 focus:outline-none"
                                                 >
                                                     Visit Website
                                                 </Link>
@@ -226,11 +227,20 @@ export default function JobShow({ job }: JobShowProps) {
                                 ) : (
                                     <button
                                         disabled
-                                        className="inline-flex cursor-not-allowed items-center rounded-md bg-gray-400 px-8 py-3 text-base font-medium text-white shadow-sm"
+                                        className="inline-flex w-full cursor-not-allowed items-center justify-center rounded-md bg-gray-400 px-8 py-3 text-base font-medium text-white shadow-sm"
                                     >
                                         Applications Closed
                                     </button>
                                 )}
+
+                                <ShareJobButton
+                                    title={`${job.title} at ${job.law_firm?.name || 'Solicitor Jobs'}`}
+                                    summary={job.excerpt || job.location?.name || null}
+                                    relativePath={`/jobs/${job.slug}`}
+                                    buttonVariant="outline"
+                                    buttonSize="lg"
+                                    className="w-full"
+                                />
                             </div>
                         </div>
                     </div>

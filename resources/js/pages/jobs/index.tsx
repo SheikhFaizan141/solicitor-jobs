@@ -1,5 +1,6 @@
 import { CreateJobAlertDialog } from '@/components/job-alerts/create-job-alert-dialog';
 import { JobFiltersSidebar } from '@/components/jobs/job-filters-sidebar';
+import { ShareJobButton } from '@/components/jobs/share-job-button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Layout from '@/layouts/main-layout';
 import { JobListingWithRelations } from '@/types/job-listing';
@@ -330,7 +331,7 @@ function JobCard({ job }: JobCardProps) {
                 {/* Description */}
                 {job.excerpt && <p className="mb-4 line-clamp-2 text-gray-600">{job.excerpt}</p>}
 
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center">
                         <span
                             className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
@@ -340,10 +341,18 @@ function JobCard({ job }: JobCardProps) {
                             {job.is_active ? 'Active' : 'Closed'}
                         </span>
                     </div>
-                    <div className="flex space-x-3">
+                    <div className="flex flex-wrap items-center justify-end gap-3 sm:flex-nowrap">
                         <button className="rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200">
                             Save Job
                         </button>
+                        <ShareJobButton
+                            title={`${job.title}${job.law_firm ? ` at ${job.law_firm.name}` : ''}`}
+                            summary={job.excerpt || job.location?.name || null}
+                            relativePath={`/jobs/${job.slug}`}
+                            buttonVariant="outline"
+                            buttonSize="sm"
+                            className="w-full sm:w-auto"
+                        />
                         <Link
                             href={`/jobs/${job.slug}`}
                             className="rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-700"
