@@ -30,11 +30,13 @@ export interface SharedData {
     [key: string]: unknown;
 }
 
+export type Role = 'admin' | 'editor' | 'user';
+
 export interface User {
     id: number;
     name: string;
     email: string;
-    role: 'admin' | 'editor' | 'user';
+    role: Role;
     avatar?: string;
     email_verified_at: string | null;
     created_at: string;

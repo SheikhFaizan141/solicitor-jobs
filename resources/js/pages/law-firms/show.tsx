@@ -34,19 +34,19 @@ interface Review {
     };
 }
 
-export default function Show() {
-    const { lawFirm, auth } = usePage<SharedData>().props as unknown as { lawFirm: Firm; auth: SharedData['auth'] };
+interface FirmShowProps {
+    lawFirm: Firm;
+}
+export default function Show({ lawFirm }: FirmShowProps) {
+    const { auth } = usePage<SharedData>().props;
+
     const user = auth?.user;
     const isStaff = user?.role === 'admin' || user?.role === 'editor';
-
-    console.log(lawFirm);
-
-    //    console.log(lawFirm);
 
     // Get tab from URL query parameter
     const urlParams = new URLSearchParams(window.location.search);
     const initialTab = (urlParams.get('tab') as 'reviews' | 'jobs' | 'contacts') || 'reviews';
-    
+
     const [activeTab, setActiveTab] = React.useState<'reviews' | 'jobs' | 'contacts'>(initialTab);
 
     // Update URL when tab changes
@@ -61,8 +61,8 @@ export default function Show() {
     }, [activeTab]);
     return (
         <>
-            <Head title={lawFirm?.name ?? 'Listing'} />
-               <article className="mx-auto pt-1 w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+            <Head title={lawFirm.name ?? 'Listing'} />
+            <article className="mx-auto w-full max-w-7xl px-4 pt-1 sm:px-6 lg:px-8">
                 {/* Staff Edit Banner */}
                 {isStaff && (
                     <div className="mb-6 border-b border-blue-200 bg-blue-50">
@@ -127,7 +127,7 @@ export default function Show() {
                         {/* About Section */}
                         <section>
                             <h2 className="mb-4 text-xl font-bold text-gray-900">About</h2>
-                            <div className="prose prose-gray max-w-none">
+                            <div className="prose max-w-none prose-gray">
                                 {lawFirm.description ? (
                                     <p>{lawFirm.description}</p>
                                 ) : (

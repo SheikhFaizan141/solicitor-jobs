@@ -4,60 +4,33 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AdminLayout from '@/layouts/admin-layout';
 import { cn } from '@/lib/utils';
-import { SharedData } from '@/types';
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { Role, User } from '@/types';
+import { PaginatedResponse } from '@/types/types';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Search } from 'lucide-react';
 import React from 'react';
 
-interface User {
-    id: number;
-    name: string;
-    email: string;
-    role: string;
-    created_at: string;
-}
-
-interface Props {
-    users: {
-        data: User[];
-        current_page: number;
-        last_page: number;
-        per_page: number;
-        total: number;
-        links: Array<{
-            url: string | null;
-            label: string;
-            active: boolean;
-        }>;
-    };
-    roles: string[];
+interface AdminUserPageProps {
+    users: PaginatedResponse<User>;
+    roles: Role[];
     filters: {
         search?: string;
         role?: string;
     };
 }
 
-// interface AdminUserPageProps {
-//     users: User[];
-// }
-
-const AdminUserPage = () => {
-    const {auth, users, roles, filters } = usePage<SharedData>().props;
-
-    console.log(auth);
-    
-
+const AdminUserPage = ({ users, roles, filters }: AdminUserPageProps) => {
     const {
         data,
         setData,
         get,
         processing,
         delete: destroy, // add destroy helper
-        errors,
     } = useForm({
         search: filters.search || '',
         role: filters.role || '',
     });
+
     const handleFilter = () => {
         get('/admin/users', {
             preserveState: true,
@@ -68,7 +41,8 @@ const AdminUserPage = () => {
 
     const handleClear = () => {
         setData({ search: '', role: '' });
-        get('/admin/users', {
+
+        router.get('/admin/users', {
             data: { search: '', role: '' },
             preserveState: true,
             preserveScroll: true,
@@ -276,7 +250,6 @@ const AdminUserPage = () => {
         </>
     );
 };
-
 
 AdminUserPage.layout = (page: React.ReactNode) => <AdminLayout>{page}</AdminLayout>;
 

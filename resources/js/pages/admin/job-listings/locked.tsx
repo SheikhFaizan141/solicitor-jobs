@@ -17,7 +17,7 @@ interface LockedJobListingProps {
     lockedAt: string;
 }
 
-const LockedJobListing: React.FC<LockedJobListingProps> = ({ job, lockedBy, lockedAt }) => {
+const LockedJobListing = ({ job, lockedBy, lockedAt }: LockedJobListingProps) => {
     const lockedTime = new Date(lockedAt);
     const formattedTime = lockedTime.toLocaleTimeString('en-GB', {
         hour: '2-digit',
@@ -42,8 +42,7 @@ const LockedJobListing: React.FC<LockedJobListingProps> = ({ job, lockedBy, lock
                     <h1 className="mb-2 text-2xl font-bold text-gray-900">Job Listing Currently Being Edited</h1>
 
                     <p className="mb-6 text-gray-600">
-                        <span className="font-medium text-gray-900">{lockedBy.name}</span> ({lockedBy.email}) is currently
-                        editing this job listing.
+                        <span className="font-medium text-gray-900">{lockedBy.name}</span> ({lockedBy.email}) is currently editing this job listing.
                     </p>
 
                     <div className="mb-6 rounded-md bg-white p-4 shadow-sm">
@@ -55,8 +54,8 @@ const LockedJobListing: React.FC<LockedJobListingProps> = ({ job, lockedBy, lock
                     </div>
 
                     <p className="mb-6 text-sm text-gray-500">
-                        The lock will automatically expire after 15 minutes of inactivity. Please try again later or contact{' '}
-                        {lockedBy.name} to coordinate.
+                        The lock will automatically expire after 15 minutes of inactivity. Please try again later or contact {lockedBy.name} to
+                        coordinate.
                     </p>
 
                     <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
