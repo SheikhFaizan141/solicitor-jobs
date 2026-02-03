@@ -36,8 +36,6 @@ interface ReviewsIndexProps {
 }
 
 export default function ReviewsIndex({ reviews, activeTab, filters, lawFirms, stats }: ReviewsIndexProps) {
-    console.log(reviews);
-
     const [selectedReviews, setSelectedReviews] = useState<number[]>([]);
     const [bulkProcessing, setBulkProcessing] = useState(false);
     const [showFilters, setShowFilters] = useState(false);

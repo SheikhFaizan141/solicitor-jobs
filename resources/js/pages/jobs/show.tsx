@@ -64,17 +64,17 @@ export default function JobShow({ job }: JobShowProps) {
             <div className="min-h-screen bg-gray-50 pb-16">
                 {/* Header */}
                 <div className="border-b bg-white">
-                    <div className="mx-auto max-w-7xl px-6 py-6">
-                        <Link href="/jobs" className="mb-6 inline-flex items-center text-sm text-gray-600 hover:text-gray-900">
+                    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+                        <Link href="/jobs" className="mb-6 inline-flex max-w-fit items-center text-sm text-gray-600 hover:text-gray-900">
                             <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                             </svg>
                             Back to Jobs
                         </Link>
 
-                        <div className="flex items-start justify-between">
+                        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
                             <div className="flex-1">
-                                <div className="mb-4 flex items-center gap-4">
+                                <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center">
                                     {/* Company Logo */}
                                     <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-white">
                                         {job.law_firm?.logo_url ? (
@@ -90,7 +90,7 @@ export default function JobShow({ job }: JobShowProps) {
                                         )}
                                     </div>
 
-                                    <div>
+                                    <div className="text-center sm:text-left">
                                         <h1 className="mb-2 text-3xl font-bold text-gray-900">{job.title}</h1>
                                         {job.law_firm && (
                                             <Link
@@ -104,7 +104,7 @@ export default function JobShow({ job }: JobShowProps) {
                                 </div>
 
                                 {/* Job Meta */}
-                                <div className="mb-4 flex flex-wrap items-center gap-6 text-sm text-gray-600">
+                                <div className="mb-4 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-gray-600">
                                     {job.location && (
                                         <div className="flex items-center">
                                             <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -121,7 +121,7 @@ export default function JobShow({ job }: JobShowProps) {
                                                     d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                                                 />
                                             </svg>
-                                            <span className=''>{job.location?.name}</span>
+                                            <span>{job.location?.name}</span>
                                         </div>
                                     )}
 
@@ -184,7 +184,7 @@ export default function JobShow({ job }: JobShowProps) {
                                 )}
 
                                 {/* Job Stats */}
-                                <div className="flex items-center gap-6 text-sm text-gray-500">
+                                <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-gray-500">
                                     <span>Posted {formatDate(job.created_at)}</span>
                                     {job.closing_date && <span>Closes {formatDate(job.closing_date)}</span>}
                                     {/* {job.applications && <span>{job.applications} applications</span>} */}
@@ -192,7 +192,7 @@ export default function JobShow({ job }: JobShowProps) {
                             </div>
 
                             {/* Apply / Share Actions */}
-                            <div className="ml-6 flex-shrink-0 space-y-3">
+                            <div className="w-full max-w-md space-y-3 lg:ml-6 lg:flex-shrink-0">
                                 {job.is_active ? (
                                     job.external_link ? (
                                         <Button
@@ -247,7 +247,7 @@ export default function JobShow({ job }: JobShowProps) {
                 </div>
 
                 {/* Content */}
-                <div className="mx-auto max-w-7xl px-6 py-8">
+                <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
                     <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                         {/* Main Content */}
                         <div className="space-y-8 lg:col-span-2">
