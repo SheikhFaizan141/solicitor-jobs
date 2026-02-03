@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AdminLayout from '@/layouts/admin-layout';
 import { cn } from '@/lib/utils';
+import { SharedData } from '@/types';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { Search } from 'lucide-react';
 import React from 'react';
@@ -36,8 +37,15 @@ interface Props {
     };
 }
 
+// interface AdminUserPageProps {
+//     users: User[];
+// }
+
 const AdminUserPage = () => {
-    const { users, roles, filters } = usePage<Props>().props;
+    const {auth, users, roles, filters } = usePage<SharedData>().props;
+
+    console.log(auth);
+    
 
     const {
         data,

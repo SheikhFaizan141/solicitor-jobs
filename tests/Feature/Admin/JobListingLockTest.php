@@ -5,9 +5,9 @@ use App\Models\User;
 
 beforeEach(function () {
     // Create admin and editor users for testing
-    $this->admin = User::factory()->create(['role' => 'admin']);
-    $this->editor = User::factory()->create(['role' => 'editor']);
-    $this->regularUser = User::factory()->create(['role' => 'user']);
+    $this->admin = User::factory()->admin()->create();
+    $this->editor = User::factory()->editor()->create();
+    $this->regularUser = User::factory()->user()->create();
     $this->jobListing = JobListing::factory()->create();
 });
 

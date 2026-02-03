@@ -17,7 +17,7 @@ interface LockedLawFirmProps {
     lockedAt: string;
 }
 
-const LockedLawFirm: React.FC<LockedLawFirmProps> = ({ lawFirm, lockedBy, lockedAt }) => {
+export default function LockedLawFirm({ lawFirm, lockedBy, lockedAt }: LockedLawFirmProps) {
     const lockedTime = new Date(lockedAt);
     const formattedTime = lockedTime.toLocaleTimeString('en-GB', {
         hour: '2-digit',
@@ -76,8 +76,6 @@ const LockedLawFirm: React.FC<LockedLawFirmProps> = ({ lawFirm, lockedBy, locked
             </div>
         </>
     );
-};
+}
 
 LockedLawFirm.layout = (page: React.ReactNode) => <AdminLayout>{page}</AdminLayout>;
-
-export default LockedLawFirm;

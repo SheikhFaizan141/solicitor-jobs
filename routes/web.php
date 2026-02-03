@@ -37,13 +37,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         $user = auth()->user();
 
         // Check if admin
-        if ($user->role === 'admin') {
+        if ($user->hasRole('admin')) {
             return Inertia::render('dashboard', [
                 'isAdmin' => true,
                 'adminStats' => [
                     'totalJobs' => \App\Models\JobListing::count(),
                     'activeJobs' => \App\Models\JobListing::where('is_active', true)->count(),
-                    'totalUsers' => \App\Models\User::where('role', 'user')->count(),
+                    'totalUsers' => \App\Models\User::role('user')->count(),
                     'totalFirms' => \App\Models\LawFirm::count(),
                 ],
             ]);
@@ -156,7 +156,7 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('admin')->name('admin.')->group(function () {
 
         // Accessible to both Admin and Editor
-        Route::middleware('role:admin,editor')->group(function () {
+        Route::middleware('role:admin|editor')->group(function () {
             // Dashboard
             Route::get('/', AdminDashboardController::class)->name('dashboard');
 

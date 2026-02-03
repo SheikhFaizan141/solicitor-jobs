@@ -7,11 +7,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, HasRoles, Notifiable;
 
     public const ROLE_ADMIN = 'admin';
 
@@ -28,9 +29,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role',
         'email_notifications',
-        'job_alerts'
+        'job_alerts',
     ];
 
     /**
@@ -42,6 +42,13 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['role'];
 
     /**
      * Get the attributes that should be cast.
@@ -58,19 +65,27 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * Get the user's primary role name for frontend compatibility.
+     */
+    public function getRoleAttribute(): string
+    {
+        return $this->roles->first()?->name ?? self::ROLE_USER;
+    }
+
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return $this->hasRole(self::ROLE_ADMIN);
     }
 
     public function isEditor(): bool
     {
-        return $this->role === self::ROLE_EDITOR;
+        return $this->hasRole(self::ROLE_EDITOR);
     }
 
     public function isStaff(): bool
     {
-        return in_array($this->role, [self::ROLE_ADMIN, self::ROLE_EDITOR]);
+        return $this->hasAnyRole([self::ROLE_ADMIN, self::ROLE_EDITOR]);
     }
 
     public function jobAlertSubscriptions(): HasMany
