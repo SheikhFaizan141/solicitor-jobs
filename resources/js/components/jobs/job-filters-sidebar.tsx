@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
-import { PracticeArea } from '@/types/practice-area';
 import { Location } from '@/types/locations';
+import { PracticeArea } from '@/types/practice-area';
 import { X } from 'lucide-react';
 import { FormEvent } from 'react';
 import { Button } from '../ui/button';
@@ -70,12 +70,7 @@ export function JobFiltersSidebar({
                     isSheet ? 'max-h-[calc(100vh-8rem)] overflow-y-auto border-none p-0 shadow-none' : 'sticky top-24 p-6',
                 )}
             >
-                <div
-                    className={cn(
-                        'flex flex-wrap items-center justify-between gap-2',
-                        isSheet ? 'border-b border-gray-100 px-4 py-4' : 'mb-4',
-                    )}
-                >
+                <div className={cn('flex flex-wrap items-center justify-between gap-2', isSheet ? 'border-b border-gray-100 px-4 py-4' : 'mb-4')}>
                     <h2 className="text-lg font-semibold text-gray-900">Filter Jobs</h2>
                     {hasActiveFilters && (
                         <button onClick={onClearFilters} className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900">

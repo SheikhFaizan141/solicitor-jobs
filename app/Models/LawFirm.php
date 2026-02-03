@@ -2,21 +2,28 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasEditLock;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class LawFirm extends Model
 {
+    use HasEditLock, HasFactory;
+
     protected $fillable = [
         'name',
         'slug', // still fillable so factory/seeder can override if needed
         'website',
         'description',
-        'email',
-        'location',
-        'phone',
         'logo_path',
+        'locked_by',
+        'locked_at',
+    ];
+
+    protected $casts = [
+        'locked_at' => 'datetime',
     ];
 
     // Add this so logo_url (from the accessor) is included when model is serialized

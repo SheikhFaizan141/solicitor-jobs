@@ -57,14 +57,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'stats' => [
                 'activeAlerts' => $activeAlerts->count(),
                 'savedJobs' => 0, // TODO: Implement saved jobs
-                'applications' => 0, // TODO: Implement applications  
+                'applications' => 0, // TODO: Implement applications
                 'newMatches' => 0, // TODO: Calculate actual job matches
             ],
             'recentAlerts' => $activeAlerts
                 ->with('location')
                 ->limit(3)
                 ->get()
-                ->map(fn($alert) => [
+                ->map(fn ($alert) => [
                     'id' => $alert->id,
                     'frequency' => $alert->frequency,
                     'location' => $alert->location?->name,
@@ -164,6 +164,12 @@ Route::middleware(['auth'])->group(function () {
             Route::resource('law-firms', AdminLawFirmController::class)
                 ->names('law-firms');
 
+            // Law Firm Lock Management
+            Route::post('law-firms/{law_firm}/refresh-lock', [AdminLawFirmController::class, 'refreshLock'])
+                ->name('law-firms.refresh-lock');
+            Route::post('law-firms/{law_firm}/release-lock', [AdminLawFirmController::class, 'releaseLock'])
+                ->name('law-firms.release-lock');
+
             // Practice Areas
             Route::resource('practice-areas', PracticeAreaController::class)
                 ->names('practice-areas')
@@ -172,7 +178,13 @@ Route::middleware(['auth'])->group(function () {
             // Job Listings
             Route::resource('job-listings', AdminJobListingController::class)
                 ->names('job-listings');
-                // ->except(['show']);
+            // ->except(['show']);
+
+            // Job Listing Lock Management
+            Route::post('job-listings/{job_listing}/refresh-lock', [AdminJobListingController::class, 'refreshLock'])
+                ->name('job-listings.refresh-lock');
+            Route::post('job-listings/{job_listing}/release-lock', [AdminJobListingController::class, 'releaseLock'])
+                ->name('job-listings.release-lock');
 
             // Locations
             Route::resource('locations', AdminLocationController::class)
@@ -205,5 +217,5 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-require __DIR__ . '/settings.php';
-require __DIR__ . '/auth.php';
+require __DIR__.'/settings.php';
+require __DIR__.'/auth.php';

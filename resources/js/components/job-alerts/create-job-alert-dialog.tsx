@@ -1,13 +1,5 @@
 import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from '@inertiajs/react';
@@ -46,7 +38,7 @@ interface CreateJobAlertDialogProps {
 
 export function CreateJobAlertDialog({ filterOptions, prefilledFilters, triggerButton }: CreateJobAlertDialogProps) {
     const [open, setOpen] = useState(false);
-    
+
     // Extract filter options with fallbacks
     const locations = filterOptions.locations || [];
     const practiceAreas = filterOptions.practiceAreas || filterOptions.practice_areas || [];
@@ -111,7 +103,7 @@ export function CreateJobAlertDialog({ filterOptions, prefilledFilters, triggerB
                     </Button>
                 )}
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[525px] max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[525px]">
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
                         <DialogTitle>Create Job Alert</DialogTitle>
@@ -126,7 +118,7 @@ export function CreateJobAlertDialog({ filterOptions, prefilledFilters, triggerB
                             <Label>How often would you like to receive alerts?</Label>
                             <div className="flex gap-4">
                                 {(['daily', 'weekly'] as const).map((freq) => (
-                                    <label key={freq} className="flex items-center gap-2 cursor-pointer">
+                                    <label key={freq} className="flex cursor-pointer items-center gap-2">
                                         <input
                                             type="radio"
                                             name="frequency"
@@ -171,7 +163,7 @@ export function CreateJobAlertDialog({ filterOptions, prefilledFilters, triggerB
                                 <div className="max-h-48 overflow-y-auto rounded-md border border-gray-200 p-3">
                                     <div className="grid grid-cols-1 gap-2">
                                         {practiceAreas.map((area) => (
-                                            <label key={area.id} className="flex items-center gap-2 cursor-pointer">
+                                            <label key={area.id} className="flex cursor-pointer items-center gap-2">
                                                 <input
                                                     type="checkbox"
                                                     checked={data.practice_area_ids.includes(area.id)}

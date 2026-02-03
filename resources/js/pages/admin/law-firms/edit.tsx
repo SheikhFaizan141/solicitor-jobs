@@ -3,8 +3,8 @@ import { Card } from '@/components/ui/card';
 import AdminLayout from '@/layouts/admin-layout';
 import { LawFirm } from '@/types/law-firms';
 import { PracticeArea } from '@/types/practice-area';
-import { useForm } from '@inertiajs/react';
-import React from 'react';
+import { router, useForm } from '@inertiajs/react';
+import React, { useEffect, useRef } from 'react';
 
 interface EditLawFirmProps {
     lawFirm: LawFirm;
@@ -12,6 +12,8 @@ interface EditLawFirmProps {
 }
 
 const EditFirm = ({ lawFirm, practiceAreas }: EditLawFirmProps) => {
+    const heartbeatInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+
     const { data, setData, post, processing, errors } = useForm<LawFirmFormData>({
         name: lawFirm.name ?? '',
         description: lawFirm.description ?? '',
@@ -22,6 +24,65 @@ const EditFirm = ({ lawFirm, practiceAreas }: EditLawFirmProps) => {
         remove_logo: false,
         _method: 'PUT', // Vital for file uploads in Inertia during update
     });
+
+    // Heartbeat to keep the lock alive
+    useEffect(() => {
+        const refreshLock = async () => {
+            try {
+                await fetch(`/admin/law-firms/${lawFirm.id}/refresh-lock`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    },
+                });
+            } catch (error) {
+                console.error('Failed to refresh lock:', error);
+            }
+        };
+
+        // Refresh lock every 5 minutes (well before the 15 minute expiry)
+        heartbeatInterval.current = setInterval(refreshLock, 5 * 60 * 1000);
+
+        // Release lock when leaving the page
+        const releaseLock = () => {
+            // Use sendBeacon for reliable delivery on page unload
+            navigator.sendBeacon(
+                `/admin/law-firms/${lawFirm.id}/release-lock`,
+                new Blob([JSON.stringify({ _token: document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') })], {
+                    type: 'application/json',
+                }),
+            );
+        };
+
+        // Handle page visibility changes (e.g., tab switching)
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                refreshLock();
+            }
+        };
+
+        // Handle Inertia navigation (SPA navigation away)
+        const removeInertiaListener = router.on('before', (event) => {
+            // Only release lock if navigating away from this edit page
+            const targetUrl = event.detail.visit.url.pathname;
+            if (!targetUrl.includes(`/admin/law-firms/${lawFirm.id}/edit`)) {
+                releaseLock();
+            }
+        });
+
+        window.addEventListener('beforeunload', releaseLock);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            if (heartbeatInterval.current) {
+                clearInterval(heartbeatInterval.current);
+            }
+            window.removeEventListener('beforeunload', releaseLock);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            removeInertiaListener();
+        };
+    }, [lawFirm.id]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();

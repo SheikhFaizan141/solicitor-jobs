@@ -25,9 +25,9 @@ class AdminLawFirmController extends Controller
         $query = LawFirm::query()
             ->with('contacts')
             ->when($search, function ($query, $search) {
-                $query->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('description', 'like', '%' . $search . '%')
-                    ->orWhere('website', 'like', '%' . $search . '%');
+                $query->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('description', 'like', '%'.$search.'%')
+                    ->orWhere('website', 'like', '%'.$search.'%');
             })
             ->when($statusFilter === 'active', function ($query) {
                 // Add your active condition if you have an is_active column
@@ -37,7 +37,6 @@ class AdminLawFirmController extends Controller
                 // Add your inactive condition
                 // $query->where('is_active', false);
             });
-
 
         // Sorting
         switch ($sortBy) {
@@ -93,7 +92,7 @@ class AdminLawFirmController extends Controller
         ]);
 
         // Sanitize HTML description
-        if (!empty($data['description'])) {
+        if (! empty($data['description'])) {
             $data['description'] = Purify::clean($data['description']);
         }
 
@@ -131,14 +130,57 @@ class AdminLawFirmController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(LawFirm $lawFirm)
+    public function edit(Request $request, LawFirm $lawFirm)
     {
+        $user = $request->user();
+
+        // Check if locked by another user
+        if ($lawFirm->isLockedByAnotherUser($user)) {
+            $lockedByUser = $lawFirm->lockedByUser;
+
+            return Inertia::render('admin/law-firms/locked', [
+                'lawFirm' => $lawFirm->only(['id', 'name', 'slug']),
+                'lockedBy' => [
+                    'name' => $lockedByUser->name,
+                    'email' => $lockedByUser->email,
+                ],
+                'lockedAt' => $lawFirm->locked_at->toISOString(),
+            ]);
+        }
+
+        // Acquire lock for current user
+        $lawFirm->acquireLock($user);
+
         $lawFirm->load('contacts', 'practiceAreas');
 
         return Inertia::render('admin/law-firms/edit', [
             'lawFirm' => $lawFirm,
             'practiceAreas' => PracticeArea::orderBy('name')->get(),
         ]);
+    }
+
+    /**
+     * Refresh the editing lock (heartbeat endpoint).
+     */
+    public function refreshLock(Request $request, LawFirm $lawFirm)
+    {
+        $user = $request->user();
+
+        if ($lawFirm->refreshLock($user)) {
+            return response()->json(['success' => true]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Lock refresh failed'], 403);
+    }
+
+    /**
+     * Release the editing lock.
+     */
+    public function releaseLock(Request $request, LawFirm $lawFirm)
+    {
+        $lawFirm->releaseLock($request->user());
+
+        return response()->json(['success' => true]);
     }
 
     /**
@@ -163,7 +205,7 @@ class AdminLawFirmController extends Controller
         ]);
 
         // Sanitize HTML description
-        if (!empty($data['description'])) {
+        if (! empty($data['description'])) {
             $data['description'] = Purify::clean($data['description']);
         }
         if (blank($data['slug'] ?? null)) {
@@ -205,6 +247,9 @@ class AdminLawFirmController extends Controller
                 $lawFirm->contacts()->create($c);
             }
         }
+
+        // Release the lock after successful update
+        $lawFirm->releaseLock($request->user());
 
         return redirect()
             ->route('admin.law-firms.index')

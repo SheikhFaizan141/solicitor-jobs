@@ -226,18 +226,18 @@ export default function ({ data, setData, errors, processing, onSubmit, practice
                         Add Address
                     </Button>
                 </div>
-                
+
                 <div className="space-y-4">
                     {data.contacts.map((c, idx) => (
-                        <div key={idx} className="rounded-lg border p-4 bg-card text-card-foreground shadow-sm">
+                        <div key={idx} className="rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
                             <div className="grid gap-4">
                                 <div className="flex items-end gap-3">
                                     <div className="flex-1">
                                         <Label htmlFor={`contact_${idx}_label`}>Label</Label>
-                                        <Input 
+                                        <Input
                                             id={`contact_${idx}_label`}
-                                            value={c.label} 
-                                            onChange={(e) => handleContactChange(idx, 'label', e.target.value)} 
+                                            value={c.label}
+                                            onChange={(e) => handleContactChange(idx, 'label', e.target.value)}
                                             placeholder="e.g. Head Office"
                                             className="mt-1"
                                         />
@@ -249,11 +249,11 @@ export default function ({ data, setData, errors, processing, onSubmit, practice
 
                                 <div>
                                     <Label htmlFor={`contact_${idx}_address`}>Address</Label>
-                                    <Textarea 
+                                    <Textarea
                                         id={`contact_${idx}_address`}
-                                        value={c.address} 
-                                        onChange={(e) => handleContactChange(idx, 'address', e.target.value)} 
-                                        rows={2} 
+                                        value={c.address}
+                                        onChange={(e) => handleContactChange(idx, 'address', e.target.value)}
+                                        rows={2}
                                         className="mt-1 resize-none"
                                     />
                                 </div>
@@ -261,20 +261,20 @@ export default function ({ data, setData, errors, processing, onSubmit, practice
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <Label htmlFor={`contact_${idx}_email`}>Email</Label>
-                                        <Input 
+                                        <Input
                                             id={`contact_${idx}_email`}
                                             type="email"
-                                            value={c.email} 
-                                            onChange={(e) => handleContactChange(idx, 'email', e.target.value)} 
+                                            value={c.email}
+                                            onChange={(e) => handleContactChange(idx, 'email', e.target.value)}
                                             className="mt-1"
                                         />
                                     </div>
                                     <div>
                                         <Label htmlFor={`contact_${idx}_phone`}>Phone</Label>
-                                        <Input 
+                                        <Input
                                             id={`contact_${idx}_phone`}
-                                            value={c.phone} 
-                                            onChange={(e) => handleContactChange(idx, 'phone', e.target.value)} 
+                                            value={c.phone}
+                                            onChange={(e) => handleContactChange(idx, 'phone', e.target.value)}
                                             className="mt-1"
                                         />
                                     </div>
@@ -282,9 +282,7 @@ export default function ({ data, setData, errors, processing, onSubmit, practice
                             </div>
                         </div>
                     ))}
-                    {data.contacts.length === 0 && (
-                        <p className="text-sm text-muted-foreground italic">No contact addresses added yet.</p>
-                    )}
+                    {data.contacts.length === 0 && <p className="text-sm text-muted-foreground italic">No contact addresses added yet.</p>}
                 </div>
             </div>
 

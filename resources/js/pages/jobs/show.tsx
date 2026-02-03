@@ -2,8 +2,10 @@ import { ShareJobButton } from '@/components/jobs/share-job-button';
 import { Button } from '@/components/ui/button';
 import Layout from '@/layouts/main-layout';
 import { cn } from '@/lib/utils';
+import { SharedData } from '@/types';
 import { JobListingWithRelations } from '@/types/job-listing';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
+import { Pencil } from 'lucide-react';
 import React from 'react';
 
 interface JobShowProps {
@@ -11,6 +13,10 @@ interface JobShowProps {
 }
 
 export default function JobShow({ job }: JobShowProps) {
+    const { auth } = usePage<SharedData>().props;
+    const user = auth?.user;
+    const isStaff = user?.role === 'admin' || user?.role === 'editor';
+
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-US', {
             year: 'numeric',
@@ -62,6 +68,24 @@ export default function JobShow({ job }: JobShowProps) {
             <Head title={`${job.title} at ${job.law_firm?.name || 'Company'}`} />
 
             <div className="min-h-screen bg-gray-50 pb-16">
+                {/* Staff Edit Banner */}
+                {isStaff && (
+                    <div className="border-b border-blue-200 bg-blue-50">
+                        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2 sm:px-6">
+                            <span className="text-sm text-blue-700">
+                                You are viewing this page as {user?.role === 'admin' ? 'an admin' : 'an editor'}
+                            </span>
+                            <Link
+                                href={`/admin/job-listings/${job.id}/edit`}
+                                className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                            >
+                                <Pencil className="h-3.5 w-3.5" />
+                                Edit Listing
+                            </Link>
+                        </div>
+                    </div>
+                )}
+
                 {/* Header */}
                 <div className="border-b bg-white">
                     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">

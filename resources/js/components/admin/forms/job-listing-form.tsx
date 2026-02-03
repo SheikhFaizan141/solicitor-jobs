@@ -45,17 +45,7 @@ interface JobListingFormProps {
     submitLabel: string;
 }
 
-export function JobListingForm({
-    data,
-    setData,
-    errors,
-    processing,
-    firms,
-    practiceAreas,
-    locations,
-    onSubmit,
-    submitLabel,
-}: JobListingFormProps) {
+export function JobListingForm({ data, setData, errors, processing, firms, practiceAreas, locations, onSubmit, submitLabel }: JobListingFormProps) {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setData(name as keyof FormData, value);
@@ -201,17 +191,12 @@ export function JobListingForm({
                                             onChange={(e) => handleArrayChange('requirements', index, e.target.value)}
                                             placeholder="e.g. 5+ years experience in Family Law"
                                         />
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={() => removeArrayItem('requirements', index)}
-                                        >
+                                        <Button type="button" variant="ghost" size="icon" onClick={() => removeArrayItem('requirements', index)}>
                                             <Trash2 className="h-4 w-4 text-gray-500 hover:text-red-600" />
                                         </Button>
                                     </div>
                                 ))}
-                                {data.requirements.length === 0 && <p className="text-sm italic text-gray-400">No requirements added yet.</p>}
+                                {data.requirements.length === 0 && <p className="text-sm text-gray-400 italic">No requirements added yet.</p>}
                             </div>
                         </div>
 
@@ -234,17 +219,12 @@ export function JobListingForm({
                                             onChange={(e) => handleArrayChange('benefits', index, e.target.value)}
                                             placeholder="e.g. Remote work options, Health insurance"
                                         />
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={() => removeArrayItem('benefits', index)}
-                                        >
+                                        <Button type="button" variant="ghost" size="icon" onClick={() => removeArrayItem('benefits', index)}>
                                             <Trash2 className="h-4 w-4 text-gray-500 hover:text-red-600" />
                                         </Button>
                                     </div>
                                 ))}
-                                {data.benefits.length === 0 && <p className="text-sm italic text-gray-400">No benefits added yet.</p>}
+                                {data.benefits.length === 0 && <p className="text-sm text-gray-400 italic">No benefits added yet.</p>}
                             </div>
                         </div>
                     </CardContent>
@@ -430,29 +410,13 @@ export function JobListingForm({
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="salary_min">Min</Label>
-                            <Input
-                                id="salary_min"
-                                name="salary_min"
-                                type="number"
-                                value={data.salary_min}
-                                onChange={handleChange}
-                                placeholder="0"
-                            />
+                            <Input id="salary_min" name="salary_min" type="number" value={data.salary_min} onChange={handleChange} placeholder="0" />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="salary_max">Max</Label>
-                            <Input
-                                id="salary_max"
-                                name="salary_max"
-                                type="number"
-                                value={data.salary_max}
-                                onChange={handleChange}
-                                placeholder="0"
-                            />
+                            <Input id="salary_max" name="salary_max" type="number" value={data.salary_max} onChange={handleChange} placeholder="0" />
                         </div>
-                        {(errors.salary_min || errors.salary_max) && (
-                            <p className="col-span-2 text-sm text-red-500">Check salary values</p>
-                        )}
+                        {(errors.salary_min || errors.salary_max) && <p className="col-span-2 text-sm text-red-500">Check salary values</p>}
                     </CardContent>
                 </Card>
 
@@ -464,13 +428,7 @@ export function JobListingForm({
                     <CardContent>
                         <div className="space-y-2">
                             <Label htmlFor="closing_date">Closing Date</Label>
-                            <Input
-                                id="closing_date"
-                                name="closing_date"
-                                type="date"
-                                value={data.closing_date}
-                                onChange={handleChange}
-                            />
+                            <Input id="closing_date" name="closing_date" type="date" value={data.closing_date} onChange={handleChange} />
                             {errors.closing_date && <p className="text-sm text-red-500">{errors.closing_date}</p>}
                         </div>
                     </CardContent>
