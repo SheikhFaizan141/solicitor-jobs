@@ -389,4 +389,6 @@ function ReviewActions({ review, activeTab }: ReviewActionsProps) {
     );
 }
 
-ReviewsIndex.layout = (page: React.ReactElement) => <AdminLayout>{page}</AdminLayout>;
+ReviewsIndex.layout = (page: React.ReactElement) => (
+    <AdminLayout breadcrumbs={[{ label: 'Reviews' }]}>{page}</AdminLayout>
+);

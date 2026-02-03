@@ -4,7 +4,7 @@ import Layout from '@/layouts/main-layout';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { Globe2Icon } from 'lucide-react';
+import { Globe2Icon, Pencil } from 'lucide-react';
 import React from 'react';
 
 interface Contact {
@@ -35,7 +35,9 @@ interface Review {
 }
 
 export default function Show() {
-    const { lawFirm } = usePage<SharedData>().props as unknown as { lawFirm: Firm };
+    const { lawFirm, auth } = usePage<SharedData>().props as unknown as { lawFirm: Firm; auth: SharedData['auth'] };
+    const user = auth?.user;
+    const isStaff = user?.role === 'admin' || user?.role === 'editor';
 
     console.log(lawFirm);
 
@@ -60,7 +62,25 @@ export default function Show() {
     return (
         <>
             <Head title={lawFirm?.name ?? 'Listing'} />
-               <article className="mx-auto my-12 w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+               <article className="mx-auto pt-1 w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+                {/* Staff Edit Banner */}
+                {isStaff && (
+                    <div className="mb-6 border-b border-blue-200 bg-blue-50">
+                        <div className="flex items-center justify-between rounded-t-lg px-4 py-3 sm:px-6">
+                            <span className="text-sm text-blue-700">
+                                You are viewing this page as {user?.role === 'admin' ? 'an admin' : 'an editor'}
+                            </span>
+                            <Link
+                                href={`/admin/law-firms/${lawFirm.id}/edit`}
+                                className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                            >
+                                <Pencil className="h-3.5 w-3.5" />
+                                Edit Firm
+                            </Link>
+                        </div>
+                    </div>
+                )}
+
                 {/* Header Section */}
                 <header className="mb-12 flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
                     <div className="flex items-start gap-6">

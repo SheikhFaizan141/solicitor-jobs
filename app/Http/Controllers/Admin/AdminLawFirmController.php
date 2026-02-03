@@ -257,6 +257,16 @@ class AdminLawFirmController extends Controller
     }
 
     /**
+     * Display the specified resource.
+     */
+    public function show(LawFirm $lawFirm)
+    {
+        return Inertia::render('admin/law-firms/show', [
+            'lawFirm' => $lawFirm->load('contacts', 'practiceAreas'),
+        ]);
+    }
+
+    /**
      * Remove the specified resource from storage.
      */
     public function destroy(LawFirm $lawFirm)

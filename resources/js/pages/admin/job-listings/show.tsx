@@ -10,6 +10,11 @@ interface JobAdminShowProps {
 const JobAdminShow: React.FC<JobAdminShowProps> & {
     layout?: (page: React.ReactNode) => React.ReactNode;
 } = ({ job }) => {
+    const breadcrumbs = [
+        { label: 'Job Listings', href: '/admin/job-listings' },
+        { label: job.title },
+    ];
+
     const formatDate = (dateString: string | null) => {
         if (!dateString) return 'N/A';
         return new Date(dateString).toLocaleDateString('en-US', {
@@ -45,6 +50,25 @@ const JobAdminShow: React.FC<JobAdminShowProps> & {
             <Head title={`${job.title} - Job Details`} />
 
             <div className="space-y-6">
+                {/* Breadcrumb */}
+                <nav className="mb-6 -mx-6 -mt-6 bg-white px-6 py-3 border-b border-gray-200 flex items-center text-sm">
+                    <Link href="/admin" className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
+                        Dashboard
+                    </Link>
+                    {breadcrumbs.map((item, index) => (
+                        <div key={index} className="flex items-center">
+                            <span className="mx-2 text-gray-400">/</span>
+                            {item.href ? (
+                                <Link href={item.href} className="text-blue-600 hover:text-blue-700 transition-colors">
+                                    {item.label}
+                                </Link>
+                            ) : (
+                                <span className="text-gray-900 font-medium">{item.label}</span>
+                            )}
+                        </div>
+                    ))}
+                </nav>
+
                 {/* Header */}
                 <div className="flex items-start justify-between">
                     <div>
@@ -234,6 +258,19 @@ const JobAdminShow: React.FC<JobAdminShowProps> & {
     );
 };
 
-JobAdminShow.layout = (page: React.ReactNode) => <AdminLayout>{page}</AdminLayout>;
+JobAdminShow.layout = (page: React.ReactNode) => {
+    const { job } = (page as React.ReactElement<{ job: { id: number; title: string } }>).props;
+
+    return (
+        <AdminLayout
+            breadcrumbs={[
+                { label: 'Job Listings', href: '/admin/job-listings' },
+                { label: job?.title ?? 'Job' },
+            ]}
+        >
+            {page}
+        </AdminLayout>
+    );
+};
 
 export default JobAdminShow;

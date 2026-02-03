@@ -5,9 +5,10 @@ import { Home } from 'lucide-react';
 
 type AdminLayoutProps = {
     children: ReactNode;
+    breadcrumbs?: { label: string; href?: string }[];
 };
 
-const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => (
+const AdminLayout: React.FC<AdminLayoutProps> = ({ children, breadcrumbs }) => (
     <div className="min-h-screen flex bg-gray-100">
         <AdminSidebar />
         <main className="flex-1 p-8">
@@ -22,6 +23,25 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => (
                     <span className="hidden sm:inline">Home</span>
                 </Link>
             </header>
+            {breadcrumbs && breadcrumbs.length > 0 && (
+                <nav className="mb-4 flex items-center text-sm text-gray-600">
+                    <Link href="/admin" className="hover:text-gray-900 transition-colors">
+                        Dashboard
+                    </Link>
+                    {breadcrumbs.map((item, index) => (
+                        <div key={index} className="flex items-center">
+                            <span className="mx-2">/</span>
+                            {item.href ? (
+                                <Link href={item.href} className="hover:text-gray-900 transition-colors">
+                                    {item.label}
+                                </Link>
+                            ) : (
+                                <span className="text-gray-900 font-medium">{item.label}</span>
+                            )}
+                        </div>
+                    ))}
+                </nav>
+            )}
             <section className="p-6">
                 {children}
             </section>

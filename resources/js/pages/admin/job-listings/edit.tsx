@@ -159,6 +159,20 @@ const EditJobListing = ({ job, firms, practiceAreas, locations }: EditJobListing
     );
 };
 
-EditJobListing.layout = (page: React.ReactNode) => <AdminLayout>{page}</AdminLayout>;
+EditJobListing.layout = (page: React.ReactNode) => {
+    const { job } = (page as React.ReactElement<{ job: { id: number; title: string } }>).props;
+
+    return (
+        <AdminLayout
+            breadcrumbs={[
+                { label: 'Job Listings', href: '/admin/job-listings' },
+                { label: job?.title ?? 'Job', href: job?.id ? `/admin/job-listings/${job.id}` : undefined },
+                { label: 'Edit' },
+            ]}
+        >
+            {page}
+        </AdminLayout>
+    );
+};
 
 export default EditJobListing;

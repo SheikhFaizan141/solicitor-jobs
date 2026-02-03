@@ -116,6 +116,20 @@ const EditFirm = ({ lawFirm, practiceAreas }: EditLawFirmProps) => {
     );
 };
 
-EditFirm.layout = (page: React.ReactNode) => <AdminLayout>{page}</AdminLayout>;
+EditFirm.layout = (page: React.ReactNode) => {
+    const { lawFirm } = (page as React.ReactElement<{ lawFirm: { id: number; name: string } }>).props;
+
+    return (
+        <AdminLayout
+            breadcrumbs={[
+                { label: 'Law Firms', href: '/admin/law-firms' },
+                { label: lawFirm?.name ?? 'Law Firm', href: lawFirm?.id ? `/admin/law-firms/${lawFirm.id}` : undefined },
+                { label: 'Edit' },
+            ]}
+        >
+            {page}
+        </AdminLayout>
+    );
+};
 
 export default EditFirm;
