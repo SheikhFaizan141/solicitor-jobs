@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { LawFirm } from '@/types/law-firms';
 import { Location } from '@/types/locations';
-import { PracticeArea } from '@/types/practice-area';
+import { PracticeArea, PracticeAreaTreeNode } from '@/types/practice-area';
 import { Plus, Trash2 } from 'lucide-react';
 import React from 'react';
 
@@ -35,7 +35,7 @@ type FormData = {
 
 interface JobListingFormProps {
     data: FormData;
-    setData: (field: keyof FormData, value: any) => void;
+    setData: (field: keyof FormData, value: FormData[keyof FormData]) => void;
     errors: Record<string, string>;
     processing: boolean;
     firms: LawFirm[];
@@ -94,12 +94,12 @@ export function JobListingForm({ data, setData, errors, processing, firms, pract
             if (!byParent[key]) byParent[key] = [];
             byParent[key].push(pa);
         });
-        const build = (parentKey: string): PracticeArea[] =>
+        const build = (parentKey: string): PracticeAreaTreeNode[] =>
             (byParent[parentKey] || []).sort((a, b) => a.name.localeCompare(b.name)).map((n) => ({ ...n, children: build(n.id.toString()) }));
         return build('root');
     }, [practiceAreas]);
 
-    const renderTree = (nodes: PracticeArea[], depth = 0): React.ReactNode => (
+    const renderTree = (nodes: PracticeAreaTreeNode[], depth = 0): React.ReactNode => (
         <ul className={depth === 0 ? 'space-y-1' : 'mt-1 ml-4 space-y-1'}>
             {nodes.map((node) => (
                 <li key={node.id}>

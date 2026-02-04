@@ -1,8 +1,8 @@
 import AdminLayout from '@/layouts/admin-layout';
 import { LawFirm } from '@/types/law-firms';
 import { Head, Link } from '@inertiajs/react';
+import { Globe, Mail, MapPin, Phone } from 'lucide-react';
 import React from 'react';
-import { Globe, Mail, Phone, MapPin } from 'lucide-react';
 
 interface LawFirmShowProps {
     lawFirm: LawFirm;
@@ -11,10 +11,9 @@ interface LawFirmShowProps {
 const LawFirmShow: React.FC<LawFirmShowProps> & {
     layout?: (page: React.ReactNode) => React.ReactNode;
 } = ({ lawFirm }) => {
-    const breadcrumbs = [
-        { label: 'Law Firms', href: '/admin/law-firms' },
-        { label: lawFirm.name },
-    ];
+    const breadcrumbs = [{ label: 'Law Firms', href: '/admin/law-firms' }, { label: lawFirm.name }];
+
+    console.log(lawFirm);
 
     return (
         <>
@@ -22,19 +21,19 @@ const LawFirmShow: React.FC<LawFirmShowProps> & {
 
             <div className="space-y-6">
                 {/* Breadcrumb */}
-                <nav className="mb-6 -mx-6 -mt-6 bg-white px-6 py-3 border-b border-gray-200 flex items-center text-sm">
-                    <Link href="/admin" className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
+                <nav className="-mx-6 -mt-6 mb-6 flex items-center border-b border-gray-200 bg-white px-6 py-3 text-sm">
+                    <Link href="/admin" className="font-medium text-blue-600 transition-colors hover:text-blue-700">
                         Dashboard
                     </Link>
                     {breadcrumbs.map((item, index) => (
                         <div key={index} className="flex items-center">
                             <span className="mx-2 text-gray-400">/</span>
                             {item.href ? (
-                                <Link href={item.href} className="text-blue-600 hover:text-blue-700 transition-colors">
+                                <Link href={item.href} className="text-blue-600 transition-colors hover:text-blue-700">
                                     {item.label}
                                 </Link>
                             ) : (
-                                <span className="text-gray-900 font-medium">{item.label}</span>
+                                <span className="font-medium text-gray-900">{item.label}</span>
                             )}
                         </div>
                     ))}
@@ -50,13 +49,7 @@ const LawFirmShow: React.FC<LawFirmShowProps> & {
                             Back to Law Firms
                         </Link>
                         <div className="flex items-center gap-4">
-                            {lawFirm.logo_path && (
-                                <img
-                                    src={`/storage/${lawFirm.logo_path}`}
-                                    alt={lawFirm.name}
-                                    className="h-16 w-16 rounded-lg object-cover"
-                                />
-                            )}
+                            {lawFirm.logo_url && <img src={lawFirm.logo_url} alt={lawFirm.name} className="h-16 w-16 rounded-lg object-cover" />}
                             <div>
                                 <h1 className="text-3xl font-bold text-gray-900">{lawFirm.name}</h1>
                                 <p className="mt-1 text-sm text-gray-600">{lawFirm.slug}</p>
@@ -87,10 +80,7 @@ const LawFirmShow: React.FC<LawFirmShowProps> & {
                         {lawFirm.description && (
                             <div className="rounded-lg border border-gray-200 bg-white p-6">
                                 <h2 className="mb-4 text-lg font-semibold text-gray-900">About</h2>
-                                <div
-                                    className="prose prose-sm max-w-none text-gray-700"
-                                    dangerouslySetInnerHTML={{ __html: lawFirm.description }}
-                                />
+                                <div className="prose prose-sm max-w-none text-gray-700" dangerouslySetInnerHTML={{ __html: lawFirm.description }} />
                             </div>
                         )}
 
@@ -184,7 +174,7 @@ const LawFirmShow: React.FC<LawFirmShowProps> & {
                                                 href={lawFirm.website}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                                                className="flex items-center gap-1 text-blue-600 hover:text-blue-700"
                                             >
                                                 <Globe className="h-4 w-4" />
                                                 Visit
@@ -201,7 +191,7 @@ const LawFirmShow: React.FC<LawFirmShowProps> & {
                             <div className="space-y-2">
                                 <Link
                                     href={`/admin/law-firms/${lawFirm.id}/edit`}
-                                    className="w-full inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
+                                    className="inline-flex w-full items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
                                 >
                                     Edit Firm
                                 </Link>
@@ -217,16 +207,7 @@ const LawFirmShow: React.FC<LawFirmShowProps> & {
 LawFirmShow.layout = (page: React.ReactNode) => {
     const { lawFirm } = (page as React.ReactElement<{ lawFirm: { id: number; name: string } }>).props;
 
-    return (
-        <AdminLayout
-            breadcrumbs={[
-                { label: 'Law Firms', href: '/admin/law-firms' },
-                { label: lawFirm?.name ?? 'Law Firm' },
-            ]}
-        >
-            {page}
-        </AdminLayout>
-    );
+    return <AdminLayout breadcrumbs={[{ label: 'Law Firms', href: '/admin/law-firms' }, { label: lawFirm?.name ?? 'Law Firm' }]}>{page}</AdminLayout>;
 };
 
 export default LawFirmShow;

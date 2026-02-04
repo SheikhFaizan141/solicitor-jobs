@@ -13,6 +13,7 @@ use App\Http\Controllers\JobAlertSubscriptionController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\LawFirmController;
 use App\Http\Controllers\PracticeAreaController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -33,10 +34,11 @@ Route::get('/jobs/{job:slug}', [JobController::class, 'show'])->name('jobs.show'
 Route::get('/job-alert/click', [JobAlertClickController::class, 'track'])->name('job-alert.click');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        $user = auth()->user();
 
-        // Check if admin
+    Route::get('dashboard', function () {
+        $user = Auth::user();
+
+        // Check if admin1
         if ($user->hasRole('admin')) {
             return Inertia::render('dashboard', [
                 'isAdmin' => true,
@@ -81,6 +83,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 'employment_types' => ['full_time', 'part_time', 'contract', 'internship'],
             ],
         ]);
+
     })->name('dashboard');
 });
 
