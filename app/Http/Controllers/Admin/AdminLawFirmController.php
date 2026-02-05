@@ -46,10 +46,10 @@ class AdminLawFirmController extends Controller
             case '-name':
                 $query->orderBy('name', 'desc');
                 break;
-            case 'location':
-                // Assuming you have a location column
-                $query->orderBy('location', 'asc');
-                break;
+            // case 'location':
+            //     // Assuming you have a location column
+            //     $query->orderBy('location', 'asc');
+            //     break;
             default:
                 $query->latest();
         }

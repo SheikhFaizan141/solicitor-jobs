@@ -37,7 +37,7 @@ class AdminJobListingController extends Controller
                 $query->where('is_active', false);
             })
             ->orderBy($sortBy, 'desc')
-            ->with('lawFirm')
+            ->with('lawFirm', 'location')
             ->paginate(20)
             ->withQueryString();
 
