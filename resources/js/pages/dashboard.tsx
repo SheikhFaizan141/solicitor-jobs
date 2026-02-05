@@ -1,14 +1,13 @@
 import { CreateJobAlertDialog } from '@/components/job-alerts/create-job-alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Location } from '@/types/locations';
 import { PracticeArea } from '@/types/practice-area';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { Bell, Briefcase, Building2, Plus, TrendingUp } from 'lucide-react';
+import { Bell, Briefcase, Building2, Plus } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -39,6 +38,18 @@ interface DashboardProps {
         practice_area_count: number;
         matchCount: number;
     }>;
+    savedJobsPreview?: Array<{
+        id: number;
+        notes: string | null;
+        saved_at: string;
+        job: {
+            id: number;
+            title: string;
+            slug: string;
+            lawFirm: string | null;
+            location: string | null;
+        };
+    }>;
     filterOptions?: {
         locations: Location[];
         practice_areas: PracticeArea[];
@@ -48,17 +59,30 @@ interface DashboardProps {
 }
 
 export default function Dashboard() {
-    const { isAdmin, stats, adminStats, recentAlerts, filterOptions } = usePage<DashboardProps>().props;
+    const { isAdmin, stats, adminStats, recentAlerts, filterOptions, savedJobsPreview } = usePage<DashboardProps>().props;
 
     if (isAdmin) {
         return <AdminDashboard stats={adminStats} />;
     }
 
-    return <UserDashboard stats={stats} recentAlerts={recentAlerts} filterOptions={filterOptions} />;
+    return <UserDashboard stats={stats} recentAlerts={recentAlerts} filterOptions={filterOptions} savedJobsPreview={savedJobsPreview} />;
 }
 
-function UserDashboard({ stats, recentAlerts, filterOptions }: Pick<DashboardProps, 'stats' | 'recentAlerts' | 'filterOptions'>) {
+function UserDashboard({
+    stats,
+    recentAlerts,
+    filterOptions,
+    savedJobsPreview,
+}: Pick<DashboardProps, 'stats' | 'recentAlerts' | 'filterOptions' | 'savedJobsPreview'>) {
     const hasAlerts = recentAlerts && recentAlerts.length > 0;
+    const hasSavedJobs = savedJobsPreview && savedJobsPreview.length > 0;
+
+    const formatDate = (value: string) =>
+        new Date(value).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+        });
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -72,7 +96,7 @@ function UserDashboard({ stats, recentAlerts, filterOptions }: Pick<DashboardPro
                 </div>
 
                 {/* Quick Stats */}
-                <div className="grid gap-4 md:grid-cols-4">
+                <div className="grid gap-4 md:grid-cols-3">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                             <CardTitle className="text-sm font-medium">Active Alerts</CardTitle>
@@ -91,7 +115,7 @@ function UserDashboard({ stats, recentAlerts, filterOptions }: Pick<DashboardPro
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{stats?.savedJobs || 0}</div>
-                            <p className="text-xs text-muted-foreground">Ready to apply</p>
+                            <p className="text-xs text-muted-foreground">Shortlist for later</p>
                         </CardContent>
                     </Card>
 
@@ -105,10 +129,52 @@ function UserDashboard({ stats, recentAlerts, filterOptions }: Pick<DashboardPro
                             <p className="text-xs text-muted-foreground">In progress</p>
                         </CardContent>
                     </Card>
+                </div>
 
-                    <Card className="bg-blue-50 dark:bg-blue-950/50">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium">Quick Actions</CardTitle>
+                <div className="grid gap-4 lg:grid-cols-3">
+                    <Card className="lg:col-span-2">
+                        <CardHeader>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <CardTitle>Saved Jobs</CardTitle>
+                                    <CardDescription>Pick up where you left off</CardDescription>
+                                </div>
+                                <Button asChild variant="outline" size="sm">
+                                    <Link href="/saved-jobs">View all</Link>
+                                </Button>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            {hasSavedJobs ? (
+                                <div className="space-y-3">
+                                    {savedJobsPreview!.map((item) => (
+                                        <div key={item.id} className="flex items-center justify-between rounded-lg border p-4">
+                                            <div>
+                                                <Link href={`/jobs/${item.job.slug}`} className="text-sm font-semibold text-gray-900 hover:text-amber-600">
+                                                    {item.job.title}
+                                                </Link>
+                                                <div className="mt-1 text-xs text-gray-600">
+                                                    {item.job.lawFirm || 'Independent'}
+                                                    {item.job.location ? ` • ${item.job.location}` : ''}
+                                                </div>
+                                                {item.notes && <p className="mt-2 text-xs text-gray-500">{item.notes}</p>}
+                                            </div>
+                                            <span className="text-xs text-gray-500">Saved {formatDate(item.saved_at)}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="rounded-lg border border-dashed p-6 text-center text-sm text-gray-500">
+                                    No saved jobs yet. Browse roles and save the ones you want to revisit.
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Quick Actions</CardTitle>
+                            <CardDescription>Stay ahead of new roles</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-2">
                             {filterOptions && (
@@ -211,40 +277,6 @@ function UserDashboard({ stats, recentAlerts, filterOptions }: Pick<DashboardPro
                     </CardContent>
                 </Card>
 
-                {/* Placeholder sections for future features */}
-                <div className="grid gap-4 md:grid-cols-2">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <TrendingUp className="h-5 w-5" />
-                                Recent Job Matches
-                            </CardTitle>
-                            <CardDescription>Jobs that match your alerts</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="relative overflow-hidden rounded-xl border border-sidebar-border/70">
-                                <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                                <div className="relative p-8 text-center text-sm text-gray-500">Coming soon...</div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Briefcase className="h-5 w-5" />
-                                Recommended Jobs
-                            </CardTitle>
-                            <CardDescription>Personalized job recommendations</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="relative overflow-hidden rounded-xl border border-sidebar-border/70">
-                                <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                                <div className="relative p-8 text-center text-sm text-gray-500">Coming soon...</div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
             </div>
         </AppLayout>
     );

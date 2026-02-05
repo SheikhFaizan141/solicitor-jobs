@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -91,5 +92,26 @@ class User extends Authenticatable
     public function jobAlertSubscriptions(): HasMany
     {
         return $this->hasMany(JobAlertSubscription::class);
+    }
+
+    public function jobInteractions(): HasMany
+    {
+        return $this->hasMany(UserJobInteraction::class);
+    }
+
+    public function savedJobInteractions(): HasMany
+    {
+        return $this->jobInteractions()
+            ->where('type', UserJobInteraction::TYPE_SAVED)
+            ->where('status', UserJobInteraction::STATUS_ACTIVE);
+    }
+
+    public function savedJobs(): BelongsToMany
+    {
+        return $this->belongsToMany(JobListing::class, 'user_job_interactions')
+            ->withPivot(['type', 'status', 'notes', 'metadata'])
+            ->wherePivot('type', UserJobInteraction::TYPE_SAVED)
+            ->wherePivot('status', UserJobInteraction::STATUS_ACTIVE)
+            ->withTimestamps();
     }
 }

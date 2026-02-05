@@ -1,3 +1,4 @@
+import { SaveJobButton } from '@/components/jobs/save-job-button';
 import { ShareJobButton } from '@/components/jobs/share-job-button';
 import { Button } from '@/components/ui/button';
 import Layout from '@/layouts/main-layout';
@@ -10,9 +11,10 @@ import React from 'react';
 
 interface JobShowProps {
     job: JobListingWithRelations;
+    isSaved: boolean;
 }
 
-export default function JobShow({ job }: JobShowProps) {
+export default function JobShow({ job, isSaved }: JobShowProps) {
     const { auth } = usePage<SharedData>().props;
     const user = auth?.user;
     const isStaff = user?.role === 'admin' || user?.role === 'editor';
@@ -256,6 +258,8 @@ export default function JobShow({ job }: JobShowProps) {
                                         Applications Closed
                                     </button>
                                 )}
+
+                                <SaveJobButton jobId={job.id} isSaved={isSaved} size="lg" className="w-full" />
 
                                 <ShareJobButton
                                     title={`${job.title} at ${job.law_firm?.name || 'Solicitor Jobs'}`}

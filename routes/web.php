@@ -13,6 +13,7 @@ use App\Http\Controllers\JobAlertSubscriptionController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\LawFirmController;
 use App\Http\Controllers\PracticeAreaController;
+use App\Http\Controllers\SavedJobController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -20,6 +21,12 @@ use Inertia\Inertia;
 Route::get('/', HomeController::class)->name('home');
 
 Route::get('/law-firms', [LawFirmController::class, 'index'])->name('law-firms.index');
+
+// Saved Jobs
+Route::get('/saved-jobs', [SavedJobController::class, 'index'])->name('saved-jobs.index');
+Route::post('/jobs/{jobListing}/save', [SavedJobController::class, 'store'])->name('jobs.save');
+Route::delete('/jobs/{jobListing}/unsave', [SavedJobController::class, 'destroy'])->name('jobs.unsave');
+Route::patch('/saved-jobs/{interaction}/notes', [SavedJobController::class, 'updateNotes'])->name('saved-jobs.notes.update');
 
 Route::get('/law-firms/{lawFirm:slug}', [LawFirmController::class, 'show'])->name('law-firms.show');
 
@@ -53,15 +60,34 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Regular user dashboard
         $activeAlerts = $user->jobAlertSubscriptions()->where('is_active', true);
+        $savedJobsCount = $user->savedJobInteractions()->count();
+        $savedJobsPreview = $user->savedJobInteractions()
+            ->with(['jobListing.lawFirm', 'jobListing.location'])
+            ->latest()
+            ->limit(3)
+            ->get()
+            ->map(fn ($interaction) => [
+                'id' => $interaction->id,
+                'notes' => $interaction->notes,
+                'saved_at' => $interaction->created_at,
+                'job' => [
+                    'id' => $interaction->jobListing->id,
+                    'title' => $interaction->jobListing->title,
+                    'slug' => $interaction->jobListing->slug,
+                    'lawFirm' => $interaction->jobListing->lawFirm?->name,
+                    'location' => $interaction->jobListing->location?->name,
+                ],
+            ]);
 
         return Inertia::render('dashboard', [
             'isAdmin' => false,
             'stats' => [
                 'activeAlerts' => $activeAlerts->count(),
-                'savedJobs' => 0, // TODO: Implement saved jobs
+                'savedJobs' => $savedJobsCount,
                 'applications' => 0, // TODO: Implement applications
                 'newMatches' => 0, // TODO: Calculate actual job matches
             ],
+            'savedJobsPreview' => $savedJobsPreview,
             'recentAlerts' => $activeAlerts
                 ->with('location')
                 ->limit(3)

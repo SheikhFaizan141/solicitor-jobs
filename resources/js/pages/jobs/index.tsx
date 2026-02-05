@@ -1,5 +1,6 @@
 import { CreateJobAlertDialog } from '@/components/job-alerts/create-job-alert-dialog';
 import { JobFiltersSidebar } from '@/components/jobs/job-filters-sidebar';
+import { SaveJobButton } from '@/components/jobs/save-job-button';
 import { ShareJobButton } from '@/components/jobs/share-job-button';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -24,6 +25,7 @@ interface AppliedFilters {
 
 interface JobsPageProps {
     jobs: PaginatedResponse<Job>;
+    savedJobIds: number[];
     filters: {
         locations: Location[];
         employment_types: string[];
@@ -40,7 +42,7 @@ interface JobsPageProps {
 
 // interface JobsIndexProps {}
 
-export default function JobsIndex({ jobs, filters, filterOptions, appliedFilters }: JobsPageProps) {
+export default function JobsIndex({ jobs, savedJobIds, filters, filterOptions, appliedFilters }: JobsPageProps) {
     const [searchTerm, setSearchTerm] = useState(appliedFilters.q || '');
     const [selectedLocationId, setSelectedLocationId] = useState(appliedFilters.location_id || '');
     const [selectedPracticeAreaId, setSelectedPracticeAreaId] = useState(appliedFilters.practice_area_id || '');
@@ -194,7 +196,7 @@ export default function JobsIndex({ jobs, filters, filterOptions, appliedFilters
                             {/* Job Cards */}
                             <div className="space-y-6">
                                 {jobs.data.map((job) => (
-                                    <JobCard key={job.id} job={job} />
+                                    <JobCard key={job.id} job={job} isSaved={savedJobIds.includes(job.id)} />
                                 ))}
                             </div>
 
@@ -258,9 +260,10 @@ export default function JobsIndex({ jobs, filters, filterOptions, appliedFilters
 
 interface JobCardProps {
     job: JobListingWithRelations;
+    isSaved: boolean;
 }
 
-function JobCard({ job }: JobCardProps) {
+function JobCard({ job, isSaved }: JobCardProps) {
     const formatSalary = (job: Job) => {
         if (!job.salary_min && !job.salary_max) return 'Salary not disclosed';
 
@@ -386,9 +389,7 @@ function JobCard({ job }: JobCardProps) {
                         </span>
                     </div>
                     <div className="flex flex-wrap items-center justify-end gap-3 sm:flex-nowrap">
-                        <button className="rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200">
-                            Save Job
-                        </button>
+                        <SaveJobButton jobId={job.id} isSaved={isSaved} />
                         <ShareJobButton
                             title={`${job.title}${job.law_firm ? ` at ${job.law_firm.name}` : ''}`}
                             summary={job.excerpt || job.location?.name || null}

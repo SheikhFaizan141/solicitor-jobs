@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\JobListing;
 use App\Models\Location;
 use App\Models\PracticeArea;
+use App\Models\UserJobInteraction;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -57,6 +58,17 @@ class JobController extends Controller
 
         $jobs = $query->latest()->paginate(20)->withQueryString();
 
+        $savedJobIds = [];
+        if ($request->user()) {
+            $savedJobIds = $request->user()
+                ->jobInteractions()
+                ->where('type', UserJobInteraction::TYPE_SAVED)
+                ->where('status', UserJobInteraction::STATUS_ACTIVE)
+                ->whereIn('job_listing_id', $jobs->getCollection()->pluck('id'))
+                ->pluck('job_listing_id')
+                ->all();
+        }
+
         // Get filter options
         // $locations = JobListing::active()
         //     ->published()
@@ -94,6 +106,7 @@ class JobController extends Controller
 
         return Inertia::render('jobs/index', [
             'jobs' => $jobs,
+            'savedJobIds' => $savedJobIds,
             'filters' => [
                 'locations' => $locations,
                 'employment_types' => $employmentTypes,
@@ -105,16 +118,27 @@ class JobController extends Controller
                 'employment_types' => $employmentTypes,
                 'practice_areas' => $practiceAreas,
             ],
-            'appliedFilters' => $filters
+            'appliedFilters' => $filters,
         ]);
     }
 
-    public function show(JobListing $job)
+    public function show(Request $request, JobListing $job)
     {
         $job->load(['lawFirm', 'practiceAreas', 'location',  'postedBy']);
 
+        $isSaved = false;
+        if ($request->user()) {
+            $isSaved = $request->user()
+                ->jobInteractions()
+                ->where('type', UserJobInteraction::TYPE_SAVED)
+                ->where('status', UserJobInteraction::STATUS_ACTIVE)
+                ->where('job_listing_id', $job->id)
+                ->exists();
+        }
+
         return Inertia::render('jobs/show', [
             'job' => $job,
+            'isSaved' => $isSaved,
         ]);
     }
 
