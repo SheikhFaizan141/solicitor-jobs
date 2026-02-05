@@ -1,5 +1,5 @@
 import AdminLayout from '@/layouts/admin-layout';
-
+import { Pagination } from '@/components/pagination';
 import { LawFirm } from '@/types/law-firms';
 import { PaginatedResponse } from '@/types/types';
 import { queryParams } from '@/wayfinder';
@@ -72,12 +72,6 @@ const LawFirms = ({ lawFirms }: LawFirmsPageProps) => {
         if (confirm(`Delete "${name}"? This action cannot be undone.`)) {
             destroy(`/admin/law-firms/${id}`, { preserveScroll: true });
         }
-    };
-
-    const getPaginationInfo = () => {
-        const start = (lawFirms.current_page - 1) * lawFirms.per_page + 1;
-        const end = Math.min(lawFirms.current_page * lawFirms.per_page, lawFirms.total);
-        return `Showing ${start}-${end} of ${lawFirms.total} results`;
     };
 
     return (
@@ -278,32 +272,12 @@ const LawFirms = ({ lawFirms }: LawFirmsPageProps) => {
                 </div>
 
                 {/* Pagination */}
-                {lawFirms.data.length > 0 && (
-                    <div className="border-t border-gray-200 bg-white px-6 py-3">
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                            <div className="text-sm text-gray-700">{getPaginationInfo()}</div>
-
-                            <nav className="flex items-center space-x-2">
-                                {lawFirms.links.map((link, index) => (
-                                    <Link
-                                        key={index}
-                                        href={link.url || '#'}
-                                        preserveState={true}
-                                        preserveScroll={true}
-                                        className={`rounded-md px-3 py-1 text-sm font-medium ${
-                                            link.active
-                                                ? 'bg-blue-600 text-white'
-                                                : link.url
-                                                  ? 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
-                                                  : 'cursor-not-allowed text-gray-300'
-                                        }`}
-                                        dangerouslySetInnerHTML={{ __html: link.label }}
-                                    />
-                                ))}
-                            </nav>
-                        </div>
-                    </div>
-                )}
+                <Pagination
+                    currentPage={lawFirms.current_page}
+                    perPage={lawFirms.per_page}
+                    total={lawFirms.total}
+                    links={lawFirms.links}
+                />
             </div>
         </div>
     );

@@ -1,4 +1,5 @@
 import AdminLayout from '@/layouts/admin-layout';
+import { Pagination } from '@/components/pagination';
 import { JobListingWithRelations } from '@/types/job-listing';
 import { PaginatedResponse } from '@/types/types';
 import { queryParams } from '@/wayfinder';
@@ -77,12 +78,6 @@ const JobAdminIndex = ({ jobs }: JobAdminProps) => {
         if (confirm('Delete this job listing?')) {
             destroy(`/admin/job-listings/${id}`, { preserveScroll: true });
         }
-    };
-
-    const getPaginationInfo = () => {
-        const start = (jobs.current_page - 1) * jobs.per_page + 1;
-        const end = Math.min(jobs.current_page * jobs.per_page, jobs.total);
-        return `Showing ${start}-${end} of ${jobs.total} results`;
     };
 
     return (
@@ -281,32 +276,7 @@ const JobAdminIndex = ({ jobs }: JobAdminProps) => {
                 </div>
 
                 {/* Pagination */}
-                {jobs.data.length > 0 && (
-                    <div className="border-t border-gray-200 bg-white px-6 py-3">
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                            <div className="text-sm text-gray-700">{getPaginationInfo()}</div>
-
-                            <nav className="flex items-center space-x-2">
-                                {jobs.links.map((link, index) => (
-                                    <Link
-                                        key={index}
-                                        href={link.url || '#'}
-                                        preserveState={true}
-                                        preserveScroll={true}
-                                        className={`rounded-md px-3 py-1 text-sm font-medium ${
-                                            link.active
-                                                ? 'bg-blue-600 text-white'
-                                                : link.url
-                                                  ? 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
-                                                  : 'cursor-not-allowed text-gray-300'
-                                        }`}
-                                        dangerouslySetInnerHTML={{ __html: link.label }}
-                                    />
-                                ))}
-                            </nav>
-                        </div>
-                    </div>
-                )}
+                <Pagination currentPage={jobs.current_page} perPage={jobs.per_page} total={jobs.total} links={jobs.links} />
             </div>
         </div>
     );
