@@ -34,8 +34,8 @@ const CreateJobListing = ({ firms, practiceAreas, locations }: CreateJobListingP
         description: '',
         excerpt: '',
         external_link: '',
-        requirements: [''],
-        benefits: [''],
+        requirements: [],
+        benefits: [],
         practice_areas: [] as number[],
     });
 

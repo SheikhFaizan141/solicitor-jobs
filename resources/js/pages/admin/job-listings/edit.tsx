@@ -33,14 +33,6 @@ type PracticeArea = {
     children?: PracticeArea[];
 };
 
-// type Location = {
-//     id: number;
-//     name: string;
-//     region: string | null;
-//     country: string;
-//     is_remote: boolean;
-// };
-
 interface EditJobListingProps {
     job: JobListing;
     firms: LawFirm[];
@@ -66,8 +58,8 @@ const EditJobListing = ({ job, firms, practiceAreas, locations }: EditJobListing
         description: job.description || '',
         excerpt: job.excerpt || '',
         external_link: job.external_link || '',
-        requirements: job.requirements || [''],
-        benefits: job.benefits || [''],
+        requirements: job.requirements || [],
+        benefits: job.benefits || [],
         practice_areas: job.practice_areas.map((pa) => pa.id),
     });
 
