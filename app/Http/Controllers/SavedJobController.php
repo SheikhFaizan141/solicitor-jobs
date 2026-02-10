@@ -21,7 +21,7 @@ class SavedJobController extends Controller
             ->paginate(12)
             ->withQueryString();
 
-        return Inertia::render('saved-jobs/index', [
+        return Inertia::render('app/saved-jobs/index', [
             'savedJobs' => $savedJobs,
         ]);
     }

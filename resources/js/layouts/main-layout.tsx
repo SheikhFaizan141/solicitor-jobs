@@ -70,12 +70,6 @@ function MainHeader() {
                         <Link href="/job-alerts" className={navLinkClasses('/job-alerts')}>
                             Job Alerts
                         </Link>
-
-                        {auth.user && (
-                            <Link href="/saved-jobs" className={navLinkClasses('/saved-jobs')}>
-                                Saved Jobs
-                            </Link>
-                        )}
                     </nav>
 
                     {/* AUTH BUTTONS */}

@@ -1,12 +1,19 @@
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import Layout from '@/layouts/main-layout';
-import { type SharedData } from '@/types';
+import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem, type SharedData } from '@/types';
 import { UserJobInteraction } from '@/types/job-interactions';
 import { PaginatedResponse } from '@/types/types';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { Bookmark, Briefcase, MapPin, Trash2 } from 'lucide-react';
-import React from 'react';
+import { type ReactNode } from 'react';
+
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Saved Jobs',
+        href: '/saved-jobs',
+    },
+];
 
 interface SavedJobsPageProps {
     savedJobs: PaginatedResponse<UserJobInteraction>;
@@ -28,49 +35,51 @@ export default function SavedJobsIndex({ savedJobs }: SavedJobsPageProps) {
     return (
         <>
             <Head title="Saved Jobs" />
-            <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">Saved Jobs</h1>
-                    <p className="mt-2 text-gray-600">
-                        {savedJobs.total} {savedJobs.total === 1 ? 'job' : 'jobs'} saved
-                    </p>
-                </div>
-
-                {savedJobs.data.length === 0 ? (
-                    <div className="rounded-lg border-2 border-dashed border-gray-300 p-12 text-center">
-                        <Bookmark className="mx-auto h-12 w-12 text-gray-400" />
-                        <h3 className="mt-4 text-lg font-medium text-gray-900">No saved jobs yet</h3>
-                        <p className="mt-2 text-gray-500">Start saving jobs to keep them here for later.</p>
-                        <Link href="/jobs">
-                            <Button className="mt-6">Browse Jobs</Button>
-                        </Link>
+            <div className="flex h-full flex-1 flex-col gap-6 p-6">
+                <div className="mx-auto w-full max-w-6xl">
+                    <div className="mb-8">
+                        <h1 className="text-3xl font-bold text-gray-900">Saved Jobs</h1>
+                        <p className="mt-2 text-gray-600">
+                            {savedJobs.total} {savedJobs.total === 1 ? 'job' : 'jobs'} saved
+                        </p>
                     </div>
-                ) : (
-                    <div className="space-y-4">
-                        {savedJobs.data.map((interaction) => (
-                            <SavedJobCard key={interaction.id} interaction={interaction} onUnsave={handleUnsave} />
-                        ))}
-                    </div>
-                )}
 
-                {savedJobs.links && savedJobs.data.length > 0 && (
-                    <div className="mt-8 flex justify-center">
-                        <div className="flex space-x-1">
-                            {savedJobs.links.map((link, index) => (
-                                <a
-                                    key={index}
-                                    href={link.url || '#'}
-                                    className={`rounded border px-3 py-2 text-sm ${
-                                        link.active
-                                            ? 'border-blue-500 bg-blue-500 text-white'
-                                            : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'
-                                    } ${!link.url ? 'pointer-events-none opacity-50' : ''}`}
-                                    dangerouslySetInnerHTML={{ __html: link.label }}
-                                />
+                    {savedJobs.data.length === 0 ? (
+                        <div className="rounded-lg border-2 border-dashed border-gray-300 p-12 text-center">
+                            <Bookmark className="mx-auto h-12 w-12 text-gray-400" />
+                            <h3 className="mt-4 text-lg font-medium text-gray-900">No saved jobs yet</h3>
+                            <p className="mt-2 text-gray-500">Start saving jobs to keep them here for later.</p>
+                            <Link href="/jobs">
+                                <Button className="mt-6">Browse Jobs</Button>
+                            </Link>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {savedJobs.data.map((interaction) => (
+                                <SavedJobCard key={interaction.id} interaction={interaction} onUnsave={handleUnsave} />
                             ))}
                         </div>
-                    </div>
-                )}
+                    )}
+
+                    {savedJobs.links && savedJobs.data.length > 0 && (
+                        <div className="mt-8 flex justify-center">
+                            <div className="flex space-x-1">
+                                {savedJobs.links.map((link, index) => (
+                                    <a
+                                        key={index}
+                                        href={link.url || '#'}
+                                        className={`rounded border px-3 py-2 text-sm ${
+                                            link.active
+                                                ? 'border-blue-500 bg-blue-500 text-white'
+                                                : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'
+                                        } ${!link.url ? 'pointer-events-none opacity-50' : ''}`}
+                                        dangerouslySetInnerHTML={{ __html: link.label }}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
         </>
     );
@@ -151,4 +160,4 @@ function SavedJobCard({
     );
 }
 
-SavedJobsIndex.layout = (page: React.ReactNode) => <Layout>{page}</Layout>;
+SavedJobsIndex.layout = (page: ReactNode) => <AppLayout breadcrumbs={breadcrumbs}>{page}</AppLayout>;

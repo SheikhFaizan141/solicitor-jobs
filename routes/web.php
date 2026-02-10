@@ -47,7 +47,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Check if admin1
         if ($user->hasRole('admin')) {
-            return Inertia::render('dashboard', [
+            return Inertia::render('app/dashboard', [
                 'isAdmin' => true,
                 'adminStats' => [
                     'totalJobs' => \App\Models\JobListing::count(),
@@ -59,58 +59,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
         }
 
         // Regular user dashboard
-        $activeAlerts = $user->jobAlertSubscriptions()->where('is_active', true);
+        $activeAlertsCount = $user->jobAlertSubscriptions()->where('is_active', true)->count();
         $savedJobsCount = $user->savedJobInteractions()->count();
-        $savedJobsPreview = $user->savedJobInteractions()
-            ->with(['jobListing.lawFirm', 'jobListing.location'])
-            ->latest()
-            ->limit(3)
-            ->get()
-            ->map(fn ($interaction) => [
-                'id' => $interaction->id,
-                'notes' => $interaction->notes,
-                'saved_at' => $interaction->created_at,
-                'job' => [
-                    'id' => $interaction->jobListing->id,
-                    'title' => $interaction->jobListing->title,
-                    'slug' => $interaction->jobListing->slug,
-                    'lawFirm' => $interaction->jobListing->lawFirm?->name,
-                    'location' => $interaction->jobListing->location?->name,
-                ],
-            ]);
 
-        return Inertia::render('dashboard', [
+        return Inertia::render('app/dashboard', [
             'isAdmin' => false,
             'stats' => [
-                'activeAlerts' => $activeAlerts->count(),
+                'activeAlerts' => $activeAlertsCount,
                 'savedJobs' => $savedJobsCount,
                 'applications' => 0, // TODO: Implement applications
                 'newMatches' => 0, // TODO: Calculate actual job matches
             ],
-            'savedJobsPreview' => $savedJobsPreview,
-            'recentAlerts' => $activeAlerts
-                ->with('location')
-                ->limit(3)
-                ->get()
-                ->map(fn ($alert) => [
-                    'id' => $alert->id,
-                    'frequency' => $alert->frequency,
-                    'location' => $alert->location?->name,
-                    'employment_types' => $alert->employment_types,
-                    'practice_area_count' => count($alert->practice_area_ids ?? []),
-                    'matchCount' => 0, // TODO: Calculate matches
-                ]),
-            'filterOptions' => [
-                'locations' => \App\Models\Location::where('is_active', true)
-                    ->orderBy('name')
-                    ->get(['id', 'name', 'region', 'country', 'is_remote']),
-                'practice_areas' => \App\Models\PracticeArea::orderBy('name')
-                    ->get(['id', 'name']),
-                'employment_types' => ['full_time', 'part_time', 'contract', 'internship'],
-            ],
         ]);
-
     })->name('dashboard');
+
 });
 
 Route::middleware(['auth'])->group(function () {
