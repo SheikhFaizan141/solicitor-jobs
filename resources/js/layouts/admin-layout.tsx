@@ -1,7 +1,7 @@
-import React, { ReactNode } from 'react';
 import AdminSidebar from '@/components/admin/admin-sidebar';
 import { Link } from '@inertiajs/react';
 import { Home } from 'lucide-react';
+import React, { ReactNode } from 'react';
 
 type AdminLayoutProps = {
     children: ReactNode;
@@ -9,10 +9,10 @@ type AdminLayoutProps = {
 };
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children, breadcrumbs }) => (
-    <div className="min-h-screen flex bg-gray-100">
+    <div className="flex min-h-screen bg-gray-100">
         <AdminSidebar />
         <main className="flex-1 p-8">
-            <header className="mb-6 border-b pb-4 flex items-center justify-between">
+            <header className="mb-6 flex items-center justify-between border-b pb-4">
                 <h1 className="text-2xl font-bold text-gray-800">Admin Area</h1>
                 <Link
                     href="/"
@@ -25,26 +25,24 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, breadcrumbs }) => (
             </header>
             {breadcrumbs && breadcrumbs.length > 0 && (
                 <nav className="mb-4 flex items-center text-sm text-gray-600">
-                    <Link href="/admin" className="hover:text-gray-900 transition-colors">
+                    <Link href="/admin" className="transition-colors hover:text-gray-900">
                         Dashboard
                     </Link>
                     {breadcrumbs.map((item, index) => (
                         <div key={index} className="flex items-center">
                             <span className="mx-2">/</span>
                             {item.href ? (
-                                <Link href={item.href} className="hover:text-gray-900 transition-colors">
+                                <Link href={item.href} className="transition-colors hover:text-gray-900">
                                     {item.label}
                                 </Link>
                             ) : (
-                                <span className="text-gray-900 font-medium">{item.label}</span>
+                                <span className="font-medium text-gray-900">{item.label}</span>
                             )}
                         </div>
                     ))}
                 </nav>
             )}
-            <section className="p-6">
-                {children}
-            </section>
+            <section className="p-6">{children}</section>
         </main>
     </div>
 );

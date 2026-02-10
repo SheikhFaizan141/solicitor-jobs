@@ -7,9 +7,9 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import type { VariantProps } from 'class-variance-authority';
 import { Copy, Facebook, Link2, Linkedin, Share2, Twitter } from 'lucide-react';
 import { useEffect, useMemo, useState, type ComponentType, type SVGProps } from 'react';
-import type { VariantProps } from 'class-variance-authority';
 
 interface ShareJobButtonProps {
     title: string;
@@ -58,14 +58,7 @@ const shareTargets: ShareTarget[] = [
     },
 ];
 
-export function ShareJobButton({
-    title,
-    relativePath,
-    summary,
-    buttonVariant = 'outline',
-    buttonSize = 'default',
-    className,
-}: ShareJobButtonProps) {
+export function ShareJobButton({ title, relativePath, summary, buttonVariant = 'outline', buttonSize = 'default', className }: ShareJobButtonProps) {
     const [shareUrl, setShareUrl] = useState(relativePath);
     const [supportsNativeShare, setSupportsNativeShare] = useState(false);
     const [copied, setCopied] = useState(false);
@@ -75,9 +68,7 @@ export function ShareJobButton({
             return;
         }
 
-        const absoluteUrl = relativePath.startsWith('http')
-            ? relativePath
-            : new URL(relativePath, window.location.origin).toString();
+        const absoluteUrl = relativePath.startsWith('http') ? relativePath : new URL(relativePath, window.location.origin).toString();
 
         setShareUrl(absoluteUrl);
     }, [relativePath]);

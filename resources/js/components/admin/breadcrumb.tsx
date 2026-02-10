@@ -1,6 +1,6 @@
-import { Link, usePage } from '@inertiajs/react';
-import React from 'react';
+import { Link } from '@inertiajs/react';
 import { ChevronRight } from 'lucide-react';
+import { type FC } from 'react';
 
 type BreadcrumbItem = {
     label: string;
@@ -11,21 +11,21 @@ interface BreadcrumbProps {
     items: BreadcrumbItem[];
 }
 
-const Breadcrumb: React.FC<BreadcrumbProps> = ({ items }) => {
+const Breadcrumb: FC<BreadcrumbProps> = ({ items }) => {
     return (
         <nav className="mb-6 flex items-center text-sm text-gray-600">
-            <Link href="/admin" className="hover:text-gray-900 transition-colors">
+            <Link href="/admin" className="transition-colors hover:text-gray-900">
                 Admin
             </Link>
             {items.map((item, index) => (
                 <div key={index} className="flex items-center">
                     <ChevronRight className="mx-2 h-4 w-4" />
                     {item.href ? (
-                        <Link href={item.href} className="hover:text-gray-900 transition-colors">
+                        <Link href={item.href} className="transition-colors hover:text-gray-900">
                             {item.label}
                         </Link>
                     ) : (
-                        <span className="text-gray-900 font-medium">{item.label}</span>
+                        <span className="font-medium text-gray-900">{item.label}</span>
                     )}
                 </div>
             ))}

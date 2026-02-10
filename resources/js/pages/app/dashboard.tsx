@@ -132,7 +132,6 @@ function UserDashboard({ stats }: Pick<DashboardProps, 'stats'>) {
                         </CardContent>
                     </Card>
                 </div>
-
             </div>
         </AppLayout>
     );

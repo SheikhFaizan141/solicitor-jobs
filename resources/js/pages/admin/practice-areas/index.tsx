@@ -30,11 +30,7 @@ const PracticeAreasIndex: React.FC<PracticeAreasPageProps> & { layout?: (page: R
     // Debounced search
     useEffect(() => {
         const timeoutId = setTimeout(() => {
-            router.get(
-                '/admin/practice-areas',
-                { search: search, sort_by: sortBy },
-                { preserveState: true, preserveScroll: true },
-            );
+            router.get('/admin/practice-areas', { search: search, sort_by: sortBy }, { preserveState: true, preserveScroll: true });
         }, 300);
 
         return () => clearTimeout(timeoutId);

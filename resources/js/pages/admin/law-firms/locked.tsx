@@ -42,8 +42,7 @@ export default function LockedLawFirm({ lawFirm, lockedBy, lockedAt }: LockedLaw
                     <h1 className="mb-2 text-2xl font-bold text-gray-900">Law Firm Currently Being Edited</h1>
 
                     <p className="mb-6 text-gray-600">
-                        <span className="font-medium text-gray-900">{lockedBy.name}</span> ({lockedBy.email}) is currently editing this
-                        law firm.
+                        <span className="font-medium text-gray-900">{lockedBy.name}</span> ({lockedBy.email}) is currently editing this law firm.
                     </p>
 
                     <div className="mb-6 rounded-md bg-white p-4 shadow-sm">
@@ -55,8 +54,8 @@ export default function LockedLawFirm({ lawFirm, lockedBy, lockedAt }: LockedLaw
                     </div>
 
                     <p className="mb-6 text-sm text-gray-500">
-                        The lock will automatically expire after 15 minutes of inactivity. Please try again later or contact{' '}
-                        {lockedBy.name} to coordinate.
+                        The lock will automatically expire after 15 minutes of inactivity. Please try again later or contact {lockedBy.name} to
+                        coordinate.
                     </p>
 
                     <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">

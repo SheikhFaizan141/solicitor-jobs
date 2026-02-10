@@ -1,5 +1,5 @@
 import AdminLayout from '@/layouts/admin-layout';
-import { JobListing, JobListingWithRelations } from '@/types/job-listing';
+import { JobListingWithRelations } from '@/types/job-listing';
 import { Head, Link } from '@inertiajs/react';
 import React from 'react';
 
@@ -10,10 +10,7 @@ interface JobAdminShowProps {
 const JobAdminShow: React.FC<JobAdminShowProps> & {
     layout?: (page: React.ReactNode) => React.ReactNode;
 } = ({ job }) => {
-    const breadcrumbs = [
-        { label: 'Job Listings', href: '/admin/job-listings' },
-        { label: job.title },
-    ];
+    const breadcrumbs = [{ label: 'Job Listings', href: '/admin/job-listings' }, { label: job.title }];
 
     const formatDate = (dateString: string | null) => {
         if (!dateString) return 'N/A';
@@ -51,19 +48,19 @@ const JobAdminShow: React.FC<JobAdminShowProps> & {
 
             <div className="space-y-6">
                 {/* Breadcrumb */}
-                <nav className="mb-6 -mx-6 -mt-6 bg-white px-6 py-3 border-b border-gray-200 flex items-center text-sm">
-                    <Link href="/admin" className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
+                <nav className="-mx-6 -mt-6 mb-6 flex items-center border-b border-gray-200 bg-white px-6 py-3 text-sm">
+                    <Link href="/admin" className="font-medium text-blue-600 transition-colors hover:text-blue-700">
                         Dashboard
                     </Link>
                     {breadcrumbs.map((item, index) => (
                         <div key={index} className="flex items-center">
                             <span className="mx-2 text-gray-400">/</span>
                             {item.href ? (
-                                <Link href={item.href} className="text-blue-600 hover:text-blue-700 transition-colors">
+                                <Link href={item.href} className="text-blue-600 transition-colors hover:text-blue-700">
                                     {item.label}
                                 </Link>
                             ) : (
-                                <span className="text-gray-900 font-medium">{item.label}</span>
+                                <span className="font-medium text-gray-900">{item.label}</span>
                             )}
                         </div>
                     ))}
@@ -137,11 +134,11 @@ const JobAdminShow: React.FC<JobAdminShowProps> & {
                             <dl className="space-y-4">
                                 <div>
                                     <dt className="text-sm font-medium text-gray-600">Employment Type</dt>
-                                    <dd className="mt-1 text-sm capitalize text-gray-900">{job.employment_type.replace('_', ' ')}</dd>
+                                    <dd className="mt-1 text-sm text-gray-900 capitalize">{job.employment_type.replace('_', ' ')}</dd>
                                 </div>
                                 <div>
                                     <dt className="text-sm font-medium text-gray-600">Workplace Type</dt>
-                                    <dd className="mt-1 text-sm capitalize text-gray-900">{job.workplace_type.replace('_', ' ')}</dd>
+                                    <dd className="mt-1 text-sm text-gray-900 capitalize">{job.workplace_type.replace('_', ' ')}</dd>
                                 </div>
                                 {job.experience_level && (
                                     <div>
@@ -170,11 +167,16 @@ const JobAdminShow: React.FC<JobAdminShowProps> & {
                                     href={job.external_link}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="inline-flex items-center break-all text-sm text-blue-600 hover:text-blue-700 hover:underline"
+                                    className="inline-flex items-center text-sm break-all text-blue-600 hover:text-blue-700 hover:underline"
                                 >
                                     {job.external_link}
                                     <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4m-4-4l8-8" />
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4m-4-4l8-8"
+                                        />
                                     </svg>
                                 </a>
                             </div>
@@ -184,7 +186,7 @@ const JobAdminShow: React.FC<JobAdminShowProps> & {
                         {job.description && (
                             <div className="rounded-lg border border-gray-200 bg-white p-6">
                                 <h2 className="mb-4 text-lg font-semibold text-gray-900">Description</h2>
-                                <div className="prose prose-gray max-w-none text-sm" dangerouslySetInnerHTML={{ __html: job.description }} />
+                                <div className="prose max-w-none text-sm prose-gray" dangerouslySetInnerHTML={{ __html: job.description }} />
                             </div>
                         )}
 
@@ -227,7 +229,10 @@ const JobAdminShow: React.FC<JobAdminShowProps> & {
                                 <h3 className="mb-3 text-sm font-semibold text-gray-900">Practice Areas</h3>
                                 <div className="flex flex-wrap gap-2">
                                     {job.practice_areas.map((area) => (
-                                        <span key={area.id} className="inline-flex items-center rounded-md bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">
+                                        <span
+                                            key={area.id}
+                                            className="inline-flex items-center rounded-md bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700"
+                                        >
                                             {area.name}
                                         </span>
                                     ))}
@@ -241,7 +246,7 @@ const JobAdminShow: React.FC<JobAdminShowProps> & {
                             <dl className="space-y-3 text-sm">
                                 <div>
                                     <dt className="text-gray-600">Slug</dt>
-                                    <dd className="mt-0.5 break-all font-mono text-xs text-gray-900">{job.slug}</dd>
+                                    <dd className="mt-0.5 font-mono text-xs break-all text-gray-900">{job.slug}</dd>
                                 </div>
                                 {job.law_firm && (
                                     <div>
@@ -261,16 +266,7 @@ const JobAdminShow: React.FC<JobAdminShowProps> & {
 JobAdminShow.layout = (page: React.ReactNode) => {
     const { job } = (page as React.ReactElement<{ job: { id: number; title: string } }>).props;
 
-    return (
-        <AdminLayout
-            breadcrumbs={[
-                { label: 'Job Listings', href: '/admin/job-listings' },
-                { label: job?.title ?? 'Job' },
-            ]}
-        >
-            {page}
-        </AdminLayout>
-    );
+    return <AdminLayout breadcrumbs={[{ label: 'Job Listings', href: '/admin/job-listings' }, { label: job?.title ?? 'Job' }]}>{page}</AdminLayout>;
 };
 
 export default JobAdminShow;

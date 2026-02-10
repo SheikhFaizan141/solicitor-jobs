@@ -53,7 +53,7 @@ export function FirmCard({ firm }: FirmCardProps) {
 
                 {/* Content */}
                 <div className="flex-1">
-                    <div className="flex justify-between items-start">
+                    <div className="flex items-start justify-between">
                         <div className="flex-1">
                             <h3 className="text-lg font-semibold text-gray-900 group-hover:text-amber-600">{firm.name}</h3>
 

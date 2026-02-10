@@ -85,13 +85,7 @@ export default function SavedJobsIndex({ savedJobs }: SavedJobsPageProps) {
     );
 }
 
-function SavedJobCard({
-    interaction,
-    onUnsave,
-}: {
-    interaction: UserJobInteraction;
-    onUnsave: (jobId: number) => void;
-}) {
+function SavedJobCard({ interaction, onUnsave }: { interaction: UserJobInteraction; onUnsave: (jobId: number) => void }) {
     const job = interaction.job_listing;
     const { data, setData, patch, processing } = useForm({ notes: interaction.notes || '' });
 
@@ -123,12 +117,7 @@ function SavedJobCard({
                     </div>
                 </div>
 
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onUnsave(job.id)}
-                    className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                >
+                <Button variant="ghost" size="sm" onClick={() => onUnsave(job.id)} className="text-red-600 hover:bg-red-50 hover:text-red-700">
                     <Trash2 className="h-4 w-4" />
                 </Button>
             </div>
@@ -145,13 +134,7 @@ function SavedJobCard({
                     placeholder="Add a note to remember why you saved this job..."
                 />
                 <div className="mt-2 flex justify-end">
-                    <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={handleSaveNotes}
-                        disabled={processing}
-                    >
+                    <Button type="button" size="sm" variant="outline" onClick={handleSaveNotes} disabled={processing}>
                         Save note
                     </Button>
                 </div>

@@ -34,7 +34,7 @@ const LocationsIndex: React.FC<LocationsIndexProps> & { layout?: (page: React.Re
     const [isEditOpen, setIsEditOpen] = useState(false);
 
     console.log(locations);
-    
+
     // Debounced search
     useEffect(() => {
         const timeoutId = setTimeout(() => {

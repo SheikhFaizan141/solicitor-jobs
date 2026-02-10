@@ -1,5 +1,5 @@
-import AdminLayout from '@/layouts/admin-layout';
 import { Pagination } from '@/components/pagination';
+import AdminLayout from '@/layouts/admin-layout';
 import { LawFirm } from '@/types/law-firms';
 import { PaginatedResponse } from '@/types/types';
 import { queryParams } from '@/wayfinder';
@@ -272,12 +272,7 @@ const LawFirms = ({ lawFirms }: LawFirmsPageProps) => {
                 </div>
 
                 {/* Pagination */}
-                <Pagination
-                    currentPage={lawFirms.current_page}
-                    perPage={lawFirms.per_page}
-                    total={lawFirms.total}
-                    links={lawFirms.links}
-                />
+                <Pagination currentPage={lawFirms.current_page} perPage={lawFirms.per_page} total={lawFirms.total} links={lawFirms.links} />
             </div>
         </div>
     );

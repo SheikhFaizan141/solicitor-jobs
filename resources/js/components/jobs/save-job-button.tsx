@@ -13,14 +13,7 @@ interface SaveJobButtonProps {
     iconOnly?: boolean;
 }
 
-export function SaveJobButton({
-    jobId,
-    isSaved,
-    size = 'sm',
-    variant = 'outline',
-    className,
-    iconOnly = false,
-}: SaveJobButtonProps) {
+export function SaveJobButton({ jobId, isSaved, size = 'sm', variant = 'outline', className, iconOnly = false }: SaveJobButtonProps) {
     const { auth } = usePage<SharedData>().props;
     const [saving, setSaving] = React.useState(false);
     const [savedState, setSavedState] = React.useState(isSaved);

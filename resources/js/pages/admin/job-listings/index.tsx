@@ -1,5 +1,5 @@
-import AdminLayout from '@/layouts/admin-layout';
 import { Pagination } from '@/components/pagination';
+import AdminLayout from '@/layouts/admin-layout';
 import { JobListingWithRelations } from '@/types/job-listing';
 import { PaginatedResponse } from '@/types/types';
 import { queryParams } from '@/wayfinder';

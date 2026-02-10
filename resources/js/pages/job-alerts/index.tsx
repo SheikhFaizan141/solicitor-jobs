@@ -9,7 +9,6 @@ type Subscription = {
     id: number;
     frequency: 'daily' | 'weekly';
     employment_types: string[] | null;
-    // practice_area_ids: number[] | null;
     practice_areas: PracticeArea[];
     location_id: number | null;
     location: Location | null;
@@ -36,8 +35,6 @@ export default function JobAlertsIndex() {
         practice_area_ids: [] as number[],
         location_id: null as number | null,
     });
-
-    console.log(subscriptions);
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -80,6 +77,7 @@ export default function JobAlertsIndex() {
             <div className="mx-auto max-w-3xl px-4 py-6">
                 <h1 className="mb-4 text-2xl font-bold text-gray-900">Create Job Alert</h1>
                 <form onSubmit={submit} className="space-y-4 rounded border bg-white p-4">
+                    {errors.limit && <p className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">{errors.limit}</p>}
                     <div>
                         <label className="block text-sm font-medium">Frequency</label>
                         <div className="mt-2 flex gap-4">
@@ -166,7 +164,7 @@ export default function JobAlertsIndex() {
                                     <div className="font-medium capitalize">{s.frequency} digest</div>
                                     <div className="text-gray-500">
                                         {s.location ? getLocationDisplay(s.location) : 'Any location'} • types:{' '}
-                                        {(s.employment_types || []).join(', ') || 'Any'} • areas: {(s.practice_area_ids || []).length || 'Any'}
+                                        {(s.employment_types || []).join(', ') || 'Any'} • areas: {s.practice_areas.length || 'Any'}
                                     </div>
                                 </div>
                                 <button

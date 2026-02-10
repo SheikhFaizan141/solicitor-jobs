@@ -1,13 +1,13 @@
-import Layout from '@/layouts/main-layout';
-import { Head, Link, router } from '@inertiajs/react';
-import { Search, MapPin, Briefcase, Building2 } from 'lucide-react';
+import { CreateJobAlertDialog } from '@/components/job-alerts/create-job-alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useState, FormEvent } from 'react';
+import Layout from '@/layouts/main-layout';
 import { Location } from '@/types/locations';
 import { PracticeArea } from '@/types/practice-area';
-import { CreateJobAlertDialog } from '@/components/job-alerts/create-job-alert-dialog';
+import { Head, Link, router } from '@inertiajs/react';
+import { Briefcase, Building2, MapPin, Search } from 'lucide-react';
+import { FormEvent, useState } from 'react';
 
 interface Job {
     id: number;
@@ -36,7 +36,6 @@ interface Job {
     }>;
 }
 
-
 interface HomePageProps {
     featuredJobs: Job[];
     filterOptions: {
@@ -51,14 +50,12 @@ export default function Home({ featuredJobs, filterOptions, totalJobs }: HomePag
     const [searchQuery, setSearchQuery] = useState('');
     const [locationId, setLocationId] = useState('');
     const [practiceAreaId, setPracticeAreaId] = useState('');
-    
-    
 
     const handleSearch = (e: FormEvent) => {
         e.preventDefault();
 
         const params: Record<string, string> = {};
-        
+
         if (searchQuery) params.q = searchQuery;
         if (locationId && locationId !== 'all') params.location_id = locationId;
         if (practiceAreaId && practiceAreaId !== 'all') params.practice_area_id = practiceAreaId;
@@ -82,41 +79,39 @@ export default function Home({ featuredJobs, filterOptions, totalJobs }: HomePag
     return (
         <>
             <Head title="Find Your Perfect Legal Career" />
-            
+
             <div className="min-h-screen bg-gray-50">
                 {/* Hero Section */}
                 <div className="bg-blue-900 text-white">
                     <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
                         <div className="text-center">
-                            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-                                Find Your Perfect Legal Career
-                            </h1>
+                            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Find Your Perfect Legal Career</h1>
                             <p className="mt-4 text-xl text-blue-100">
                                 Discover {totalJobs.toLocaleString()}+ opportunities at top law firms across the UK
                             </p>
                         </div>
 
                         {/* Search Form */}
-                        <form onSubmit={handleSearch} className="mt-10 max-w-5xl mx-auto">
+                        <form onSubmit={handleSearch} className="mx-auto mt-10 max-w-5xl">
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
                                 {/* Search Query */}
                                 <div className="md:col-span-5">
                                     <div className="relative">
-                                        <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                                        <Search className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
                                         <Input
                                             type="text"
                                             placeholder="Job title, keywords, or company"
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
-                                            className="pl-10 h-12 bg-white border-0 text-gray-900"
+                                            className="h-12 border-0 bg-white pl-10 text-gray-900"
                                         />
                                     </div>
                                 </div>
-                                
+
                                 {/* Location */}
                                 <div className="md:col-span-4">
                                     <Select value={locationId} onValueChange={setLocationId}>
-                                        <SelectTrigger className="h-12 bg-white border-0 text-gray-900">
+                                        <SelectTrigger className="h-12 border-0 bg-white text-gray-900">
                                             <div className="flex items-center gap-2">
                                                 <MapPin className="h-4 w-4 text-gray-400" />
                                                 <SelectValue placeholder="Location" />
@@ -135,10 +130,7 @@ export default function Home({ featuredJobs, filterOptions, totalJobs }: HomePag
 
                                 {/* Search Button */}
                                 <div className="md:col-span-3">
-                                    <Button 
-                                        type="submit" 
-                                        className="w-full h-12 bg-amber-600 hover:bg-amber-700"
-                                    >
+                                    <Button type="submit" className="h-12 w-full bg-amber-600 hover:bg-amber-700">
                                         Search Jobs
                                     </Button>
                                 </div>
@@ -151,7 +143,7 @@ export default function Home({ featuredJobs, filterOptions, totalJobs }: HomePag
                                     <span className="text-sm text-blue-100">Practice Area:</span>
                                 </div>
                                 <Select value={practiceAreaId} onValueChange={setPracticeAreaId}>
-                                    <SelectTrigger className="w-64 bg-white border-0 text-gray-900">
+                                    <SelectTrigger className="w-64 border-0 bg-white text-gray-900">
                                         <SelectValue placeholder="All Practice Areas" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -165,11 +157,11 @@ export default function Home({ featuredJobs, filterOptions, totalJobs }: HomePag
                                 </Select>
 
                                 {(searchQuery || locationId || practiceAreaId) && (
-                                    <Button 
-                                        type="button" 
-                                        variant="outline" 
+                                    <Button
+                                        type="button"
+                                        variant="outline"
                                         onClick={clearFilters}
-                                        className="bg-white text-gray-900 border-white hover:bg-gray-100"
+                                        className="border-white bg-white text-gray-900 hover:bg-gray-100"
                                     >
                                         Clear Filters
                                     </Button>
@@ -187,7 +179,7 @@ export default function Home({ featuredJobs, filterOptions, totalJobs }: HomePag
                                     practiceAreaId: practiceAreaId !== 'all' ? practiceAreaId : undefined,
                                 }}
                                 triggerButton={
-                                    <Button variant="outline" className="bg-white text-blue-900 hover:bg-gray-100 border-white">
+                                    <Button variant="outline" className="border-white bg-white text-blue-900 hover:bg-gray-100">
                                         Create a Job Alert
                                     </Button>
                                 }
@@ -201,14 +193,11 @@ export default function Home({ featuredJobs, filterOptions, totalJobs }: HomePag
                     <div>
                         <div className="mb-6 flex items-center justify-between">
                             <h2 className="text-2xl font-bold text-gray-900">Latest Legal Jobs</h2>
-                            <Link 
-                                href="/jobs" 
-                                className="text-blue-600 hover:text-blue-800 font-medium"
-                            >
+                            <Link href="/jobs" className="font-medium text-blue-600 hover:text-blue-800">
                                 View all jobs →
                             </Link>
                         </div>
-                        
+
                         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                             {featuredJobs.map((job) => (
                                 <JobCard key={job.id} job={job} />
@@ -237,14 +226,14 @@ function JobCard({ job }: JobCardProps) {
     };
 
     const formatEmploymentType = (type: string) => {
-        return type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+        return type.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase());
     };
 
     const formatTimeAgo = (dateString: string) => {
         const date = new Date(dateString);
         const now = new Date();
         const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-        
+
         if (diffInHours < 24) {
             return `${diffInHours}h ago`;
         } else {
@@ -261,30 +250,21 @@ function JobCard({ job }: JobCardProps) {
     };
 
     return (
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-start justify-between mb-4">
+        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+            <div className="mb-4 flex items-start justify-between">
                 <div className="flex items-center gap-3">
                     {job.law_firm?.logo_url ? (
-                        <img
-                            src={job.law_firm.logo_url}
-                            alt={`${job.law_firm.name} logo`}
-                            className="h-10 w-10 rounded object-cover"
-                        />
+                        <img src={job.law_firm.logo_url} alt={`${job.law_firm.name} logo`} className="h-10 w-10 rounded object-cover" />
                     ) : (
                         <div className="flex h-10 w-10 items-center justify-center rounded bg-gray-100">
                             <Building2 className="h-5 w-5 text-gray-600" />
                         </div>
                     )}
                     <div>
-                        <Link
-                            href={`/jobs/${job.slug}`}
-                            className="font-semibold text-gray-900 hover:text-blue-600"
-                        >
+                        <Link href={`/jobs/${job.slug}`} className="font-semibold text-gray-900 hover:text-blue-600">
                             {job.title}
                         </Link>
-                        {job.law_firm && (
-                            <p className="text-sm text-gray-600">{job.law_firm.name}</p>
-                        )}
+                        {job.law_firm && <p className="text-sm text-gray-600">{job.law_firm.name}</p>}
                     </div>
                 </div>
                 <span className="text-xs text-gray-500">{formatTimeAgo(job.created_at)}</span>
@@ -301,18 +281,13 @@ function JobCard({ job }: JobCardProps) {
                     <Briefcase className="h-4 w-4" />
                     {formatEmploymentType(job.employment_type)}
                 </div>
-                <div className="font-medium text-gray-900">
-                    {formatSalary(job)}
-                </div>
+                <div className="font-medium text-gray-900">{formatSalary(job)}</div>
             </div>
 
             {job.practice_areas.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-1">
                     {job.practice_areas.slice(0, 2).map((area) => (
-                        <span
-                            key={area.id}
-                            className="inline-block rounded bg-blue-100 px-2 py-1 text-xs text-blue-800"
-                        >
+                        <span key={area.id} className="inline-block rounded bg-blue-100 px-2 py-1 text-xs text-blue-800">
                             {area.name}
                         </span>
                     ))}

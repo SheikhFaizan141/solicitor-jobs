@@ -1,6 +1,6 @@
 import Layout from '@/layouts/main-layout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface Job {
     id: number;
@@ -85,7 +85,7 @@ export default function JobsIndex() {
 
     useEffect(() => {
         const params: Record<string, string> = {};
-        
+
         if (searchTerm) params.q = searchTerm;
         if (selectedLocation) params.location_id = selectedLocation;
         if (selectedPracticeArea) params.practice_area_id = selectedPracticeArea;
@@ -430,7 +430,6 @@ export default function JobsIndex() {
                                     </div>
                                 </div>
                             )}
-                            
                         </div>
                     </div>
                 </div>
