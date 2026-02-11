@@ -2,7 +2,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import Layout from '@/layouts/main-layout';
 import { destroy } from '@/routes/job-alerts';
 import { Location } from '@/types/locations';
-import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import React from 'react';
 
 type Subscription = {
@@ -27,17 +27,24 @@ interface JobAlertsPageProps {
     [key: string]: unknown;
 }
 
-export default function JobAlertsIndex() {
-    const { subscriptions = [], filterOptions } = usePage<JobAlertsPageProps>().props;
+export default function JobAlertsIndex({subscriptions = [], filterOptions}: JobAlertsPageProps) {
+    // const { subscriptions = [], filterOptions } = usePage<JobAlertsPageProps>().props;
     const { data, setData, post, processing, errors, reset } = useForm({
         frequency: 'daily' as 'daily' | 'weekly',
         employment_types: [] as string[],
         practice_area_ids: [] as number[],
         location_id: null as number | null,
     });
+    const limitError = (errors as Record<string, string | undefined>).limit;
+    const maxActiveAlerts = 5;
+    const activeAlertCount = subscriptions.filter((subscription) => subscription.is_active).length;
+    const isLimitReached = activeAlertCount >= maxActiveAlerts;
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
+        if (isLimitReached) {
+            return;
+        }
         post('/job-alerts', {
             preserveScroll: true,
             onSuccess: () => reset('practice_area_ids', 'employment_types', 'location_id'),
@@ -77,7 +84,13 @@ export default function JobAlertsIndex() {
             <div className="mx-auto max-w-3xl px-4 py-6">
                 <h1 className="mb-4 text-2xl font-bold text-gray-900">Create Job Alert</h1>
                 <form onSubmit={submit} className="space-y-4 rounded border bg-white p-4">
-                    {errors.limit && <p className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">{errors.limit}</p>}
+                    <div className="flex flex-wrap items-center justify-between gap-2 rounded border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
+                        <span>
+                            Active alerts: {activeAlertCount} / {maxActiveAlerts}
+                        </span>
+                        {isLimitReached && <span className="font-medium text-amber-700">You have reached the maximum.</span>}
+                    </div>
+                    {limitError && <p className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">{limitError}</p>}
                     <div>
                         <label className="block text-sm font-medium">Frequency</label>
                         <div className="mt-2 flex gap-4">
@@ -150,8 +163,14 @@ export default function JobAlertsIndex() {
                         {errors.location_id && <p className="mt-1 text-sm text-red-600">{errors.location_id}</p>}
                     </div>
 
-                    <button type="submit" disabled={processing} className="rounded bg-amber-600 px-4 py-2 font-medium text-white">
-                        {processing ? 'Saving...' : 'Create Alert'}
+                    <button
+                        type="submit"
+                        disabled={processing || isLimitReached}
+                        className={`rounded px-4 py-2 font-medium text-white ${
+                            processing || isLimitReached ? 'cursor-not-allowed bg-amber-300' : 'bg-amber-600'
+                        }`}
+                    >
+                        {isLimitReached ? 'Max alerts reached' : processing ? 'Saving...' : 'Create Alert'}
                     </button>
                 </form>
 
