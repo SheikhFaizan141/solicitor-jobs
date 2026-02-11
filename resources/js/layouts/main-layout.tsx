@@ -8,7 +8,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <MainHeader />
 
             {/* MAIN CONTENT */}
-            <main>{children}</main>
+            <main className="min-h-[calc(100vh-8rem)]">{children}</main>
 
             {/* FOOTER */}
             <MainFooter />

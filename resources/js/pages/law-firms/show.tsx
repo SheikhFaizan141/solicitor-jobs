@@ -3,9 +3,11 @@ import { Textarea } from '@/components/ui/textarea';
 import Layout from '@/layouts/main-layout';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
+import { PaginatedResponse } from '@/types/types';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { Globe2Icon, Pencil } from 'lucide-react';
 import React from 'react';
+import LawFirmJobsTab, { JobOverview } from './law-firm-jobs-tab';
 
 interface Contact {
     label?: string;
@@ -36,8 +38,11 @@ interface Review {
 
 interface FirmShowProps {
     lawFirm: Firm;
+    jobs: PaginatedResponse<JobOverview>;
 }
-export default function Show({ lawFirm }: FirmShowProps) {
+export default function Show({ lawFirm, jobs }: FirmShowProps) {
+    console.log(jobs);
+
     const { auth } = usePage<SharedData>().props;
 
     const user = auth?.user;
@@ -163,18 +168,7 @@ export default function Show({ lawFirm }: FirmShowProps) {
                                 </div>
 
                                 <div className={cn(activeTab !== 'jobs' && 'hidden')}>
-                                    <div className="rounded-xl bg-gray-50 py-12 text-center">
-                                        <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6M8 8v10a2 2 0 002 2h4a2 2 0 002-2V8"
-                                            />
-                                        </svg>
-                                        <h3 className="mt-4 text-lg font-medium text-gray-900">No Jobs Available</h3>
-                                        <p className="mt-2 text-sm text-gray-500">This law firm hasn't posted any job openings yet.</p>
-                                    </div>
+                                   <LawFirmJobsTab jobs={jobs} />
                                 </div>
 
                                 <div className={cn(activeTab !== 'contacts' && 'hidden')}>
@@ -282,6 +276,7 @@ export default function Show({ lawFirm }: FirmShowProps) {
     );
 }
 
+// function JobsTab({ jobs }: { jobs: PaginatedResponse<JobListing> }) {
 function Reviews({ lawFirm }: { lawFirm: Firm }) {
     const {
         auth,

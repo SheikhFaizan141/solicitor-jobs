@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\JobListing;
 use App\Models\LawFirm;
 use App\Models\PracticeArea;
 use Illuminate\Http\Request;
@@ -76,13 +77,33 @@ class LawFirmController extends Controller
     public function show(LawFirm $lawFirm)
     {
         $reviews = $lawFirm->reviews()
-            ->where('status', 'active')
+            ->active()
             ->with('user')
             ->latest()->paginate(10);
 
+        $jobs = $lawFirm->jobs()
+            ->active()
+            ->latest()
+            ->with('location')
+            ->paginate(5)
+            ->through(function (JobListing $job): array {
+                $location = $job->getRelation('location')?->name;
+
+                return [
+                    'id' => $job->id,
+                    'slug' => $job->slug,
+                    'title' => $job->title,
+                    'location' => $location ?? $job->location,
+                    'excerpt' => $job->excerpt,
+                    'employment_type' => $job->employment_type,
+                    'published_at' => $job->published_at?->toDateString(),
+                ];
+            });
+
         return Inertia::render('law-firms/show', [
-            'lawFirm' => $lawFirm->load(['contacts', 'reviews']),
+            'lawFirm' => $lawFirm->load(['contacts']),
             'reviews' => $reviews,
+            'jobs' => $jobs,
         ]);
     }
 
