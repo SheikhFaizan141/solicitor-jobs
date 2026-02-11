@@ -1,4 +1,5 @@
 import { FirmCard } from '@/components/law-firms/firm-card';
+import { PublicPagination } from '@/components/pagination/public-pagination';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Layout from '@/layouts/main-layout';
@@ -21,6 +22,8 @@ interface LawFirmPageProps {
 }
 
 const LawFirmPage = ({ lawFirms, practiceAreas, filters }: LawFirmPageProps) => {
+    console.log(lawFirms);
+
     const [search, setSearch] = useState(filters.search || '');
     const [practiceArea, setPracticeArea] = useState(filters.practice_area || 'all');
     const [sort, setSort] = useState(filters.sort || 'latest');
@@ -255,22 +258,12 @@ const LawFirmPage = ({ lawFirms, practiceAreas, filters }: LawFirmPageProps) => 
 
                 {/* Pagination */}
                 {lawFirms.links && lawFirms.data.length > 0 && (
-                    <div className="mt-8 flex justify-center">
-                        <div className="flex space-x-1">
-                            {lawFirms.links.map((link, index) => (
-                                <a
-                                    key={index}
-                                    href={link.url || '#'}
-                                    className={`rounded border px-3 py-2 text-sm ${
-                                        link.active
-                                            ? 'border-blue-500 bg-blue-500 text-white'
-                                            : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'
-                                    } ${!link.url ? 'pointer-events-none opacity-50' : ''}`}
-                                    dangerouslySetInnerHTML={{ __html: link.label }}
-                                />
-                            ))}
-                        </div>
-                    </div>
+                    <PublicPagination
+                        links={lawFirms.links}
+                        currentPage={lawFirms.current_page}
+                        totalPages={lawFirms.last_page}
+                        totalResults={lawFirms.total}
+                    />
                 )}
             </article>
         </>

@@ -27,7 +27,7 @@ interface JobAlertsPageProps {
     [key: string]: unknown;
 }
 
-export default function JobAlertsIndex({subscriptions = [], filterOptions}: JobAlertsPageProps) {
+export default function JobAlertsIndex({ subscriptions = [], filterOptions }: JobAlertsPageProps) {
     // const { subscriptions = [], filterOptions } = usePage<JobAlertsPageProps>().props;
     const { data, setData, post, processing, errors, reset } = useForm({
         frequency: 'daily' as 'daily' | 'weekly',

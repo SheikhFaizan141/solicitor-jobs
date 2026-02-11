@@ -2,6 +2,7 @@ import { CreateJobAlertDialog } from '@/components/job-alerts/create-job-alert-d
 import { JobFiltersSidebar } from '@/components/jobs/job-filters-sidebar';
 import { SaveJobButton } from '@/components/jobs/save-job-button';
 import { ShareJobButton } from '@/components/jobs/share-job-button';
+import { PublicPagination } from '@/components/pagination/public-pagination';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -233,22 +234,12 @@ export default function JobsIndex({ jobs, savedJobIds, filters, filterOptions, a
 
                             {/* Pagination */}
                             {jobs.links && (
-                                <div className="mt-8 flex justify-center">
-                                    <div className="flex space-x-1">
-                                        {jobs.links.map((link, index) => (
-                                            <a
-                                                key={index}
-                                                href={link.url ? link.url : '#'}
-                                                className={`rounded border px-3 py-2 text-sm ${
-                                                    link.active
-                                                        ? 'border-blue-500 bg-blue-500 text-white'
-                                                        : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'
-                                                } ${!link.url ? 'pointer-events-none opacity-50' : ''}`}
-                                                dangerouslySetInnerHTML={{ __html: link.label }}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
+                                <PublicPagination
+                                    links={jobs.links}
+                                    currentPage={jobs.current_page}
+                                    totalPages={jobs.last_page}
+                                    totalResults={jobs.total}
+                                />
                             )}
                         </div>
                     </div>

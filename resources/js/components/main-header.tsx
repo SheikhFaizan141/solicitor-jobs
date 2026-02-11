@@ -1,8 +1,8 @@
 import { dashboard, login, register } from '@/routes';
 import { SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { X, Menu } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Menu, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export default function MainHeader() {
     const { auth } = usePage<SharedData>().props;
@@ -36,9 +36,7 @@ export default function MainHeader() {
     const mobileNavLinkClasses = (path: string) => {
         const isActive = currentPath === path;
         return `block px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-            isActive
-                ? 'bg-amber-500 text-white'
-                : 'text-gray-700 hover:bg-gray-100'
+            isActive ? 'bg-amber-500 text-white' : 'text-gray-700 hover:bg-gray-100'
         }`;
     };
 
@@ -116,16 +114,12 @@ export default function MainHeader() {
                     <div className="md:hidden">
                         <button
                             type="button"
-                            className="inline-flex items-center justify-center rounded-md p-2 text-white hover:bg-blue-800 focus:ring-2 focus:ring-amber-500 focus:outline-none transition-colors"
+                            className="inline-flex items-center justify-center rounded-md p-2 text-white transition-colors hover:bg-blue-800 focus:ring-2 focus:ring-amber-500 focus:outline-none"
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             aria-expanded={isMobileMenuOpen}
                             aria-label="Toggle navigation menu"
                         >
-                            {isMobileMenuOpen ? (
-                                <X className="h-6 w-6" />
-                            ) : (
-                                <Menu className="h-6 w-6" />
-                            )}
+                            {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
                         </button>
                     </div>
                 </div>
@@ -135,44 +129,25 @@ export default function MainHeader() {
             {isMobileMenuOpen && (
                 <>
                     {/* Backdrop */}
-                    <div
-                        className="fixed inset-0 top-16 bg-black/50 md:hidden"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                    />
+                    <div className="fixed inset-0 top-16 bg-black/50 md:hidden" onClick={() => setIsMobileMenuOpen(false)} />
 
                     {/* Menu Content */}
-                    <div className="fixed left-0 right-0 top-16 max-h-[calc(100vh-64px)] overflow-y-auto bg-white shadow-lg md:hidden">
+                    <div className="fixed top-16 right-0 left-0 max-h-[calc(100vh-64px)] overflow-y-auto bg-white shadow-lg md:hidden">
                         <div className="space-y-1 p-4">
                             {/* Navigation Links */}
-                            <Link
-                                href="/"
-                                className={mobileNavLinkClasses('/')}
-                                onClick={() => setIsMobileMenuOpen(false)}
-                            >
+                            <Link href="/" className={mobileNavLinkClasses('/')} onClick={() => setIsMobileMenuOpen(false)}>
                                 Home
                             </Link>
 
-                            <Link
-                                href="/jobs"
-                                className={mobileNavLinkClasses('/jobs')}
-                                onClick={() => setIsMobileMenuOpen(false)}
-                            >
+                            <Link href="/jobs" className={mobileNavLinkClasses('/jobs')} onClick={() => setIsMobileMenuOpen(false)}>
                                 Jobs
                             </Link>
 
-                            <Link
-                                href="/law-firms"
-                                className={mobileNavLinkClasses('/law-firms')}
-                                onClick={() => setIsMobileMenuOpen(false)}
-                            >
+                            <Link href="/law-firms" className={mobileNavLinkClasses('/law-firms')} onClick={() => setIsMobileMenuOpen(false)}>
                                 Law Firms
                             </Link>
 
-                            <Link
-                                href="/job-alerts"
-                                className={mobileNavLinkClasses('/job-alerts')}
-                                onClick={() => setIsMobileMenuOpen(false)}
-                            >
+                            <Link href="/job-alerts" className={mobileNavLinkClasses('/job-alerts')} onClick={() => setIsMobileMenuOpen(false)}>
                                 Job Alerts
                             </Link>
 
@@ -182,9 +157,7 @@ export default function MainHeader() {
                             {/* Auth Section */}
                             {auth.user ? (
                                 <div className="space-y-2">
-                                    <div className="px-4 py-2 text-sm font-medium text-gray-700">
-                                        {auth.user.name}
-                                    </div>
+                                    <div className="px-4 py-2 text-sm font-medium text-gray-700">{auth.user.name}</div>
                                     <Link
                                         href={dashboard()}
                                         className="block w-full rounded-lg bg-amber-600 px-4 py-3 text-center text-sm font-medium text-white transition-all hover:bg-amber-700"
