@@ -73,3 +73,8 @@ it('shows saved jobs list for authenticated users', function () {
         ->get(route('saved-jobs.index'))
         ->assertOk();
 });
+
+it('redirects guests trying to view saved jobs', function () {
+    $this->get(route('saved-jobs.index'))
+        ->assertRedirect(route('login'));
+});
