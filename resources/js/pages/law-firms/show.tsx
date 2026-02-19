@@ -1,3 +1,5 @@
+import AboutLawFirm from '@/components/law-firm-about';
+import LawFirmContacts from '@/components/law-firm-contacts';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import Layout from '@/layouts/main-layout';
@@ -50,9 +52,9 @@ export default function Show({ lawFirm, jobs }: FirmShowProps) {
 
     // Get tab from URL query parameter
     const urlParams = new URLSearchParams(window.location.search);
-    const initialTab = (urlParams.get('tab') as 'reviews' | 'jobs' | 'contacts') || 'reviews';
+    const initialTab = (urlParams.get('tab') as 'reviews' | 'jobs' | 'contacts' | 'about') || 'about';
 
-    const [activeTab, setActiveTab] = React.useState<'reviews' | 'jobs' | 'contacts'>(initialTab);
+    const [activeTab, setActiveTab] = React.useState<'reviews' | 'jobs' | 'contacts' | 'about'>(initialTab);
 
     // Update URL when tab changes
     React.useEffect(() => {
@@ -64,6 +66,7 @@ export default function Show({ lawFirm, jobs }: FirmShowProps) {
         }
         window.history.replaceState({}, '', url.toString());
     }, [activeTab]);
+
     return (
         <>
             <Head title={lawFirm.name ?? 'Listing'} />
@@ -130,25 +133,15 @@ export default function Show({ lawFirm, jobs }: FirmShowProps) {
                 <div className="grid gap-12">
                     <div className="space-y-12 lg:col-span-2">
                         {/* About Section */}
-                        <section>
-                            <h2 className="mb-4 text-xl font-bold text-gray-900">About</h2>
-                            <div className="prose max-w-none prose-gray">
-                                {lawFirm.description ? (
-                                    <p>{lawFirm.description}</p>
-                                ) : (
-                                    <p className="text-gray-500 italic">No description provided.</p>
-                                )}
-                            </div>
-                        </section>
 
                         {/* Tabs Section */}
                         <section>
                             <div className="border-b border-gray-200">
                                 <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-                                    {['reviews', 'jobs', 'contacts'].map((tab) => (
+                                    {['about', 'reviews', 'jobs', 'contacts'].map((tab) => (
                                         <button
                                             key={tab}
-                                            onClick={() => setActiveTab(tab as 'reviews' | 'jobs' | 'contacts')}
+                                            onClick={() => setActiveTab(tab as 'about' | 'reviews' | 'jobs' | 'contacts')}
                                             className={cn(
                                                 'border-b-2 px-1 py-4 text-sm font-medium capitalize transition-colors',
                                                 activeTab === tab
@@ -163,105 +156,20 @@ export default function Show({ lawFirm, jobs }: FirmShowProps) {
                             </div>
 
                             <div className="py-8">
+                                <div className={cn(activeTab !== 'about' && 'hidden')}>
+                                    <AboutLawFirm description={lawFirm.description} />
+                                </div>
+
                                 <div className={cn(activeTab !== 'reviews' && 'hidden')}>
                                     <Reviews lawFirm={lawFirm} />
                                 </div>
 
                                 <div className={cn(activeTab !== 'jobs' && 'hidden')}>
-                                   <LawFirmJobsTab jobs={jobs} />
+                                    <LawFirmJobsTab jobs={jobs} />
                                 </div>
 
                                 <div className={cn(activeTab !== 'contacts' && 'hidden')}>
-                                    <h3 className="mb-6 text-lg font-bold text-gray-900">Contact Information</h3>
-                                    {(lawFirm.contacts || []).length ? (
-                                        <div className="grid gap-6 sm:grid-cols-2">
-                                            {lawFirm.contacts.map((c: Contact, i: number) => (
-                                                <div key={i} className="group relative rounded-xl bg-gray-50 p-6 transition-colors hover:bg-gray-100">
-                                                    <h4 className="mb-4 font-semibold text-gray-900">{c.label || 'Office'}</h4>
-                                                    <div className="space-y-3 text-sm text-gray-600">
-                                                        {c.address && (
-                                                            <div className="flex items-start gap-3">
-                                                                <svg
-                                                                    className="mt-0.5 h-5 w-5 flex-shrink-0 text-gray-400"
-                                                                    fill="none"
-                                                                    stroke="currentColor"
-                                                                    viewBox="0 0 24 24"
-                                                                >
-                                                                    <path
-                                                                        strokeLinecap="round"
-                                                                        strokeLinejoin="round"
-                                                                        strokeWidth={2}
-                                                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                                                                    />
-                                                                    <path
-                                                                        strokeLinecap="round"
-                                                                        strokeLinejoin="round"
-                                                                        strokeWidth={2}
-                                                                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                                                                    />
-                                                                </svg>
-                                                                <span>{c.address}</span>
-                                                            </div>
-                                                        )}
-                                                        {c.email && (
-                                                            <div className="flex items-center gap-3">
-                                                                <svg
-                                                                    className="h-5 w-5 flex-shrink-0 text-gray-400"
-                                                                    fill="none"
-                                                                    stroke="currentColor"
-                                                                    viewBox="0 0 24 24"
-                                                                >
-                                                                    <path
-                                                                        strokeLinecap="round"
-                                                                        strokeLinejoin="round"
-                                                                        strokeWidth={2}
-                                                                        d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                                                                    />
-                                                                </svg>
-                                                                <a
-                                                                    href={`mailto:${c.email}`}
-                                                                    className="text-amber-600 hover:text-amber-700 hover:underline"
-                                                                >
-                                                                    {c.email}
-                                                                </a>
-                                                            </div>
-                                                        )}
-                                                        {c.phone && (
-                                                            <div className="flex items-center gap-3">
-                                                                <svg
-                                                                    className="h-5 w-5 flex-shrink-0 text-gray-400"
-                                                                    fill="none"
-                                                                    stroke="currentColor"
-                                                                    viewBox="0 0 24 24"
-                                                                >
-                                                                    <path
-                                                                        strokeLinecap="round"
-                                                                        strokeLinejoin="round"
-                                                                        strokeWidth={2}
-                                                                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                                                                    />
-                                                                </svg>
-                                                                <span>{c.phone}</span>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <div className="rounded-xl bg-gray-50 py-12 text-center">
-                                            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                                                />
-                                            </svg>
-                                            <h3 className="mt-4 text-lg font-medium text-gray-900">No Contact Information</h3>
-                                            <p className="mt-2 text-sm text-gray-500">Contact details are not available for this law firm.</p>
-                                        </div>
-                                    )}
+                                    <LawFirmContacts contacts={lawFirm.contacts} />
                                 </div>
                             </div>
                         </section>
@@ -276,7 +184,6 @@ export default function Show({ lawFirm, jobs }: FirmShowProps) {
     );
 }
 
-// function JobsTab({ jobs }: { jobs: PaginatedResponse<JobListing> }) {
 function Reviews({ lawFirm }: { lawFirm: Firm }) {
     const {
         auth,
@@ -452,7 +359,5 @@ function Reviews({ lawFirm }: { lawFirm: Firm }) {
         </div>
     );
 }
-
-// Remove the unused ReviewForm component since it's integrated into Reviews
 
 Show.layout = (page: React.ReactNode) => <Layout>{page}</Layout>;
