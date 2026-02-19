@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { SharedData } from '@/types';
 import { JobListingWithRelations } from '@/types/job-listing';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { Pencil } from 'lucide-react';
+import { BadgeCheck, MapPinIcon, Pencil, SquareArrowOutUpRight } from 'lucide-react';
 import React from 'react';
 
 interface JobShowProps {
@@ -18,6 +18,8 @@ export default function JobShow({ job, isSaved }: JobShowProps) {
     const { auth } = usePage<SharedData>().props;
     const user = auth?.user;
     const isStaff = user?.role === 'admin' || user?.role === 'editor';
+
+    console.log(job);
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-US', {
@@ -90,7 +92,7 @@ export default function JobShow({ job, isSaved }: JobShowProps) {
 
                 {/* Header */}
                 <div className="border-b bg-white">
-                    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+                    <div className="mx-auto max-w-7xl px-4 pt-6 pb-8 sm:px-6">
                         <Link href="/jobs" className="mb-6 inline-flex max-w-fit items-center text-sm text-gray-600 hover:text-gray-900">
                             <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -102,7 +104,7 @@ export default function JobShow({ job, isSaved }: JobShowProps) {
                             <div className="flex-1">
                                 <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center">
                                     {/* Company Logo */}
-                                    <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-white">
+                                    <div className="flex h-18 w-18 flex-shrink-0 items-start justify-center overflow-hidden rounded-lg border bg-white">
                                         {job.law_firm?.logo_url ? (
                                             <img src={job.law_firm.logo_url} alt={`${job.law_firm.name} logo`} className="h-14 w-14 object-cover" />
                                         ) : (
@@ -116,7 +118,7 @@ export default function JobShow({ job, isSaved }: JobShowProps) {
                                         )}
                                     </div>
 
-                                    <div className="text-center sm:text-left">
+                                    <div className="sm:text-left">
                                         <h1 className="mb-2 text-3xl font-bold text-gray-900">{job.title}</h1>
                                         {job.law_firm && (
                                             <Link
@@ -133,46 +135,19 @@ export default function JobShow({ job, isSaved }: JobShowProps) {
                                 <div className="mb-4 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-gray-600">
                                     {job.location && (
                                         <div className="flex items-center">
-                                            <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth="2"
-                                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                                                />
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth="2"
-                                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                                                />
-                                            </svg>
+                                            <MapPinIcon className="mr-2 h-4 w-4" />
                                             <span>{job.location?.name}</span>
                                         </div>
                                     )}
 
                                     <div className="flex items-center">
-                                        <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth="2"
-                                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
-                                            />
-                                        </svg>
+                                        {/* <DollarSignIcon className="mr-2 h-4 w-4" /> */}
                                         {formatSalary()}
                                     </div>
 
                                     {job.experience_level && (
                                         <div className="flex items-center">
-                                            <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth="2"
-                                                    d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
-                                                ></path>
-                                            </svg>
+                                            <BadgeCheck className="mr-2 h-4 w-4" />
                                             {job.experience_level}
                                         </div>
                                     )}
@@ -218,37 +193,25 @@ export default function JobShow({ job, isSaved }: JobShowProps) {
                             </div>
 
                             {/* Apply / Share Actions */}
-                            <div className="w-full max-w-md space-y-3 lg:ml-6 lg:flex-shrink-0">
+                            <div className="flex w-full max-w-md flex-col space-y-3 md:items-end lg:ml-6 lg:flex-shrink-0">
                                 {job.is_active ? (
-                                    job.external_link ? (
+                                    job.external_link && (
                                         <Button
                                             onClick={handleApplyClick}
                                             variant="default"
-                                            className="w-full bg-amber-600 hover:bg-amber-700 focus:ring-amber-500"
+                                            className="w-full max-w-[224px] bg-amber-600 hover:bg-amber-700 focus:ring-amber-500"
                                         >
                                             Apply Now
-                                            <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            {/* <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path
                                                     strokeLinecap="round"
                                                     strokeLinejoin="round"
                                                     strokeWidth={2}
                                                     d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
                                                 />
-                                            </svg>
+                                            </svg> */}
+                                            <SquareArrowOutUpRight className="ml-2 h-4 w-4" />
                                         </Button>
-                                    ) : (
-                                        <div className="text-center">
-                                            <div className="mb-2 text-sm text-gray-600">Contact employer directly</div>
-                                            {job.law_firm?.website && (
-                                                <Link
-                                                    href={job.law_firm.website}
-                                                    target="_blank"
-                                                    className="inline-flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-amber-500 focus:outline-none"
-                                                >
-                                                    Visit Website
-                                                </Link>
-                                            )}
-                                        </div>
                                     )
                                 ) : (
                                     <button
@@ -259,7 +222,7 @@ export default function JobShow({ job, isSaved }: JobShowProps) {
                                     </button>
                                 )}
 
-                                <SaveJobButton jobId={job.id} isSaved={isSaved} size="lg" className="w-full" />
+                                <SaveJobButton jobId={job.id} isSaved={isSaved} size="lg" className="w-full max-w-[224px]" />
 
                                 <ShareJobButton
                                     title={`${job.title} at ${job.law_firm?.name || 'Solicitor Jobs'}`}
@@ -267,7 +230,7 @@ export default function JobShow({ job, isSaved }: JobShowProps) {
                                     relativePath={`/jobs/${job.slug}`}
                                     buttonVariant="outline"
                                     buttonSize="lg"
-                                    className="w-full"
+                                    className="w-full max-w-[224px]"
                                 />
                             </div>
                         </div>
@@ -336,21 +299,20 @@ export default function JobShow({ job, isSaved }: JobShowProps) {
                         {/* Sidebar */}
                         <div className="space-y-6">
                             {/* Quick Apply */}
-                            {job.is_active && (
+                            {job.external_link && (
                                 <div className="rounded-lg border bg-white p-6">
                                     <h3 className="mb-4 text-lg font-semibold text-gray-900">Ready to Apply?</h3>
-
                                     <div>
                                         <p className="mb-4 text-sm text-gray-600">Contact the employer directly to apply for this position.</p>
-                                        {job.external_link && (
-                                            <a
-                                                href={job.external_link}
-                                                target="_blank"
-                                                className="inline-flex w-full items-center justify-center rounded-md border border-gray-300 bg-[#4db2ec] px-6 py-3 text-base font-medium text-white hover:bg-[#3a8bd1] focus:ring-2 focus:ring-[#3a8bd1] focus:outline-none"
-                                            >
-                                                Apply Now
-                                            </a>
-                                        )}
+                                        <a
+                                            href={job.external_link}
+                                            target="_blank"
+                                            className="inline-flex w-full items-center justify-center rounded-md border border-gray-300 bg-[#a32245] px-4 py-2 text-base font-semibold text-white hover:bg-[#af2449] focus:ring-2 focus:ring-[#3a8bd1] focus:outline-none"
+                                        >
+                                            Apply Now
+
+                                            <SquareArrowOutUpRight className="ml-2 h-4 w-4" />
+                                        </a>
                                     </div>
                                 </div>
                             )}
@@ -397,7 +359,7 @@ export default function JobShow({ job, isSaved }: JobShowProps) {
                                 <div className="rounded-lg border bg-white p-6">
                                     <h3 className="mb-4 text-lg font-semibold text-gray-900">About {job.law_firm.name}</h3>
                                     {job.law_firm.description ? (
-                                        <p className="mb-4 text-sm text-gray-700">{job.law_firm.description}</p>
+                                        <div className="mb-4 text-sm text-gray-700" dangerouslySetInnerHTML={{ __html:  job.law_firm.description.slice(0, 200) }} />
                                     ) : (
                                         <p className="mb-4 text-sm text-gray-500">No company description available.</p>
                                     )}

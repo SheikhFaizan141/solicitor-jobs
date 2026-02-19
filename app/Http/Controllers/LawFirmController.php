@@ -22,25 +22,22 @@ class LawFirmController extends Controller
         $query = LawFirm::with(['contacts', 'practiceAreas'])
             ->withCount('activeReviews as reviews_count')
             ->withAvg('activeReviews as average_rating', 'rating')
-            ->withCount('jobs as jobs_count');
+            ->withCount(['jobs as jobs_count' => fn($q) => $q->active()->open()]);
 
-        // Search filter
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%");
-                // ->orWhere('location', 'like', "%{$search}%");
+                 // ->orWhere('location', 'like', "%{$search}%");
             });
         }
 
-        // Practice area filter
         if ($practiceAreaId) {
             $query->whereHas('practiceAreas', function ($q) use ($practiceAreaId) {
                 $q->where('practice_areas.id', $practiceAreaId);
             });
         }
 
-        // Sorting
         switch ($sort) {
             case 'high':
                 $query->orderByDesc('average_rating');
@@ -51,7 +48,7 @@ class LawFirmController extends Controller
             case 'name':
                 $query->orderBy('name');
                 break;
-            default: // 'latest'
+            default:
                 $query->latest();
                 break;
         }
@@ -83,6 +80,7 @@ class LawFirmController extends Controller
 
         $jobs = $lawFirm->jobs()
             ->active()
+            ->open()
             ->latest()
             ->with('location')
             ->paginate(5)
@@ -101,7 +99,7 @@ class LawFirmController extends Controller
             });
 
         return Inertia::render('law-firms/show', [
-            'lawFirm' => $lawFirm->load(['contacts']),
+            'lawFirm' => $lawFirm->load(['contacts', 'practiceAreas']),
             'reviews' => $reviews,
             'jobs' => $jobs,
         ]);

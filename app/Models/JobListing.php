@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasEditLock;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -56,7 +58,7 @@ class JobListing extends Model
                 $slug = $base;
                 $i = 2;
                 while (static::withTrashed()->where('slug', $slug)->exists()) {
-                    $slug = $base.'-'.$i++;
+                    $slug = $base . '-' . $i++;
                 }
                 $job->slug = $slug;
             }
@@ -93,6 +95,15 @@ class JobListing extends Model
         return $query->where('is_active', true);
     }
 
+    #[Scope]
+    public function open($query): void
+    {
+        $query->where(function (Builder $q): void {
+            $q->whereNull('closing_date')
+                ->orWhere('closing_date', '>=', now());
+        });
+    }
+
     public function scopePublished($query)
     {
         return $query->whereNotNull('published_at');
@@ -107,13 +118,13 @@ class JobListing extends Model
         $currency = $this->salary_currency === 'GBP' ? '£' : $this->salary_currency;
 
         if ($this->salary_min && $this->salary_max) {
-            return $currency.number_format($this->salary_min).' - '.$currency.number_format($this->salary_max);
+            return $currency . number_format($this->salary_min) . ' - ' . $currency . number_format($this->salary_max);
         }
 
         if ($this->salary_min) {
-            return 'From '.$currency.number_format($this->salary_min);
+            return 'From ' . $currency . number_format($this->salary_min);
         }
 
-        return 'Up to '.$currency.number_format($this->salary_max);
+        return 'Up to ' . $currency . number_format($this->salary_max);
     }
 }
