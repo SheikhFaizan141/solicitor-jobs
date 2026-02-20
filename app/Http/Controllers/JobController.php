@@ -18,7 +18,12 @@ class JobController extends Controller
         $query = JobListing::query()
             ->active()
             ->published()
-            ->with(['lawFirm', 'practiceAreas']);
+            ->with(['lawFirm', 'practiceAreas'])
+            ->where(function ($q): void {
+                // Allow jobs with no firm, or jobs from active, non-deleted firms
+                $q->whereNull('law_firm_id')
+                    ->orWhereHas('lawFirm', fn ($q) => $q->active());
+            });
 
         if ($filters['q'] ?? null) {
             $q = $filters['q'];

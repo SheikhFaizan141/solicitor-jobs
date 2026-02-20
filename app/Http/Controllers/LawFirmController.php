@@ -20,15 +20,17 @@ class LawFirmController extends Controller
         $sort = $request->input('sort', 'latest');
 
         $query = LawFirm::with(['contacts', 'practiceAreas'])
+            ->active()
             ->withCount('activeReviews as reviews_count')
             ->withAvg('activeReviews as average_rating', 'rating')
-            ->withCount(['jobs as jobs_count' => fn($q) => $q->active()->open()]);
+            ->withCount(['jobs as jobs_count' => fn ($q) => $q->active()->open()]);
 
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('excerpt', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%");
-                 // ->orWhere('location', 'like', "%{$search}%");
+                // ->orWhere('location', 'like', "%{$search}%");
             });
         }
 
@@ -73,6 +75,8 @@ class LawFirmController extends Controller
      */
     public function show(LawFirm $lawFirm)
     {
+        abort_if(! $lawFirm->is_active, 404);
+
         $reviews = $lawFirm->reviews()
             ->active()
             ->with('user')

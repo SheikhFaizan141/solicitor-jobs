@@ -319,7 +319,7 @@ export default function JobShow({ job, isSaved }: JobShowProps) {
 
                             {/* Job Details */}
                             <div className="rounded-lg border bg-white p-6">
-                                <h3 className="mb-4 text-lg font-semibold text-gray-900">Job Details</h3>
+                                <h3 className="mb-4 text-lg font-semibold text-gray-900 border-b pb-2">Job Details</h3>
                                 <dl className="space-y-3">
                                     {job.location && (
                                         <div>
@@ -357,9 +357,9 @@ export default function JobShow({ job, isSaved }: JobShowProps) {
                             {/* Company Info */}
                             {job.law_firm && (
                                 <div className="rounded-lg border bg-white p-6">
-                                    <h3 className="mb-4 text-lg font-semibold text-gray-900">About {job.law_firm.name}</h3>
-                                    {job.law_firm.description ? (
-                                        <div className="mb-4 text-sm text-gray-700" dangerouslySetInnerHTML={{ __html:  job.law_firm.description.slice(0, 200) }} />
+                                    <h3 className="mb-4 text-lg font-semibold text-gray-900 border-b pb-2">About {job.law_firm.name}</h3>
+                                    {job.law_firm.plain_description ? (
+                                        <p className="mb-4 text-sm text-gray-700">{job.law_firm.plain_description.slice(0, 200)}</p>
                                     ) : (
                                         <p className="mb-4 text-sm text-gray-500">No company description available.</p>
                                     )}

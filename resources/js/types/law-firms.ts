@@ -8,10 +8,12 @@ export interface LawFirm {
     website: string;
     logo_url: string | null;
     description: string;
+    excerpt: string | null;
+    plain_description: string;
     email: string;
     location: string;
     phone: string;
-    is_active?: boolean;
+    is_active: boolean;
     average_rating: number;
     // reviews_count: number;
     jobs_count: number;
@@ -21,6 +23,7 @@ export interface LawFirm {
     locations?: Location[];
     practice_areas?: PracticeArea[];
 
+    deleted_at: string | null;
     created_at: string;
     updated_at: string;
 }

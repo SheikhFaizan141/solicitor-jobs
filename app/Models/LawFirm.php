@@ -3,31 +3,37 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasEditLock;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class LawFirm extends Model
 {
-    use HasEditLock, HasFactory;
+    use HasEditLock, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'name',
         'slug', // still fillable so factory/seeder can override if needed
         'website',
         'description',
+        'excerpt',
+        'is_active',
         'logo_path',
         'locked_by',
         'locked_at',
     ];
 
     protected $casts = [
+        'is_active' => 'boolean',
         'locked_at' => 'datetime',
     ];
 
-    // Add this so logo_url (from the accessor) is included when model is serialized
-    protected $appends = ['logo_url'];
+    // Add this so logo_url and plain_description are included when model is serialized
+    protected $appends = ['logo_url', 'plain_description'];
 
     // Hide internal storage path when serializing model for responses
     protected $hidden = ['logo_path'];
@@ -59,6 +65,25 @@ class LawFirm extends Model
     public function contacts()
     {
         return $this->hasMany(LawFirmContact::class);
+    }
+
+    /**
+     * Plain-text description for use in meta tags, previews, and search snippets.
+     * Prefers the editor-curated excerpt; falls back to a stripped version of description.
+     */
+    protected function plainDescription(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): string => $this->excerpt ?? strip_tags($this->description ?? ''),
+        );
+    }
+
+    /**
+     * Scope to only active (non-hidden) law firms.
+     */
+    public function scopeActive(Builder $query): void
+    {
+        $query->where('is_active', true);
     }
 
     /**

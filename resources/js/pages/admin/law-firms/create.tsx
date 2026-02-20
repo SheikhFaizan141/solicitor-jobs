@@ -15,6 +15,8 @@ const CreateFirm = ({ practiceAreas }: CreateLawFirmProps) => {
     const { data, setData, post, processing, reset, errors } = useForm<LawFirmFormData>({
         name: '',
         description: '',
+        excerpt: '',
+        is_active: true,
         website: '',
         practice_areas: [] as number[], // IDs of selected practice areas
         contacts: [] as Contact[],

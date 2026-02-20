@@ -40,7 +40,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::middleware(['auth'])->group(function () {
 
-
     Route::post('/jobs/{jobListing}/save', [SavedJobController::class, 'store'])->name('jobs.save');
     Route::delete('/jobs/{jobListing}/unsave', [SavedJobController::class, 'destroy'])->name('jobs.unsave');
     Route::patch('/saved-jobs/{interaction}/notes', [SavedJobController::class, 'updateNotes'])->name('saved-jobs.notes.update');
@@ -120,6 +119,14 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         Route::get('/', AdminDashboardController::class)->name('dashboard');
 
         // Law Firms
+        // Note: trash route must be declared before resource() to prevent {law_firm} capturing "trash"
+        Route::get('law-firms/trash', [AdminLawFirmController::class, 'trash'])
+            ->name('law-firms.trash');
+        Route::post('law-firms/{id}/restore', [AdminLawFirmController::class, 'restore'])
+            ->name('law-firms.restore');
+        Route::delete('law-firms/{id}/force-destroy', [AdminLawFirmController::class, 'forceDestroy'])
+            ->name('law-firms.force-destroy');
+
         Route::resource('law-firms', AdminLawFirmController::class)
             ->names('law-firms');
 
@@ -175,5 +182,5 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     });
 });
 
-require __DIR__ . '/settings.php';
-require __DIR__ . '/auth.php';
+require __DIR__.'/settings.php';
+require __DIR__.'/auth.php';

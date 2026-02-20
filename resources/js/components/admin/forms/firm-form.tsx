@@ -15,6 +15,8 @@ export interface LawFirmFormData {
     name: string;
     slug?: string;
     description: string;
+    excerpt: string;
+    is_active: boolean;
     website: string;
     practice_areas: number[];
     contacts: Contact[];
@@ -145,6 +147,36 @@ export default function ({ data, setData, errors, processing, onSubmit, practice
                     placeholder="Describe the law firm, practice areas, expertise, culture..."
                 />
                 {errors.description && <InputError message={errors.description} className="mt-2" />}
+            </div>
+
+            <div>
+                <Label htmlFor="excerpt">Short Summary / Excerpt</Label>
+                <p className="mb-1 text-xs text-muted-foreground">Plain-text blurb shown in search results, previews, and SEO meta descriptions. Max 500 characters.</p>
+                <Textarea
+                    id="excerpt"
+                    name="excerpt"
+                    value={data.excerpt}
+                    onChange={(e) => setData('excerpt', e.target.value)}
+                    maxLength={500}
+                    rows={3}
+                    placeholder="A concise summary of the firm's expertise and services..."
+                    className="mt-1 resize-none"
+                />
+                <p className="mt-1 text-right text-xs text-muted-foreground">{data.excerpt.length} / 500</p>
+                {errors.excerpt && <InputError message={errors.excerpt} className="mt-2" />}
+            </div>
+
+            <div className="flex items-center gap-3">
+                <input
+                    type="checkbox"
+                    id="is_active"
+                    checked={data.is_active}
+                    onChange={(e) => setData('is_active', e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <Label htmlFor="is_active" className="cursor-pointer">
+                    Active — firm is publicly visible
+                </Label>
             </div>
 
             {/* Logo Upload */}

@@ -25,7 +25,19 @@ class LawFirmFactory extends Factory
         return [
             'name' => $name,
             'description' => $this->faker->optional()->paragraphs(2, true),
+            'excerpt' => $this->faker->optional()->sentence(15),
+            'is_active' => true,
             'website' => $this->faker->optional()->url(),
         ];
+    }
+
+    /**
+     * Mark the law firm as inactive.
+     */
+    public function inactive(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_active' => false,
+        ]);
     }
 }

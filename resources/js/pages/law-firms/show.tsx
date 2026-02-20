@@ -25,6 +25,8 @@ interface Firm {
     logo_url: string | null;
     website: string | null;
     description: string | null;
+    excerpt: string | null;
+    plain_description: string;
     contacts: Contact[];
     practice_areas: { id: number; name: string }[];
 }
@@ -70,7 +72,14 @@ export default function Show({ lawFirm, jobs }: FirmShowProps) {
 
     return (
         <>
-            <Head title={lawFirm.name ?? 'Listing'} />
+            <Head title={lawFirm.name ?? 'Listing'}>
+                <meta name="description" content={lawFirm.plain_description.slice(0, 160)} />
+                <meta property="og:title" content={lawFirm.name} />
+                <meta property="og:description" content={lawFirm.plain_description.slice(0, 160)} />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content={`/law-firms/${lawFirm.slug}`} />
+                {lawFirm.logo_url && <meta property="og:image" content={lawFirm.logo_url} />}
+            </Head>
             <article className="mx-auto w-full max-w-7xl px-4 pt-1 sm:px-6 lg:px-8">
                 {/* Staff Edit Banner */}
                 {isStaff && (

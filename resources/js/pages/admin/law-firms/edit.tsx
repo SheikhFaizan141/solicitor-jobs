@@ -17,6 +17,8 @@ const EditFirm = ({ lawFirm, practiceAreas }: EditLawFirmProps) => {
     const { data, setData, post, processing, errors } = useForm<LawFirmFormData>({
         name: lawFirm.name ?? '',
         description: lawFirm.description ?? '',
+        excerpt: lawFirm.excerpt ?? '',
+        is_active: lawFirm.is_active ?? true,
         website: lawFirm.website ?? '',
         practice_areas: (lawFirm.practice_areas ?? []).map((pa: PracticeArea) => pa.id),
         contacts: lawFirm.contacts ?? [],
