@@ -1,6 +1,6 @@
 import { SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { Bell, Briefcase, Building2, ChevronRight, LayoutDashboard, MapPin, MessageSquare, Tags, Users } from 'lucide-react';
+import { Bell, Briefcase, Building2, ChevronRight, FolderOpen, LayoutDashboard, MapPin, MessageSquare, Shield, Tags, Users } from 'lucide-react';
 import React, { useState } from 'react';
 
 type IconType = React.ComponentType<React.SVGProps<SVGSVGElement>>;
@@ -54,44 +54,50 @@ const AdminSidebar: React.FC = () => {
             label: 'Dashboard',
         },
         {
-            label: 'Law Firms',
-            icon: Building2,
+            label: 'Content',
+            icon: FolderOpen,
             children: [
                 {
                     href: '/admin/law-firms',
                     icon: Building2,
-                    label: 'All Law Firms',
+                    label: 'Law Firms',
+                },
+                {
+                    href: '/admin/job-listings',
+                    icon: Briefcase,
+                    label: 'Job Listings',
                 },
                 {
                     href: '/admin/practice-areas',
                     icon: Tags,
                     label: 'Practice Areas',
                 },
+                {
+                    href: '/admin/locations',
+                    icon: MapPin,
+                    label: 'Locations',
+                },
             ],
         },
         {
-            href: '/admin/job-listings',
-            icon: Briefcase,
-            label: 'Job Listings',
-        },
-        {
-            href: '/admin/job-alerts',
-            icon: Bell,
-            label: 'Job Alerts',
-        },
-        {
-            href: '/admin/reviews',
-            icon: MessageSquare,
-            label: 'Reviews',
-        },
-        {
-            href: '/admin/locations',
-            icon: MapPin,
-            label: 'Locations',
+            label: 'Engagement',
+            icon: Users,
+            children: [
+                {
+                    href: '/admin/job-alerts',
+                    icon: Bell,
+                    label: 'Job Alerts',
+                },
+                {
+                    href: '/admin/reviews',
+                    icon: MessageSquare,
+                    label: 'Reviews',
+                },
+            ],
         },
         {
             href: '/admin/users',
-            icon: Users,
+            icon: Shield,
             label: 'Users',
             adminOnly: true,
         },

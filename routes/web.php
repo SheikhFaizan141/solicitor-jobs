@@ -142,8 +142,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
 
         // Practice Areas
         Route::resource('practice-areas', PracticeAreaController::class)
-            ->names('practice-areas')
-            ->except(['show']);
+            ->names('practice-areas');
 
         // Job Listings
         Route::resource('job-listings', AdminJobListingController::class)

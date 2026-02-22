@@ -22,4 +22,9 @@ class PracticeArea extends Model
     {
         return $this->belongsToMany(LawFirm::class, 'law_firm_practice_areas');
     }
+
+    public function jobListings()
+    {
+        return $this->belongsToMany(JobListing::class, 'job_listing_practice_areas');
+    }
 }

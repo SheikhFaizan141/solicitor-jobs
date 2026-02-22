@@ -7,6 +7,7 @@ import { PaginatedResponse } from '@/types/types';
 import { queryParams } from '@/wayfinder';
 import { Link, router, useForm } from '@inertiajs/react';
 import { RowSelectionState } from '@tanstack/react-table';
+import { Tags } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createLawFirmColumns } from './columns';
 
@@ -118,6 +119,13 @@ const LawFirms = ({ lawFirms }: LawFirmsPageProps) => {
                     <p className="mt-1 text-sm text-gray-600">Manage law firms and their information</p>
                 </div>
                 <div className="flex items-center gap-3">
+                    <Link
+                        href="/admin/practice-areas"
+                        className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 sm:w-auto"
+                    >
+                        <Tags className="mr-2 h-4 w-4" />
+                        <span className="hidden sm:inline">Practice Areas</span>
+                    </Link>
                     <Link
                         href="/admin/law-firms/trash"
                         className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 sm:w-auto"

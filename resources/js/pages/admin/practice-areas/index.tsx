@@ -1,7 +1,8 @@
 import AdminLayout from '@/layouts/admin-layout';
 import { PaginatedResponse } from '@/types/types';
 import { Link, router, useForm } from '@inertiajs/react';
-import React, { useEffect, useState } from 'react';
+import { Briefcase, Building2, Search, Tags } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 interface PracticeArea {
     id: number;
@@ -19,22 +20,79 @@ interface PracticeArea {
 
 interface PracticeAreasPageProps {
     areas: PaginatedResponse<PracticeArea>;
+    stats: {
+        totalFirmUsage: number;
+        totalJobUsage: number;
+    };
 }
 
-const PracticeAreasIndex: React.FC<PracticeAreasPageProps> & { layout?: (page: React.ReactNode) => React.ReactNode } = ({ areas }) => {
+const PracticeAreasIndex: React.FC<PracticeAreasPageProps> & { layout?: (page: React.ReactNode) => React.ReactNode } = ({
+    areas,
+    stats,
+}) => {
     const { delete: destroy, processing } = useForm();
 
-    const [search, setSearch] = useState('');
-    const [sortBy, setSortBy] = useState('created_at');
+    const urlParams = useRef(new URLSearchParams(window.location.search));
+
+    const [search, setSearch] = useState(urlParams.current.get('search') ?? '');
+    const [sortBy, setSortBy] = useState(urlParams.current.get('sort_by') ?? 'name');
+    const [filterBy, setFilterBy] = useState(urlParams.current.get('filter_by') ?? 'all');
+
+    const isInitialMount = useRef(true);
+    const [pendingSortBy, setPendingSortBy] = useState(sortBy);
+    const [pendingFilterBy, setPendingFilterBy] = useState(filterBy);
+
+    const buildQuery = useCallback(
+        (overrides?: Partial<{ search: string; sort_by: string; filter_by: string }>) => {
+            const nextSearch = overrides?.search ?? search;
+            const nextSortBy = overrides?.sort_by ?? sortBy;
+            const nextFilterBy = overrides?.filter_by ?? filterBy;
+
+            return {
+                search: nextSearch.trim() !== '' ? nextSearch : null,
+                sort_by: nextSortBy !== 'name' ? nextSortBy : null,
+                filter_by: nextFilterBy !== 'all' ? nextFilterBy : null,
+            };
+        },
+        [search, sortBy, filterBy],
+    );
 
     // Debounced search
     useEffect(() => {
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            return;
+        }
+
         const timeoutId = setTimeout(() => {
-            router.get('/admin/practice-areas', { search: search, sort_by: sortBy }, { preserveState: true, preserveScroll: true });
+            const params = buildQuery({ search });
+            const query = new URLSearchParams(
+                Object.entries(params)
+                    .filter(([, v]) => v !== null)
+                    .map(([k, v]) => [k, v as string]),
+            ).toString();
+            router.get(`/admin/practice-areas${query ? '?' + query : ''}`, {}, { preserveState: true, preserveScroll: true });
         }, 300);
 
         return () => clearTimeout(timeoutId);
-    }, [search, sortBy]);
+    }, [search, buildQuery]);
+
+    const applyFilters = () => {
+        setSortBy(pendingSortBy);
+        setFilterBy(pendingFilterBy);
+
+        const params = buildQuery({
+            sort_by: pendingSortBy,
+            filter_by: pendingFilterBy,
+        });
+        const query = new URLSearchParams(
+            Object.entries(params)
+                .filter(([, v]) => v !== null)
+                .map(([k, v]) => [k, v as string]),
+        ).toString();
+
+        router.get(`/admin/practice-areas${query ? '?' + query : ''}`, {}, { preserveState: true, preserveScroll: true });
+    };
 
     const handleDelete = (id: number, name: string) => {
         if (confirm(`Delete "${name}"? This action cannot be undone.`)) {
@@ -54,7 +112,7 @@ const PracticeAreasIndex: React.FC<PracticeAreasPageProps> & { layout?: (page: R
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">Practice Areas</h1>
-                    <p className="mt-1 text-sm text-gray-600">Manage legal practice areas and specializations</p>
+                    <p className="mt-1 text-sm text-gray-600">Manage legal practice areas used by law firms and job listings</p>
                 </div>
                 <Link
                     href="/admin/practice-areas/create"
@@ -63,8 +121,39 @@ const PracticeAreasIndex: React.FC<PracticeAreasPageProps> & { layout?: (page: R
                     <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
-                    Add New Area
+                    Add Practice Area
                 </Link>
+            </div>
+
+            {/* Stats Cards */}
+            <div className="grid gap-4 md:grid-cols-3">
+                <div className="rounded-lg border border-gray-200 bg-white p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-gray-600">Total Areas</p>
+                            <p className="mt-1 text-2xl font-bold text-gray-900">{areas.total}</p>
+                        </div>
+                        <Tags className="h-8 w-8 text-blue-500" />
+                    </div>
+                </div>
+                <div className="rounded-lg border border-gray-200 bg-white p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-gray-600">Used by Firms</p>
+                            <p className="mt-1 text-2xl font-bold text-gray-900">{stats.totalFirmUsage}</p>
+                        </div>
+                        <Building2 className="h-8 w-8 text-green-500" />
+                    </div>
+                </div>
+                <div className="rounded-lg border border-gray-200 bg-white p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-gray-600">Used by Jobs</p>
+                            <p className="mt-1 text-2xl font-bold text-gray-900">{stats.totalJobUsage}</p>
+                        </div>
+                        <Briefcase className="h-8 w-8 text-purple-500" />
+                    </div>
+                </div>
             </div>
 
             {/* Filters */}
@@ -72,14 +161,7 @@ const PracticeAreasIndex: React.FC<PracticeAreasPageProps> & { layout?: (page: R
                 <div className="flex flex-col gap-4 sm:flex-row">
                     <div className="flex-1">
                         <div className="relative">
-                            <svg
-                                className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
+                            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
                             <input
                                 type="search"
                                 placeholder="Search practice areas..."
@@ -92,15 +174,45 @@ const PracticeAreasIndex: React.FC<PracticeAreasPageProps> & { layout?: (page: R
 
                     <div className="flex gap-3">
                         <select
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value)}
+                            value={pendingFilterBy}
+                            onChange={(e) => {
+                                setPendingFilterBy(e.target.value);
+                                setFilterBy(e.target.value);
+                                const params = buildQuery({ filter_by: e.target.value });
+                                const query = new URLSearchParams(
+                                    Object.entries(params)
+                                        .filter(([, v]) => v !== null)
+                                        .map(([k, v]) => [k, v as string]),
+                                ).toString();
+                                router.get(`/admin/practice-areas${query ? '?' + query : ''}`, {}, { preserveState: true, preserveScroll: true });
+                            }}
                             className="rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                         >
-                            <option value="created_at">Latest</option>
+                            <option value="all">All Areas</option>
+                            <option value="top-level">Top Level Only</option>
+                            <option value="with-children">With Children</option>
+                            <option value="unused">Unused</option>
+                        </select>
+                        <select
+                            value={pendingSortBy}
+                            onChange={(e) => {
+                                setPendingSortBy(e.target.value);
+                                setSortBy(e.target.value);
+                                const params = buildQuery({ sort_by: e.target.value });
+                                const query = new URLSearchParams(
+                                    Object.entries(params)
+                                        .filter(([, v]) => v !== null)
+                                        .map(([k, v]) => [k, v as string]),
+                                ).toString();
+                                router.get(`/admin/practice-areas${query ? '?' + query : ''}`, {}, { preserveState: true, preserveScroll: true });
+                            }}
+                            className="rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                        >
                             <option value="name">Name A-Z</option>
                             <option value="-name">Name Z-A</option>
-                            <option value="job_listings_count">Most Jobs</option>
-                            <option value="law_firms_count">Most Firms</option>
+                            <option value="job_listings_count">Most Used (Jobs)</option>
+                            <option value="law_firms_count">Most Used (Firms)</option>
+                            <option value="created_at">Latest</option>
                         </select>
                     </div>
                 </div>
@@ -124,7 +236,11 @@ const PracticeAreasIndex: React.FC<PracticeAreasPageProps> & { layout?: (page: R
                                 <tr key={area.id} className="transition-colors hover:bg-gray-50">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div>
-                                            <div className="text-sm font-medium text-gray-900">{area.name}</div>
+                                            <div className="text-sm font-medium text-gray-900">
+                                                <Link href={`/admin/practice-areas/${area.id}`} className="hover:text-blue-600">
+                                                    {area.name}
+                                                </Link>
+                                            </div>
                                             <div className="text-sm text-gray-500">
                                                 {area.created_at ? new Date(area.created_at).toLocaleDateString() : '—'}
                                             </div>
@@ -235,6 +351,8 @@ const PracticeAreasIndex: React.FC<PracticeAreasPageProps> & { layout?: (page: R
     );
 };
 
-PracticeAreasIndex.layout = (page: React.ReactNode) => <AdminLayout>{page}</AdminLayout>;
+PracticeAreasIndex.layout = (page: React.ReactNode) => (
+    <AdminLayout breadcrumbs={[{ label: 'Practice Areas' }]}>{page}</AdminLayout>
+);
 
 export default PracticeAreasIndex;
