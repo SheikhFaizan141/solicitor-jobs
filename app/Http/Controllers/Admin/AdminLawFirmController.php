@@ -27,9 +27,9 @@ class AdminLawFirmController extends Controller
         $query = LawFirm::query()
             ->with('contacts')
             ->when($search, function ($query, $search) {
-                $query->where('name', 'like', '%'.$search.'%')
-                    ->orWhere('description', 'like', '%'.$search.'%')
-                    ->orWhere('website', 'like', '%'.$search.'%');
+                $query->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhere('website', 'like', '%' . $search . '%');
             })
             ->when($statusFilter === 'active', function ($query) {
                 $query->where('is_active', true);
@@ -46,10 +46,10 @@ class AdminLawFirmController extends Controller
             case '-name':
                 $query->orderBy('name', 'desc');
                 break;
-                // case 'location':
-                //     // Assuming you have a location column
-                //     $query->orderBy('location', 'asc');
-                //     break;
+            case 'location':
+                // Assuming you have a location column
+                $query->orderBy('location', 'asc');
+                break;
             default:
                 $query->latest();
         }
