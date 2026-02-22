@@ -114,7 +114,7 @@ export default function ({ data, setData, errors, processing, onSubmit, practice
             {/* Two-column grid: main fields left, sidebar right */}
             <div className="grid gap-6 lg:grid-cols-3">
                 {/* ── Left column (main content, 2/3 width) ── */}
-                <div className="space-y-6 lg:col-span-2 bg-card p-6 rounded-lg shadow-sm">
+                <div className="space-y-6 rounded-lg bg-card p-6 shadow-sm lg:col-span-2">
                     <div>
                         <Label htmlFor="name">Firm Name *</Label>
                         <Input
@@ -172,7 +172,6 @@ export default function ({ data, setData, errors, processing, onSubmit, practice
                         <p className="mt-1 text-right text-xs text-muted-foreground">{data.excerpt.length} / 500</p>
                         {errors.excerpt && <InputError message={errors.excerpt} className="mt-2" />}
                     </div>
-                    
                 </div>
 
                 {/* ── Right column (sidebar, 1/3 width) ── */}
@@ -281,7 +280,7 @@ export default function ({ data, setData, errors, processing, onSubmit, practice
             </div>
 
             {/* ── Full-width: Contact Addresses ── */}
-            <div className="space-y-4 bg-card p-6 rounded-lg shadow-sm">
+            <div className="space-y-4 rounded-lg bg-card p-6 shadow-sm">
                 <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold">Contact Addresses</h3>
                     <Button type="button" variant="outline" size="sm" onClick={addContact}>

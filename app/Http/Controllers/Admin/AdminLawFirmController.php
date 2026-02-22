@@ -25,11 +25,11 @@ class AdminLawFirmController extends Controller
         $statusFilter = $request->input('status');
 
         $query = LawFirm::query()
-            ->with('contacts')
+            ->with('contacts', 'practiceAreas')
             ->when($search, function ($query, $search) {
-                $query->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('description', 'like', '%' . $search . '%')
-                    ->orWhere('website', 'like', '%' . $search . '%');
+                $query->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('description', 'like', '%'.$search.'%')
+                    ->orWhere('website', 'like', '%'.$search.'%');
             })
             ->when($statusFilter === 'active', function ($query) {
                 $query->where('is_active', true);

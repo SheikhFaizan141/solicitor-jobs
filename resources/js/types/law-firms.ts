@@ -21,7 +21,7 @@ export interface LawFirm {
     contacts?: Contact[];
 
     locations?: Location[];
-    practice_areas?: PracticeArea[];
+    practice_areas: PracticeArea[];
 
     deleted_at: string | null;
     created_at: string;

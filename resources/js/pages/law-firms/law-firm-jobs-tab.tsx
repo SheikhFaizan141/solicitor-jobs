@@ -41,7 +41,7 @@ export default function LawFirmJobsTab({ jobs }: LawFirmJobsOverviewProps) {
 
     const formatPostedDate = (dateString: string) => {
         console.log(dateString);
-        
+
         const date = new Date(dateString);
         const now = new Date();
         const diffTime = Math.abs(now.getTime() - date.getTime());

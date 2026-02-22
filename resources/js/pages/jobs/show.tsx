@@ -310,7 +310,6 @@ export default function JobShow({ job, isSaved }: JobShowProps) {
                                             className="inline-flex w-full items-center justify-center rounded-md border border-gray-300 bg-[#a32245] px-4 py-2 text-base font-semibold text-white hover:bg-[#af2449] focus:ring-2 focus:ring-[#3a8bd1] focus:outline-none"
                                         >
                                             Apply Now
-
                                             <SquareArrowOutUpRight className="ml-2 h-4 w-4" />
                                         </a>
                                     </div>
@@ -319,7 +318,7 @@ export default function JobShow({ job, isSaved }: JobShowProps) {
 
                             {/* Job Details */}
                             <div className="rounded-lg border bg-white p-6">
-                                <h3 className="mb-4 text-lg font-semibold text-gray-900 border-b pb-2">Job Details</h3>
+                                <h3 className="mb-4 border-b pb-2 text-lg font-semibold text-gray-900">Job Details</h3>
                                 <dl className="space-y-3">
                                     {job.location && (
                                         <div>
@@ -357,7 +356,7 @@ export default function JobShow({ job, isSaved }: JobShowProps) {
                             {/* Company Info */}
                             {job.law_firm && (
                                 <div className="rounded-lg border bg-white p-6">
-                                    <h3 className="mb-4 text-lg font-semibold text-gray-900 border-b pb-2">About {job.law_firm.name}</h3>
+                                    <h3 className="mb-4 border-b pb-2 text-lg font-semibold text-gray-900">About {job.law_firm.name}</h3>
                                     {job.law_firm.plain_description ? (
                                         <p className="mb-4 text-sm text-gray-700">{job.law_firm.plain_description.slice(0, 200)}</p>
                                     ) : (

@@ -1,13 +1,12 @@
 import { Pagination } from '@/components/pagination';
-import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { DataTable } from '@/components/ui/data-table';
 import AdminLayout from '@/layouts/admin-layout';
 import { LawFirm } from '@/types/law-firms';
 import { PaginatedResponse } from '@/types/types';
 import { queryParams } from '@/wayfinder';
 import { Link, router, useForm } from '@inertiajs/react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { createLawFirmColumns } from './columns';
 
 interface LawFirmsPageProps {
     lawFirms: PaginatedResponse<LawFirm>;
@@ -167,150 +166,14 @@ const LawFirms = ({ lawFirms }: LawFirmsPageProps) => {
             </div>
 
             {/* Table */}
-            <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
-                <div className="rounded-md border bg-white">
-                    <Table className="w-full px-4">
-                        <TableHeader>
-                            <TableRow className="bg-muted/50 hover:bg-muted/50">
-                                <TableHead className="px-4">Firm Name</TableHead>
-                                <TableHead className="px-4">Location</TableHead>
-                                <TableHead className="px-4">Contact</TableHead>
-                                <TableHead className="px-4">Status</TableHead>
-                                <TableHead className="px-4 text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody className="divide-y divide-gray-200 bg-white">
-                            {lawFirms.data.map((firm) => (
-                                <TableRow key={firm.id}>
-                                    <TableCell className="px-4 py-4">
-                                        <div className="font-medium text-gray-900">{firm.name}</div>
-                                        <div className="text-sm text-muted-foreground">
-                                            {firm.created_at ? new Date(firm.created_at).toLocaleDateString() : '—'}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="px-4 py-4">{firm.location || <span className="text-muted-foreground">—</span>}</TableCell>
-                                    <TableCell className="px-4 py-4">
-                                        <div className="text-sm text-gray-900">{firm.phone || <span className="text-muted-foreground">—</span>}</div>
-                                        <div className="text-sm text-muted-foreground">
-                                            {firm.email || <span className="text-muted-foreground">—</span>}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="px-4 py-4">
-                                        <span
-                                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                                                firm.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                                            }`}
-                                        >
-                                            {firm.is_active ? 'Active' : 'Inactive'}
-                                        </span>
-                                    </TableCell>
-
-                                    <TableCell className="px-4 py-4 text-right">
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" className="h-8 w-8 p-0">
-                                                    <span className="sr-only">Open menu</span>
-                                                    {/* Standard Ellipsis Icon */}
-                                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        ``
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth={2}
-                                                            d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"
-                                                        />
-                                                    </svg>
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="w-32">
-                                                {/* Note: We use asChild here because Inertia's <Link> is the actual DOM node we want to render */}
-                                                <DropdownMenuItem asChild>
-                                                    <Link href={`/admin/law-firms/${firm.id}`} className="flex cursor-pointer items-center">
-                                                        <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                strokeWidth={2}
-                                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                                            />
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                strokeWidth={2}
-                                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                                            />
-                                                        </svg>
-                                                        View
-                                                    </Link>
-                                                </DropdownMenuItem>
-
-                                                <DropdownMenuItem asChild>
-                                                    <Link href={`/admin/law-firms/${firm.id}/edit`} className="flex cursor-pointer items-center">
-                                                        <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                strokeWidth={2}
-                                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                                                            />
-                                                        </svg>
-                                                        Edit
-                                                    </Link>
-                                                </DropdownMenuItem>
-
-                                                <DropdownMenuItem
-                                                    onClick={() => handleDelete(firm.id, firm.name)}
-                                                    disabled={processing}
-                                                    className="flex cursor-pointer items-center text-red-600 focus:bg-red-50 focus:text-red-700"
-                                                >
-                                                    <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth={2}
-                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                                        />
-                                                    </svg>
-                                                    Delete
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-
-                        {!lawFirms.data.length && (
-                            <div className="py-12 text-center">
-                                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                                    />
-                                </svg>
-                                <h3 className="mt-2 text-sm font-medium text-gray-900">No law firms</h3>
-                                <p className="mt-1 text-sm text-gray-500">Get started by creating a new law firm.</p>
-                            </div>
-                        )}
-                    </Table>
-
-                    {/* {!lawFirms.data.length && (
-                        <div className="py-12 text-center">
-                            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                                />
-                            </svg>
-                            <h3 className="mt-2 text-sm font-medium text-gray-900">No law firms</h3>
-                            <p className="mt-1 text-sm text-gray-500">Get started by creating a new law firm.</p>
-                        </div>
-                    )} */}
-                </div>
+            <div className="space-y-4">
+                <DataTable
+                    columns={createLawFirmColumns({
+                        onDelete: handleDelete,
+                        isProcessing: processing,
+                    })}
+                    data={lawFirms.data}
+                />
 
                 {/* Pagination */}
                 <Pagination currentPage={lawFirms.current_page} perPage={lawFirms.per_page} total={lawFirms.total} links={lawFirms.links} />
