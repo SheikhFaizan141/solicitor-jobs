@@ -1,10 +1,12 @@
 import { Pagination } from '@/components/pagination';
+import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import AdminLayout from '@/layouts/admin-layout';
 import { LawFirm } from '@/types/law-firms';
 import { PaginatedResponse } from '@/types/types';
 import { queryParams } from '@/wayfinder';
 import { Link, router, useForm } from '@inertiajs/react';
+import { RowSelectionState } from '@tanstack/react-table';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createLawFirmColumns } from './columns';
 
@@ -20,6 +22,8 @@ const LawFirms = ({ lawFirms }: LawFirmsPageProps) => {
     const [search, setSearch] = useState(urlParams.current.get('search') ?? '');
     const [sortBy, setSortBy] = useState(urlParams.current.get('sort_by') ?? 'created_at');
     const [statusFilter, setStatusFilter] = useState(urlParams.current.get('status') ?? 'all');
+    const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+    const [isBulkDeleting, setIsBulkDeleting] = useState(false);
 
     const isInitialSearchMount = useRef(true);
     const [pendingSortBy, setPendingSortBy] = useState(sortBy);
@@ -73,6 +77,35 @@ const LawFirms = ({ lawFirms }: LawFirmsPageProps) => {
     const handleDelete = (id: number, name: string) => {
         if (confirm(`Delete "${name}"? This action cannot be undone.`)) {
             destroy(`/admin/law-firms/${id}`, { preserveScroll: true });
+        }
+    };
+
+    const handleBulkDelete = () => {
+        const selectedIds = Object.keys(rowSelection)
+            .filter((key) => rowSelection[parseInt(key)])
+            .map((key) => parseInt(key));
+
+        if (selectedIds.length === 0) return;
+
+        const ids = selectedIds.map((idx) => lawFirms.data[idx].id);
+        const count = ids.length;
+
+        if (confirm(`Delete ${count} law firm(s)? This action cannot be undone.`)) {
+            setIsBulkDeleting(true);
+            router.post(
+                '/admin/law-firms/bulk-destroy',
+                { ids },
+                {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        setRowSelection({});
+                        setIsBulkDeleting(false);
+                    },
+                    onError: () => {
+                        setIsBulkDeleting(false);
+                    },
+                },
+            );
         }
     };
 
@@ -167,12 +200,47 @@ const LawFirms = ({ lawFirms }: LawFirmsPageProps) => {
 
             {/* Table */}
             <div className="space-y-4">
+                {/* Bulk Actions Toolbar */}
+                {Object.keys(rowSelection).length > 0 && (
+                    <div className="sticky top-0 z-10 flex items-center gap-3 rounded-lg border border-orange-200 bg-orange-50 p-4">
+                        <div className="flex items-center gap-2">
+                            <svg className="h-5 w-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M12 9v2m0 4v2m0 0v2m0-6v-2m0 0V7m0 2H7m0 0H5m0 0h2m0 6h2m0 0h-2m0 0h2m6-6h2m0 0h-2m0 0h2m0 6h2m0 0h-2m0 0h2"
+                                />
+                            </svg>
+                            <span className="font-medium text-orange-900">{Object.keys(rowSelection).length} selected</span>
+                        </div>
+                        <div className="ml-auto flex gap-2">
+                            <Button variant="outline" size="sm" onClick={() => setRowSelection({})}>
+                                Clear Selection
+                            </Button>
+                            <Button size="sm" className="bg-red-600 hover:bg-red-700" onClick={handleBulkDelete} disabled={isBulkDeleting}>
+                                <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                    />
+                                </svg>
+                                {isBulkDeleting ? 'Deleting...' : `Delete (${Object.keys(rowSelection).length})`}
+                            </Button>
+                        </div>
+                    </div>
+                )}
+
                 <DataTable
                     columns={createLawFirmColumns({
                         onDelete: handleDelete,
                         isProcessing: processing,
                     })}
                     data={lawFirms.data}
+                    rowSelection={rowSelection}
+                    onRowSelectionChange={setRowSelection}
                 />
 
                 {/* Pagination */}

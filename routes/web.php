@@ -130,6 +130,10 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         Route::resource('law-firms', AdminLawFirmController::class)
             ->names('law-firms');
 
+        // Law Firm Bulk Operations
+        Route::post('law-firms/bulk-destroy', [AdminLawFirmController::class, 'bulkDestroy'])
+            ->name('law-firms.bulk-destroy');
+
         // Law Firm Lock Management
         Route::post('law-firms/{law_firm}/refresh-lock', [AdminLawFirmController::class, 'refreshLock'])
             ->name('law-firms.refresh-lock');

@@ -326,4 +326,23 @@ class AdminLawFirmController extends Controller
             ->route('admin.law-firms.trash')
             ->with('success', 'Law firm permanently deleted.');
     }
+
+    /**
+     * Bulk delete law firms (soft delete).
+     */
+    public function bulkDestroy(Request $request): RedirectResponse
+    {
+        $ids = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'exists:law_firms,id'],
+        ])['ids'];
+
+        LawFirm::whereIn('id', $ids)->delete();
+
+        $count = count($ids);
+
+        return redirect()
+            ->route('admin.law-firms.index')
+            ->with('success', "{$count} law firm(s) moved to trash.");
+    }
 }
