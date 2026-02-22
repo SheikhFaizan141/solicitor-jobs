@@ -199,10 +199,10 @@ const LawFirms = ({ lawFirms }: LawFirmsPageProps) => {
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span
                                             className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                                                firm.is_active !== false ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                                firm.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                                             }`}
                                         >
-                                            {firm.is_active !== false ? 'Active' : 'Inactive'}
+                                            {firm.is_active ? 'Active' : 'Inactive'}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">

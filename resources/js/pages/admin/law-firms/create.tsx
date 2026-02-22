@@ -1,7 +1,5 @@
 import FirmForm, { LawFirmFormData } from '@/components/admin/forms/firm-form';
-import { Card } from '@/components/ui/card';
 import AdminLayout from '@/layouts/admin-layout';
-import { create } from '@/routes/admin/law-firms';
 import { Contact } from '@/types/law-firms';
 import { PracticeArea } from '@/types/practice-area';
 import { useForm } from '@inertiajs/react';
@@ -25,8 +23,6 @@ const CreateFirm = ({ practiceAreas }: CreateLawFirmProps) => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-
-        console.log(create);
         post('/admin/law-firms', {
             onSuccess: () => reset(), // Inertia handles the reset, FirmForm will re-render
             forceFormData: true,
@@ -40,7 +36,7 @@ const CreateFirm = ({ practiceAreas }: CreateLawFirmProps) => {
                 <p className="mt-2">This is the page to create a new law firm listing.</p>
             </header>
 
-            <Card className="mt-6 px-6 py-5">
+            <div className="mt-6 px-6 py-5">
                 <FirmForm
                     data={data}
                     setData={setData}
@@ -50,7 +46,7 @@ const CreateFirm = ({ practiceAreas }: CreateLawFirmProps) => {
                     practiceAreas={practiceAreas}
                     submitLabel="Create Firm"
                 />
-            </Card>
+            </div>
         </div>
     );
 };

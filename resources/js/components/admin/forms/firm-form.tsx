@@ -108,150 +108,180 @@ export default function ({ data, setData, errors, processing, onSubmit, practice
         const updated = current.map((c, i) => (i === index ? { ...c, [field]: value } : c));
         setData('contacts', updated);
     };
+
     return (
-        <form className="space-y-6" onSubmit={onSubmit} encType="multipart/form-data">
-            <div>
-                <Label htmlFor="name">Firm Name *</Label>
-                <Input
-                    id="name"
-                    name="name"
-                    value={data.name}
-                    onChange={(e) => setData('name', e.target.value)}
-                    required
-                    placeholder="Enter firm name"
-                    className="mt-1"
-                />
-                {errors.name && <InputError message={errors.name} className="mt-2" />}
-            </div>
-
-            <div>
-                <Label htmlFor="website">Website</Label>
-                <Input
-                    id="website"
-                    name="website"
-                    type="url"
-                    value={data.website}
-                    onChange={(e) => setData('website', e.target.value)}
-                    placeholder="https://example.com"
-                    className="mt-1"
-                />
-                {errors.website && <InputError message={errors.website} className="mt-2" />}
-            </div>
-
-            <div>
-                <Label htmlFor="description">Description</Label>
-                <RichTextEditor
-                    value={data.description}
-                    onChange={(html) => setData('description', html)}
-                    error={errors.description}
-                    placeholder="Describe the law firm, practice areas, expertise, culture..."
-                />
-                {errors.description && <InputError message={errors.description} className="mt-2" />}
-            </div>
-
-            <div>
-                <Label htmlFor="excerpt">Short Summary / Excerpt</Label>
-                <p className="mb-1 text-xs text-muted-foreground">Plain-text blurb shown in search results, previews, and SEO meta descriptions. Max 500 characters.</p>
-                <Textarea
-                    id="excerpt"
-                    name="excerpt"
-                    value={data.excerpt}
-                    onChange={(e) => setData('excerpt', e.target.value)}
-                    maxLength={500}
-                    rows={3}
-                    placeholder="A concise summary of the firm's expertise and services..."
-                    className="mt-1 resize-none"
-                />
-                <p className="mt-1 text-right text-xs text-muted-foreground">{data.excerpt.length} / 500</p>
-                {errors.excerpt && <InputError message={errors.excerpt} className="mt-2" />}
-            </div>
-
-            <div className="flex items-center gap-3">
-                <input
-                    type="checkbox"
-                    id="is_active"
-                    checked={data.is_active}
-                    onChange={(e) => setData('is_active', e.target.checked)}
-                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <Label htmlFor="is_active" className="cursor-pointer">
-                    Active — firm is publicly visible
-                </Label>
-            </div>
-
-            {/* Logo Upload */}
-            <div className="space-y-3">
-                <Label>Firm Logo</Label>
-                {/* Hidden Native Input */}
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    className="hidden"
-                    accept="image/jpeg,image/jpg,image/png,image/webp"
-                    onChange={handleFileSelect}
-                />
-
-                <div className="flex items-start gap-6">
-                    {/* Visual Area */}
-                    <div
-                        className={`relative flex h-32 w-32 items-center justify-center overflow-hidden rounded-lg border-2 border-dashed ${displayUrl ? 'border-solid border-gray-200 bg-white' : 'border-gray-300 bg-gray-50'} `}
-                    >
-                        {displayUrl ? (
-                            <img src={displayUrl} alt="Logo preview" className="h-full w-full object-contain p-2" />
-                        ) : (
-                            <div className="text-center text-gray-400">
-                                <ImagePlus className="mx-auto h-8 w-8 opacity-50" />
-                                <span className="mt-1 block text-xs font-medium">No Logo</span>
-                            </div>
-                        )}
+        <form onSubmit={onSubmit} encType="multipart/form-data" className="space-y-8">
+            {/* Two-column grid: main fields left, sidebar right */}
+            <div className="grid gap-6 lg:grid-cols-3">
+                {/* ── Left column (main content, 2/3 width) ── */}
+                <div className="space-y-6 lg:col-span-2 bg-card p-6 rounded-lg shadow-sm">
+                    <div>
+                        <Label htmlFor="name">Firm Name *</Label>
+                        <Input
+                            id="name"
+                            name="name"
+                            value={data.name}
+                            onChange={(e) => setData('name', e.target.value)}
+                            required
+                            placeholder="Enter firm name"
+                            className="mt-1"
+                        />
+                        {errors.name && <InputError message={errors.name} className="mt-2" />}
                     </div>
 
-                    {/* Actions Area */}
-                    <div className="flex flex-col gap-3 pt-2">
-                        {displayUrl ? (
-                            <>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    className="w-full justify-start gap-2"
-                                    onClick={() => fileInputRef.current?.click()}
-                                >
-                                    <RefreshCw className="h-4 w-4" />
-                                    Change Logo
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant="destructive"
-                                    size="sm"
-                                    className="w-full justify-start gap-2"
-                                    onClick={handleRemoveImage}
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                    Remove
-                                </Button>
-                            </>
-                        ) : (
-                            <div>
-                                <Button type="button" variant="secondary" onClick={() => fileInputRef.current?.click()}>
-                                    Upload Logo
-                                </Button>
-                                <p className="mt-2 text-xs text-muted-foreground">
-                                    Recommended size: 500x500px <br />
-                                    Max file size: 2MB <br />
-                                    Formats: JPG, PNG, WebP
-                                </p>
-                            </div>
-                        )}
+                    <div>
+                        <Label htmlFor="website">Website</Label>
+                        <Input
+                            id="website"
+                            name="website"
+                            type="url"
+                            value={data.website}
+                            onChange={(e) => setData('website', e.target.value)}
+                            placeholder="https://example.com"
+                            className="mt-1"
+                        />
+                        {errors.website && <InputError message={errors.website} className="mt-2" />}
                     </div>
+
+                    <div>
+                        <Label htmlFor="description">Description</Label>
+                        <RichTextEditor
+                            value={data.description}
+                            onChange={(html) => setData('description', html)}
+                            error={errors.description}
+                            placeholder="Describe the law firm, practice areas, expertise, culture..."
+                        />
+                        {errors.description && <InputError message={errors.description} className="mt-2" />}
+                    </div>
+
+                    <div>
+                        <Label htmlFor="excerpt">Short Summary / Excerpt</Label>
+                        <p className="mb-1 text-xs text-muted-foreground">
+                            Plain-text blurb shown in search results, previews, and SEO meta descriptions. Max 500 characters.
+                        </p>
+                        <Textarea
+                            id="excerpt"
+                            name="excerpt"
+                            value={data.excerpt}
+                            onChange={(e) => setData('excerpt', e.target.value)}
+                            maxLength={500}
+                            rows={3}
+                            placeholder="A concise summary of the firm's expertise and services..."
+                            className="mt-1 resize-none"
+                        />
+                        <p className="mt-1 text-right text-xs text-muted-foreground">{data.excerpt.length} / 500</p>
+                        {errors.excerpt && <InputError message={errors.excerpt} className="mt-2" />}
+                    </div>
+                    
                 </div>
 
-                {/* Validation Errors */}
-                {errors.logo && <p className="text-sm text-red-600">{errors.logo}</p>}
+                {/* ── Right column (sidebar, 1/3 width) ── */}
+                <div className="space-y-6">
+                    {/* Visibility */}
+                    <div className="rounded-lg border bg-card p-4 shadow-sm">
+                        <h3 className="mb-3 text-sm font-semibold tracking-wide text-muted-foreground uppercase">Visibility</h3>
+                        <label htmlFor="is_active" className="flex cursor-pointer items-start gap-3">
+                            <input
+                                type="checkbox"
+                                id="is_active"
+                                checked={data.is_active}
+                                onChange={(e) => setData('is_active', e.target.checked)}
+                                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            />
+                            <span className="space-y-0.5">
+                                <span className="block text-sm leading-none font-medium">Active</span>
+                                <span className="block text-xs text-muted-foreground">Firm is publicly visible on the site</span>
+                            </span>
+                        </label>
+                    </div>
+
+                    {/* Logo Upload */}
+                    <div className="rounded-lg border bg-card p-4 shadow-sm">
+                        <h3 className="mb-3 text-sm font-semibold tracking-wide text-muted-foreground uppercase">Firm Logo</h3>
+                        {/* Hidden Native Input */}
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            className="hidden"
+                            accept="image/jpeg,image/jpg,image/png,image/webp"
+                            onChange={handleFileSelect}
+                        />
+
+                        <div className="flex items-start gap-4">
+                            {/* Visual Area */}
+                            <div
+                                className={`relative flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-lg border-2 border-dashed ${displayUrl ? 'border-solid border-gray-200 bg-white' : 'border-gray-300 bg-gray-50'}`}
+                            >
+                                {displayUrl ? (
+                                    <img src={displayUrl} alt="Logo preview" className="h-full w-full object-contain p-2" />
+                                ) : (
+                                    <div className="text-center text-gray-400">
+                                        <ImagePlus className="mx-auto h-7 w-7 opacity-50" />
+                                        <span className="mt-1 block text-xs font-medium">No Logo</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Actions Area */}
+                            <div className="flex flex-col gap-2 pt-1">
+                                {displayUrl ? (
+                                    <>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            className="w-full justify-start gap-2"
+                                            onClick={() => fileInputRef.current?.click()}
+                                        >
+                                            <RefreshCw className="h-4 w-4" />
+                                            Change
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            variant="destructive"
+                                            size="sm"
+                                            className="w-full justify-start gap-2"
+                                            onClick={handleRemoveImage}
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                            Remove
+                                        </Button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Button type="button" variant="secondary" size="sm" onClick={() => fileInputRef.current?.click()}>
+                                            Upload Logo
+                                        </Button>
+                                        <p className="text-xs text-muted-foreground">
+                                            500×500px recommended
+                                            <br />
+                                            Max 2MB · JPG, PNG, WebP
+                                        </p>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+
+                        {errors.logo && <p className="mt-2 text-sm text-red-600">{errors.logo}</p>}
+                    </div>
+
+                    {/* Practice Areas */}
+                    <div className="rounded-lg border bg-card p-4 shadow-sm">
+                        <h3 className="mb-3 text-sm font-semibold tracking-wide text-muted-foreground uppercase">Practice Areas</h3>
+                        <div className="max-h-64 overflow-y-auto rounded-md border p-3">
+                            {tree.length ? (
+                                <PracticeAreaTree nodes={tree} selected={data.practice_areas} onToggle={toggleArea} />
+                            ) : (
+                                <p className="text-sm text-gray-500">No practice areas yet.</p>
+                            )}
+                        </div>
+                        {errors.practice_areas && <InputError message={errors.practice_areas} className="mt-2" />}
+                    </div>
+                </div>
             </div>
 
-            {/* --- Contact Details --- */}
-            <div className="space-y-4">
+            {/* ── Full-width: Contact Addresses ── */}
+            <div className="space-y-4 bg-card p-6 rounded-lg shadow-sm">
                 <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold">Contact Addresses</h3>
                     <Button type="button" variant="outline" size="sm" onClick={addContact}>
@@ -318,21 +348,8 @@ export default function ({ data, setData, errors, processing, onSubmit, practice
                 </div>
             </div>
 
-            {/* Practice Areas */}
-            <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Practice Areas</h3>
-                <div className="max-h-64 overflow-y-auto rounded-md border p-4">
-                    {tree.length ? (
-                        <PracticeAreaTree nodes={tree} selected={data.practice_areas} onToggle={toggleArea} />
-                    ) : (
-                        <p className="text-sm text-gray-500">No practice areas yet.</p>
-                    )}
-                </div>
-                {errors.practice_areas && <InputError message={errors.practice_areas} className="mt-2" />}
-            </div>
-
             {/* Submit Button */}
-            <div className="pt-4">
+            <div className="border-t pt-6">
                 <Button type="submit" disabled={processing}>
                     {processing ? 'Saving...' : submitLabel}
                 </Button>
