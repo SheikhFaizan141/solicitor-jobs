@@ -12,9 +12,45 @@ class UserJobInteraction extends Model
 
     public const TYPE_SAVED = 'saved';
 
+    public const TYPE_APPLIED = 'applied';
+
     public const STATUS_ACTIVE = 'active';
 
     public const STATUS_ARCHIVED = 'archived';
+
+    public const APPLICATION_STATUS_APPLIED = 'applied';
+
+    public const APPLICATION_STATUS_INTERVIEW = 'interview';
+
+    public const APPLICATION_STATUS_OFFER = 'offer';
+
+    public const APPLICATION_STATUS_REJECTED = 'rejected';
+
+    public const APPLICATION_STATUS_WITHDRAWN = 'withdrawn';
+
+    /**
+     * @return list<string>
+     */
+    public static function applicationStatuses(): array
+    {
+        return [
+            self::APPLICATION_STATUS_APPLIED,
+            self::APPLICATION_STATUS_INTERVIEW,
+            self::APPLICATION_STATUS_OFFER,
+            self::APPLICATION_STATUS_REJECTED,
+            self::APPLICATION_STATUS_WITHDRAWN,
+        ];
+    }
+
+    public function getApplicationStatusAttribute(): ?string
+    {
+        return $this->metadata['application_status'] ?? null;
+    }
+
+    public function getAppliedAtAttribute(): ?string
+    {
+        return $this->metadata['applied_at'] ?? null;
+    }
 
     /**
      * @var list<string>

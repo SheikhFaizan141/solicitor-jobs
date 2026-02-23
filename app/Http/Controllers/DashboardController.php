@@ -36,7 +36,7 @@ class DashboardController extends Controller
             'stats' => [
                 'activeAlerts' => $activeAlertsCount,
                 'savedJobs' => $savedJobsCount,
-                'applications' => 0, // TODO: Implement applications
+                'applications' => $user->appliedJobInteractions()->count(),
                 'newMatches' => 0, // TODO: Calculate actual job matches
             ],
         ]);

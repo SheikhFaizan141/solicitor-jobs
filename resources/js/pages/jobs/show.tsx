@@ -1,20 +1,22 @@
 import { SaveJobButton } from '@/components/jobs/save-job-button';
 import { ShareJobButton } from '@/components/jobs/share-job-button';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Layout from '@/layouts/main-layout';
 import { cn } from '@/lib/utils';
 import { SharedData } from '@/types';
 import { JobListingWithRelations } from '@/types/job-listing';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { BadgeCheck, MapPinIcon, Pencil, SquareArrowOutUpRight } from 'lucide-react';
 import React from 'react';
 
 interface JobShowProps {
     job: JobListingWithRelations;
     isSaved: boolean;
+    hasApplied: boolean;
 }
 
-export default function JobShow({ job, isSaved }: JobShowProps) {
+export default function JobShow({ job, isSaved, hasApplied }: JobShowProps) {
     const { auth } = usePage<SharedData>().props;
     const user = auth?.user;
     const isStaff = user?.role === 'admin' || user?.role === 'editor';
@@ -58,7 +60,28 @@ export default function JobShow({ job, isSaved }: JobShowProps) {
 
     const handleApplyClick = () => {
         const link = job.external_link;
-        if (link) {
+        if (!link) {
+            return;
+        }
+
+        // Track the application for logged-in users
+        if (user) {
+            router.post(
+                `/jobs/${job.id}/apply`,
+                {},
+                {
+                    preserveScroll: true,
+                    preserveState: true,
+                    onSuccess: () => {
+                        if (link.startsWith('mailto:')) {
+                            window.location.href = link;
+                        } else {
+                            window.open(link, '_blank', 'noopener,noreferrer');
+                        }
+                    },
+                },
+            );
+        } else {
             if (link.startsWith('mailto:')) {
                 window.location.href = link;
             } else {
@@ -196,22 +219,24 @@ export default function JobShow({ job, isSaved }: JobShowProps) {
                             <div className="flex w-full max-w-md flex-col space-y-3 md:items-end lg:ml-6 lg:flex-shrink-0">
                                 {job.is_active ? (
                                     job.external_link && (
-                                        <Button
-                                            onClick={handleApplyClick}
-                                            variant="default"
-                                            className="w-full max-w-[224px] bg-amber-600 hover:bg-amber-700 focus:ring-amber-500"
-                                        >
-                                            Apply Now
-                                            {/* <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                                                />
-                                            </svg> */}
-                                            <SquareArrowOutUpRight className="ml-2 h-4 w-4" />
-                                        </Button>
+                                        <div className="flex w-full max-w-[224px] flex-col gap-2">
+                                            <Button
+                                                onClick={handleApplyClick}
+                                                variant="default"
+                                                className="w-full bg-amber-600 hover:bg-amber-700 focus:ring-amber-500"
+                                            >
+                                                {hasApplied ? 'Apply Again' : 'Apply Now'}
+                                                <SquareArrowOutUpRight className="ml-2 h-4 w-4" />
+                                            </Button>
+                                            {hasApplied && (
+                                                <Badge
+                                                    variant="secondary"
+                                                    className="w-fit self-end border-green-200 bg-green-50 text-green-700"
+                                                >
+                                                    ✓ Tracked in Applied Jobs
+                                                </Badge>
+                                            )}
+                                        </div>
                                     )
                                 ) : (
                                     <button

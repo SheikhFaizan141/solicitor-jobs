@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\AdminLawFirmController;
 use App\Http\Controllers\Admin\AdminLocationController;
 use App\Http\Controllers\Admin\AdminReviewController;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\AppliedJobController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JobAlertClickController;
@@ -104,6 +105,12 @@ Route::middleware(['auth'])->group(function () {
         // Return the email view (for browser preview)
         return new \App\Mail\JobAlertDigestMail($subscription, $jobs);
     })->middleware('auth');
+
+    // Applied Jobs routes
+    Route::get('/applied-jobs', [AppliedJobController::class, 'index'])->name('applied-jobs.index');
+    Route::post('/jobs/{jobListing}/apply', [AppliedJobController::class, 'store'])->name('jobs.apply');
+    Route::patch('/applied-jobs/{interaction}/status', [AppliedJobController::class, 'updateStatus'])->name('applied-jobs.status.update');
+    Route::delete('/applied-jobs/{interaction}', [AppliedJobController::class, 'destroy'])->name('applied-jobs.destroy');
 
     // Job Alerts routes
     Route::get('/job-alerts', [JobAlertSubscriptionController::class, 'index'])->name('job-alerts.index');

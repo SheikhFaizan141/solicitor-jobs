@@ -132,10 +132,18 @@ class JobController extends Controller
         $job->load(['lawFirm', 'practiceAreas', 'location',  'postedBy']);
 
         $isSaved = false;
+        $hasApplied = false;
         if ($request->user()) {
             $isSaved = $request->user()
                 ->jobInteractions()
                 ->where('type', UserJobInteraction::TYPE_SAVED)
+                ->where('status', UserJobInteraction::STATUS_ACTIVE)
+                ->where('job_listing_id', $job->id)
+                ->exists();
+
+            $hasApplied = $request->user()
+                ->jobInteractions()
+                ->where('type', UserJobInteraction::TYPE_APPLIED)
                 ->where('status', UserJobInteraction::STATUS_ACTIVE)
                 ->where('job_listing_id', $job->id)
                 ->exists();
@@ -144,6 +152,7 @@ class JobController extends Controller
         return Inertia::render('jobs/show', [
             'job' => $job,
             'isSaved' => $isSaved,
+            'hasApplied' => $hasApplied,
         ]);
     }
 

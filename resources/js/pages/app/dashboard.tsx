@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Bell, Briefcase, Building2 } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -76,14 +76,14 @@ function UserDashboard({ stats }: Pick<DashboardProps, 'stats'>) {
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="cursor-pointer transition-shadow hover:shadow-md" onClick={() => router.visit('/applied-jobs')}>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                             <CardTitle className="text-sm font-medium">Applications</CardTitle>
                             <Building2 className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{stats?.applications || 0}</div>
-                            <p className="text-xs text-muted-foreground">In progress</p>
+                            <p className="text-xs text-muted-foreground">Tracked applications</p>
                         </CardContent>
                     </Card>
                 </div>

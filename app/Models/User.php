@@ -114,4 +114,20 @@ class User extends Authenticatable
             ->wherePivot('status', UserJobInteraction::STATUS_ACTIVE)
             ->withTimestamps();
     }
+
+    public function appliedJobInteractions(): HasMany
+    {
+        return $this->jobInteractions()
+            ->where('type', UserJobInteraction::TYPE_APPLIED)
+            ->where('status', UserJobInteraction::STATUS_ACTIVE);
+    }
+
+    public function appliedJobs(): BelongsToMany
+    {
+        return $this->belongsToMany(JobListing::class, 'user_job_interactions')
+            ->withPivot(['type', 'status', 'notes', 'metadata'])
+            ->wherePivot('type', UserJobInteraction::TYPE_APPLIED)
+            ->wherePivot('status', UserJobInteraction::STATUS_ACTIVE)
+            ->withTimestamps();
+    }
 }
