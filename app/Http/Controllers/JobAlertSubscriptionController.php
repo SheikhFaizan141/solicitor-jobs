@@ -34,6 +34,8 @@ class JobAlertSubscriptionController extends Controller
             'frequency' => $data['frequency'],
             'employment_types' => $data['employment_types'] ?? null,
             'location_id' => $data['location_id'] ?? null,
+            'keyword' => $data['keyword'] ?? null,
+            'experience_level' => $data['experience_level'] ?? null,
             'is_active' => true,
         ]);
 
@@ -46,7 +48,7 @@ class JobAlertSubscriptionController extends Controller
 
     public function destroy(Request $request, JobAlertSubscription $subscription)
     {
-        // Gate::authorize('delete', $subscription);
+        Gate::authorize('delete', $subscription);
 
         $subscription->delete();
 

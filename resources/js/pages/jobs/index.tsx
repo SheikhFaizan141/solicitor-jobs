@@ -37,6 +37,7 @@ interface JobsPageProps {
         locations: Location[];
         employment_types: string[];
         practice_areas: PracticeArea[];
+        experience_levels: string[];
     };
     appliedFilters: AppliedFilters;
 }
@@ -181,6 +182,19 @@ export default function JobsIndex({ jobs, savedJobIds, filters, filterOptions, a
                                             </div>
                                         </SheetContent>
                                     </Sheet>
+                                    {hasActiveFilters && (
+                                        <CreateJobAlertDialog
+                                            filterOptions={filterOptions}
+                                            prefilledFilters={{
+                                                keyword: searchTerm,
+                                                locationId: selectedLocationId,
+                                                practiceAreaId: selectedPracticeAreaId,
+                                                employmentType: selectedType,
+                                                experienceLevel: selectedExperience,
+                                            }}
+                                            triggerButton={<Button variant="outline">Save Search as Alert</Button>}
+                                        />
+                                    )}
                                     <Select>
                                         <SelectTrigger className="w-full sm:w-[200px]">
                                             <SelectValue placeholder="Sort by" />
@@ -222,9 +236,11 @@ export default function JobsIndex({ jobs, savedJobIds, filters, filterOptions, a
                                             <CreateJobAlertDialog
                                                 filterOptions={filterOptions}
                                                 prefilledFilters={{
+                                                    keyword: searchTerm,
                                                     locationId: selectedLocationId,
                                                     practiceAreaId: selectedPracticeAreaId,
                                                     employmentType: selectedType,
+                                                    experienceLevel: selectedExperience,
                                                 }}
                                             />
                                         </div>

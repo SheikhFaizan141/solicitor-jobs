@@ -32,6 +32,8 @@ class StoreJobAlertSubscriptionRequest extends FormRequest
             'practice_area_ids' => ['nullable', 'array'],
             'practice_area_ids.*' => ['integer', Rule::exists('practice_areas', 'id')],
             'location_id' => ['nullable', 'integer', Rule::exists('locations', 'id')],
+            'keyword' => ['nullable', 'string', 'max:255'],
+            'experience_level' => ['nullable', 'string', 'max:50'],
         ];
     }
 

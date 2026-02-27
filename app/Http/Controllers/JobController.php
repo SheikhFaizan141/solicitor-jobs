@@ -122,6 +122,7 @@ class JobController extends Controller
                 'locations' => $locations,
                 'employment_types' => $employmentTypes,
                 'practice_areas' => $practiceAreas,
+                'experience_levels' => $experienceLevels,
             ],
             'appliedFilters' => $filters,
         ]);

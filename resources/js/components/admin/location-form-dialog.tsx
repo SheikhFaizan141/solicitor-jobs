@@ -1,4 +1,3 @@
-import { Location } from '@/types/types';
 import { useForm } from '@inertiajs/react';
 
 import React from 'react';
@@ -6,6 +5,7 @@ import { Button } from '../ui/button';
 import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import { Location } from '@/types/locations';
 
 interface LocationFormDialogProps {
     mode: 'create' | 'edit';
