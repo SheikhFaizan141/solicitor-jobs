@@ -66,6 +66,17 @@ interface Stats {
     total_sent: number;
     total_clicks: number;
     avg_click_rate: number;
+    ctr_top_3: number;
+    ctr_rest: number;
+    apply_rate_from_alerts: number;
+    personalized_vs_baseline_lift: number;
+    trend_last_30_days: Array<{
+        date: string;
+        delivered: number;
+        clicked: number;
+        applied: number;
+        ctr: number;
+    }>;
 }
 
 interface Filters {
@@ -74,6 +85,8 @@ interface Filters {
     is_active?: string;
     location_id?: string;
     practice_area_id?: string;
+    rank_bucket?: string;
+    strategy?: string;
     sort_by?: string;
     sort_order?: string;
 }
@@ -214,6 +227,50 @@ export default function Index({ subscriptions, stats, filters, locations, practi
                             <p className="text-xs text-muted-foreground">Across all alerts</p>
                         </CardContent>
                     </Card>
+
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">CTR Top 3</CardTitle>
+                            <MousePointerClick className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{stats.ctr_top_3}%</div>
+                            <p className="text-xs text-muted-foreground">Last 30 days</p>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">CTR Rest</CardTitle>
+                            <MousePointerClick className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{stats.ctr_rest}%</div>
+                            <p className="text-xs text-muted-foreground">Rank 4+</p>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Apply Rate</CardTitle>
+                            <Users className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{stats.apply_rate_from_alerts}%</div>
+                            <p className="text-xs text-muted-foreground">From delivered jobs</p>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Personalization Lift</CardTitle>
+                            <Bell className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{stats.personalized_vs_baseline_lift}%</div>
+                            <p className="text-xs text-muted-foreground">CTR vs baseline</p>
+                        </CardContent>
+                    </Card>
                 </div>
 
                 {/* Filters */}
@@ -236,7 +293,7 @@ export default function Index({ subscriptions, stats, filters, locations, practi
                             <Button type="submit">Search</Button>
                         </form>
 
-                        <div className="grid gap-4 md:grid-cols-4">
+                        <div className="grid gap-4 md:grid-cols-6">
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Frequency</label>
                                 <Select value={filters.frequency || 'all'} onValueChange={(v) => handleFilter('frequency', v)}>
@@ -298,7 +355,51 @@ export default function Index({ subscriptions, stats, filters, locations, practi
                                     </SelectContent>
                                 </Select>
                             </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Rank Bucket</label>
+                                <Select value={filters.rank_bucket || 'all'} onValueChange={(v) => handleFilter('rank_bucket', v)}>
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All</SelectItem>
+                                        <SelectItem value="top3">Top 3</SelectItem>
+                                        <SelectItem value="rest">Rest (4+)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Ranking Strategy</label>
+                                <Select value={filters.strategy || 'all'} onValueChange={(v) => handleFilter('strategy', v)}>
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All</SelectItem>
+                                        <SelectItem value="personalized">Personalized</SelectItem>
+                                        <SelectItem value="baseline">Baseline</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>30-Day Engagement Trend</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                        {stats.trend_last_30_days.slice(-7).map((day) => (
+                            <div key={day.date} className="flex items-center justify-between text-sm">
+                                <span>{new Date(day.date).toLocaleDateString()}</span>
+                                <span className="text-muted-foreground">
+                                    Delivered {day.delivered} | Clicked {day.clicked} | Applied {day.applied} | CTR {day.ctr}%
+                                </span>
+                            </div>
+                        ))}
                     </CardContent>
                 </Card>
 

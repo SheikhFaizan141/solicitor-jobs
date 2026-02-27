@@ -90,6 +90,11 @@ class JobListing extends Model
         return $this->hasMany(UserJobInteraction::class);
     }
 
+    public function alertDeliveryItems(): HasMany
+    {
+        return $this->hasMany(JobAlertDeliveryItem::class);
+    }
+
     public function scopeActive($query)
     {
         return $query->where('is_active', true);

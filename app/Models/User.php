@@ -94,6 +94,11 @@ class User extends Authenticatable
         return $this->hasMany(JobAlertSubscription::class);
     }
 
+    public function jobAlertDeliveryItems(): HasMany
+    {
+        return $this->hasMany(JobAlertDeliveryItem::class);
+    }
+
     public function jobInteractions(): HasMany
     {
         return $this->hasMany(UserJobInteraction::class);

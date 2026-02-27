@@ -53,6 +53,11 @@ class JobAlertSubscription extends Model
         return $this->hasMany(JobAlertClick::class);
     }
 
+    public function deliveryItems(): HasMany
+    {
+        return $this->hasMany(JobAlertDeliveryItem::class);
+    }
+
     public function incrementSentCount(): void
     {
         $this->increment('sent_count');

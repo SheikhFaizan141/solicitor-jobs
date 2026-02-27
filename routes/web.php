@@ -29,7 +29,9 @@ Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
 Route::get('/jobs/{job:slug}', [JobController::class, 'show'])->name('jobs.show');
 
 // Job Alerts public tracking route
-Route::get('/job-alert/click', [JobAlertClickController::class, 'track'])->name('job-alert.click');
+Route::get('/job-alert/click/{deliveryItem}', [JobAlertClickController::class, 'track'])
+    ->middleware('signed')
+    ->name('job-alert.click');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');

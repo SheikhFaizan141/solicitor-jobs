@@ -6,11 +6,9 @@ Hello {{ $subscription->user->name }},
 We found {{ count($jobs) }} new {{ $subscription->frequency === 'daily' ? 'daily' : 'weekly' }}
 job{{ count($jobs) !== 1 ? 's' : '' }} that match your preferences.
 
-@foreach ($jobs as $job)
-<x-mail::panel>
-### {{ $job->title }}
-
+@foreach ($jobs as $entry)
 @php
+    $job = $entry['job'];
     $locationName = null;
     $locationCountry = null;
 
@@ -22,6 +20,14 @@ job{{ count($jobs) !== 1 ? 's' : '' }} that match your preferences.
     }
 @endphp
 
+<x-mail::panel>
+### #{{ $entry['rank_position'] }} {{ $job->title }}
+
+@if (!empty($entry['reason_labels']))
+**Why this job:** {{ implode(' • ', $entry['reason_labels']) }}
+
+@endif
+
 @if ($locationName)
 **Location:** {{ $locationName }}@if ($locationCountry), {{ $locationCountry }}@endif
 @if (optional($job->location)->is_remote)
@@ -30,10 +36,9 @@ job{{ count($jobs) !== 1 ? 's' : '' }} that match your preferences.
 
 @endif
 
-**Posted:** {{ $job->created_at->format('F j, Y') }}
+**Posted:** {{ optional($job->published_at ?? $job->created_at)->format('F j, Y') }}
 
 @if ($job->salary_min || $job->salary_max)
-
 **Salary:**
 @if ($job->salary_min && $job->salary_max)
 £{{ number_format($job->salary_min) }} – £{{ number_format($job->salary_max) }}
@@ -47,12 +52,7 @@ Up to £{{ number_format($job->salary_max) }}
 
 {{ \Illuminate\Support\Str::limit(strip_tags($job->description), 140) }}
 
-<x-mail::button
-    :url="route('job-alert.click', [
-        'alert_id' => $subscription->id,
-        'job_id' => $job->id,
-    ])"
->
+<x-mail::button :url="$entry['click_url']">
 View Job
 </x-mail::button>
 </x-mail::panel>
@@ -62,6 +62,6 @@ View Job
 Browse All Jobs
 </x-mail::button>
 
-Thanks,  
+Thanks,
 {{ config('app.name') }}
 </x-mail::message>
