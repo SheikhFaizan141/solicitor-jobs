@@ -15,6 +15,8 @@ class JobAlertSubscription extends Model
         'employment_types',
         'practice_area_ids',
         'location_id',
+        'keyword',
+        'experience_level',
         'is_active',
         'last_sent_at',
         'sent_count',

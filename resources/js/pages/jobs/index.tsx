@@ -1,6 +1,11 @@
 import { CreateJobAlertDialog } from '@/components/job-alerts/create-job-alert-dialog';
 import { JobFiltersSidebar } from '@/components/jobs/job-filters-sidebar';
+import { SaveJobButton } from '@/components/jobs/save-job-button';
+import { ShareJobButton } from '@/components/jobs/share-job-button';
+import { PublicPagination } from '@/components/pagination/public-pagination';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import Layout from '@/layouts/main-layout';
 import { JobListingWithRelations } from '@/types/job-listing';
 import { Location } from '@/types/locations';
@@ -21,6 +26,7 @@ interface AppliedFilters {
 
 interface JobsPageProps {
     jobs: PaginatedResponse<Job>;
+    savedJobIds: number[];
     filters: {
         locations: Location[];
         employment_types: string[];
@@ -31,18 +37,20 @@ interface JobsPageProps {
         locations: Location[];
         employment_types: string[];
         practice_areas: PracticeArea[];
+        experience_levels: string[];
     };
     appliedFilters: AppliedFilters;
 }
 
 // interface JobsIndexProps {}
 
-export default function JobsIndex({ jobs, filters, filterOptions, appliedFilters }: JobsPageProps) {
+export default function JobsIndex({ jobs, savedJobIds, filters, filterOptions, appliedFilters }: JobsPageProps) {
     const [searchTerm, setSearchTerm] = useState(appliedFilters.q || '');
     const [selectedLocationId, setSelectedLocationId] = useState(appliedFilters.location_id || '');
     const [selectedPracticeAreaId, setSelectedPracticeAreaId] = useState(appliedFilters.practice_area_id || '');
     const [selectedType, setSelectedType] = useState(appliedFilters.type || '');
     const [selectedExperience, setSelectedExperience] = useState(appliedFilters.experience || '');
+    const [isMobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
     // Sync state when URL changes (e.g., pagination, back button)
     useEffect(() => {
@@ -68,8 +76,8 @@ export default function JobsIndex({ jobs, filters, filterOptions, appliedFilters
         });
     };
 
-    const handleSearch = (e: FormEvent) => {
-        e.preventDefault();
+    const handleSearch = (e?: FormEvent) => {
+        e?.preventDefault();
         handleFilterChange();
     };
 
@@ -111,6 +119,8 @@ export default function JobsIndex({ jobs, filters, filterOptions, appliedFilters
                     <div className="flex flex-col gap-8 lg:flex-row">
                         {/* Filters Sidebar */}
                         <JobFiltersSidebar
+                            className="hidden lg:block"
+                            variant="sidebar"
                             searchTerm={searchTerm}
                             selectedLocationId={selectedLocationId}
                             selectedPracticeAreaId={selectedPracticeAreaId}
@@ -130,26 +140,78 @@ export default function JobsIndex({ jobs, filters, filterOptions, appliedFilters
                         {/* Job Listings */}
                         <div className="lg:w-3/4">
                             {/* Results Header */}
-                            <div className="mb-6 flex items-center justify-between">
+                            <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                                 <h2 className="text-xl font-semibold text-gray-900">
                                     {jobs.total} {jobs.total === 1 ? 'Job' : 'Jobs'} Found
                                 </h2>
-                                <Select>
-                                    <SelectTrigger className="w-[180px]">
-                                        <SelectValue placeholder="Sort by" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="apple">Most Recent</SelectItem>
-                                        <SelectItem value="banana">Salary: High to Low</SelectItem>
-                                        <SelectItem value="blueberry">Salary: Low to High</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                                    <Sheet open={isMobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
+                                        <SheetTrigger asChild>
+                                            <Button variant="outline" className="w-full lg:hidden">
+                                                Filter &amp; Refine
+                                            </Button>
+                                        </SheetTrigger>
+                                        <SheetContent side="left" className="w-full overflow-y-auto sm:max-w-md">
+                                            <SheetHeader>
+                                                <SheetTitle>Filter Jobs</SheetTitle>
+                                            </SheetHeader>
+                                            <div className="mt-4">
+                                                <JobFiltersSidebar
+                                                    variant="sheet"
+                                                    searchTerm={searchTerm}
+                                                    selectedLocationId={selectedLocationId}
+                                                    selectedPracticeAreaId={selectedPracticeAreaId}
+                                                    selectedType={selectedType}
+                                                    selectedExperience={selectedExperience}
+                                                    hasActiveFilters={hasActiveFilters}
+                                                    filters={filters}
+                                                    onSearchChange={setSearchTerm}
+                                                    onLocationChange={setSelectedLocationId}
+                                                    onPracticeAreaChange={setSelectedPracticeAreaId}
+                                                    onTypeChange={setSelectedType}
+                                                    onExperienceChange={setSelectedExperience}
+                                                    onApplyFilters={(event) => {
+                                                        handleSearch(event);
+                                                        setMobileFiltersOpen(false);
+                                                    }}
+                                                    onClearFilters={() => {
+                                                        clearAllFilters();
+                                                        setMobileFiltersOpen(false);
+                                                    }}
+                                                />
+                                            </div>
+                                        </SheetContent>
+                                    </Sheet>
+                                    {hasActiveFilters && (
+                                        <CreateJobAlertDialog
+                                            filterOptions={filterOptions}
+                                            prefilledFilters={{
+                                                keyword: searchTerm,
+                                                locationId: selectedLocationId,
+                                                practiceAreaId: selectedPracticeAreaId,
+                                                employmentType: selectedType,
+                                                experienceLevel: selectedExperience,
+                                            }}
+                                            triggerButton={<Button variant="outline">Save Search as Alert</Button>}
+                                        />
+                                    )}
+                                    <Select>
+                                        <SelectTrigger className="w-full sm:w-[200px]">
+                                            <SelectValue placeholder="Sort by" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="apple">Most Recent</SelectItem>
+                                            <SelectItem value="banana">Salary: High to Low</SelectItem>
+                                            <SelectItem value="blueberry">Salary: Low to High</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
 
                             {/* Job Cards */}
                             <div className="space-y-6">
                                 {jobs.data.map((job) => (
-                                    <JobCard key={job.id} job={job} />
+                                    <JobCard key={job.id} job={job} isSaved={savedJobIds.includes(job.id)} />
                                 ))}
                             </div>
 
@@ -174,9 +236,11 @@ export default function JobsIndex({ jobs, filters, filterOptions, appliedFilters
                                             <CreateJobAlertDialog
                                                 filterOptions={filterOptions}
                                                 prefilledFilters={{
+                                                    keyword: searchTerm,
                                                     locationId: selectedLocationId,
                                                     practiceAreaId: selectedPracticeAreaId,
                                                     employmentType: selectedType,
+                                                    experienceLevel: selectedExperience,
                                                 }}
                                             />
                                         </div>
@@ -186,22 +250,12 @@ export default function JobsIndex({ jobs, filters, filterOptions, appliedFilters
 
                             {/* Pagination */}
                             {jobs.links && (
-                                <div className="mt-8 flex justify-center">
-                                    <div className="flex space-x-1">
-                                        {jobs.links.map((link, index) => (
-                                            <a
-                                                key={index}
-                                                href={link.url ? link.url : '#'}
-                                                className={`rounded border px-3 py-2 text-sm ${
-                                                    link.active
-                                                        ? 'border-blue-500 bg-blue-500 text-white'
-                                                        : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'
-                                                } ${!link.url ? 'pointer-events-none opacity-50' : ''}`}
-                                                dangerouslySetInnerHTML={{ __html: link.label }}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
+                                <PublicPagination
+                                    links={jobs.links}
+                                    currentPage={jobs.current_page}
+                                    totalPages={jobs.last_page}
+                                    totalResults={jobs.total}
+                                />
                             )}
                         </div>
                     </div>
@@ -213,9 +267,10 @@ export default function JobsIndex({ jobs, filters, filterOptions, appliedFilters
 
 interface JobCardProps {
     job: JobListingWithRelations;
+    isSaved: boolean;
 }
 
-function JobCard({ job }: JobCardProps) {
+function JobCard({ job, isSaved }: JobCardProps) {
     const formatSalary = (job: Job) => {
         if (!job.salary_min && !job.salary_max) return 'Salary not disclosed';
 
@@ -250,7 +305,7 @@ function JobCard({ job }: JobCardProps) {
     return (
         <div key={job.id} className="rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">
             <div className="p-6">
-                <div className="mb-4 flex items-start justify-between">
+                <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex-1">
                         <Link href={`/jobs/${job.slug}`} className="cursor-pointer text-xl font-semibold text-gray-900 hover:text-amber-600">
                             {job.title}
@@ -262,7 +317,7 @@ function JobCard({ job }: JobCardProps) {
                         )}
                         {!job.law_firm && <p className="mt-1 text-lg font-medium text-gray-600">Independent Posting</p>}
                     </div>
-                    <div className="flex flex-col items-end">
+                    <div className="flex flex-col items-start sm:items-end">
                         <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">
                             {formatEmploymentType(job.employment_type)}
                         </span>
@@ -330,7 +385,7 @@ function JobCard({ job }: JobCardProps) {
                 {/* Description */}
                 {job.excerpt && <p className="mb-4 line-clamp-2 text-gray-600">{job.excerpt}</p>}
 
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center">
                         <span
                             className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
@@ -340,10 +395,16 @@ function JobCard({ job }: JobCardProps) {
                             {job.is_active ? 'Active' : 'Closed'}
                         </span>
                     </div>
-                    <div className="flex space-x-3">
-                        <button className="rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200">
-                            Save Job
-                        </button>
+                    <div className="flex flex-wrap items-center justify-end gap-3 sm:flex-nowrap">
+                        <SaveJobButton jobId={job.id} isSaved={isSaved} />
+                        <ShareJobButton
+                            title={`${job.title}${job.law_firm ? ` at ${job.law_firm.name}` : ''}`}
+                            summary={job.excerpt || job.location?.name || null}
+                            relativePath={`/jobs/${job.slug}`}
+                            buttonVariant="outline"
+                            buttonSize="sm"
+                            className="w-full sm:w-auto"
+                        />
                         <Link
                             href={`/jobs/${job.slug}`}
                             className="rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-700"

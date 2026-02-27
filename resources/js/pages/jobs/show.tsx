@@ -1,12 +1,25 @@
+import { SaveJobButton } from '@/components/jobs/save-job-button';
+import { ShareJobButton } from '@/components/jobs/share-job-button';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Layout from '@/layouts/main-layout';
 import { cn } from '@/lib/utils';
-import { type SharedData } from '@/types';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { SharedData } from '@/types';
+import { JobListingWithRelations } from '@/types/job-listing';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { BadgeCheck, MapPinIcon, Pencil, SquareArrowOutUpRight } from 'lucide-react';
 import React from 'react';
 
-export default function JobShow() {
-    const { auth, job } = usePage<SharedData>().props;
+interface JobShowProps {
+    job: JobListingWithRelations;
+    isSaved: boolean;
+    hasApplied: boolean;
+}
+
+export default function JobShow({ job, isSaved, hasApplied }: JobShowProps) {
+    const { auth } = usePage<SharedData>().props;
+    const user = auth?.user;
+    const isStaff = user?.role === 'admin' || user?.role === 'editor';
 
     console.log(job);
 
@@ -39,9 +52,36 @@ export default function JobShow() {
         }
     };
 
+    const EmploymentTypeMap: Record<string, string> = {
+        full_time: 'Full-time',
+        part_time: 'Part-time',
+        contract: 'Contract',
+    };
+
     const handleApplyClick = () => {
-        const link = job.external_link || job.application_url;
-        if (link) {
+        const link = job.external_link;
+        if (!link) {
+            return;
+        }
+
+        // Track the application for logged-in users
+        if (user) {
+            router.post(
+                `/jobs/${job.id}/apply`,
+                {},
+                {
+                    preserveScroll: true,
+                    preserveState: true,
+                    onSuccess: () => {
+                        if (link.startsWith('mailto:')) {
+                            window.location.href = link;
+                        } else {
+                            window.open(link, '_blank', 'noopener,noreferrer');
+                        }
+                    },
+                },
+            );
+        } else {
             if (link.startsWith('mailto:')) {
                 window.location.href = link;
             } else {
@@ -55,21 +95,39 @@ export default function JobShow() {
             <Head title={`${job.title} at ${job.law_firm?.name || 'Company'}`} />
 
             <div className="min-h-screen bg-gray-50 pb-16">
+                {/* Staff Edit Banner */}
+                {isStaff && (
+                    <div className="border-b border-blue-200 bg-blue-50">
+                        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2 sm:px-6">
+                            <span className="text-sm text-blue-700">
+                                You are viewing this page as {user?.role === 'admin' ? 'an admin' : 'an editor'}
+                            </span>
+                            <Link
+                                href={`/admin/job-listings/${job.id}/edit`}
+                                className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                            >
+                                <Pencil className="h-3.5 w-3.5" />
+                                Edit Listing
+                            </Link>
+                        </div>
+                    </div>
+                )}
+
                 {/* Header */}
                 <div className="border-b bg-white">
-                    <div className="mx-auto max-w-5xl px-6 py-6">
-                        <Link href="/jobs" className="mb-6 inline-flex items-center text-sm text-gray-600 hover:text-gray-900">
+                    <div className="mx-auto max-w-7xl px-4 pt-6 pb-8 sm:px-6">
+                        <Link href="/jobs" className="mb-6 inline-flex max-w-fit items-center text-sm text-gray-600 hover:text-gray-900">
                             <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                             </svg>
                             Back to Jobs
                         </Link>
 
-                        <div className="flex items-start justify-between">
+                        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
                             <div className="flex-1">
-                                <div className="mb-4 flex items-center gap-4">
+                                <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center">
                                     {/* Company Logo */}
-                                    <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-white">
+                                    <div className="flex h-18 w-18 flex-shrink-0 items-start justify-center overflow-hidden rounded-lg border bg-white">
                                         {job.law_firm?.logo_url ? (
                                             <img src={job.law_firm.logo_url} alt={`${job.law_firm.name} logo`} className="h-14 w-14 object-cover" />
                                         ) : (
@@ -83,7 +141,7 @@ export default function JobShow() {
                                         )}
                                     </div>
 
-                                    <div>
+                                    <div className="sm:text-left">
                                         <h1 className="mb-2 text-3xl font-bold text-gray-900">{job.title}</h1>
                                         {job.law_firm && (
                                             <Link
@@ -97,49 +155,22 @@ export default function JobShow() {
                                 </div>
 
                                 {/* Job Meta */}
-                                <div className="mb-4 flex flex-wrap items-center gap-6 text-sm text-gray-600">
+                                <div className="mb-4 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-gray-600">
                                     {job.location && (
                                         <div className="flex items-center">
-                                            <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth="2"
-                                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                                                />
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth="2"
-                                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                                                />
-                                            </svg>
-                                            {job.location}
+                                            <MapPinIcon className="mr-2 h-4 w-4" />
+                                            <span>{job.location?.name}</span>
                                         </div>
                                     )}
 
                                     <div className="flex items-center">
-                                        <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth="2"
-                                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
-                                            />
-                                        </svg>
+                                        {/* <DollarSignIcon className="mr-2 h-4 w-4" /> */}
                                         {formatSalary()}
                                     </div>
 
                                     {job.experience_level && (
                                         <div className="flex items-center">
-                                            <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    stroke-width="2"
-                                                    d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
-                                                ></path>
-                                            </svg>
+                                            <BadgeCheck className="mr-2 h-4 w-4" />
                                             {job.experience_level}
                                         </div>
                                     )}
@@ -147,13 +178,12 @@ export default function JobShow() {
                                     <span
                                         className={cn(
                                             'inline-flex items-center rounded-full px-3 py-1 text-xs font-medium',
-                                            job.type === 'Full-time' && 'bg-green-100 text-green-800',
-                                            job.type === 'Part-time' && 'bg-blue-100 text-blue-800',
-                                            job.type === 'Contract' && 'bg-yellow-100 text-yellow-800',
-                                            job.type === 'Internship' && 'bg-purple-100 text-purple-800',
+                                            job.employment_type === 'full_time' && 'bg-green-100 text-green-800',
+                                            job.employment_type === 'part_time' && 'bg-blue-100 text-blue-800',
+                                            job.employment_type === 'contract' && 'bg-yellow-100 text-yellow-800',
                                         )}
                                     >
-                                        {job.type}
+                                        {EmploymentTypeMap[job.employment_type]}
                                     </span>
 
                                     {!job.is_active && (
@@ -178,61 +208,62 @@ export default function JobShow() {
                                 )}
 
                                 {/* Job Stats */}
-                                <div className="flex items-center gap-6 text-sm text-gray-500">
+                                <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-gray-500">
                                     <span>Posted {formatDate(job.created_at)}</span>
                                     {job.closing_date && <span>Closes {formatDate(job.closing_date)}</span>}
-                                    {job.applications && <span>{job.applications} applications</span>}
+                                    {/* {job.applications && <span>{job.applications} applications</span>} */}
                                 </div>
                             </div>
 
-                            {/* Apply Button */}
-                            <div className="ml-6 flex-shrink-0">
+                            {/* Apply / Share Actions */}
+                            <div className="flex w-full max-w-md flex-col space-y-3 md:items-end lg:ml-6 lg:flex-shrink-0">
                                 {job.is_active ? (
-                                    job.external_link || job.application_url ? (
-                                        <Button
-                                            onClick={handleApplyClick}
-                                            variant="default"
-                                            className="bg-amber-600 hover:bg-amber-700 focus:ring-amber-500"
-                                        >
-                                            Apply Now
-                                            <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                                                />
-                                            </svg>
-                                        </Button>
-                                    ) : (
-                                        <div className="text-center">
-                                            <div className="mb-2 text-sm text-gray-600">Contact employer directly</div>
-                                            {job.law_firm?.website && (
-                                                <Link
-                                                    href={job.law_firm.website}
-                                                    target="_blank"
-                                                    className="inline-flex items-center rounded-md border border-gray-300 bg-white px-6 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                                    job.external_link && (
+                                        <div className="flex w-full max-w-[224px] flex-col gap-2">
+                                            <Button
+                                                onClick={handleApplyClick}
+                                                variant="default"
+                                                className="w-full bg-amber-600 hover:bg-amber-700 focus:ring-amber-500"
+                                            >
+                                                {hasApplied ? 'Apply Again' : 'Apply Now'}
+                                                <SquareArrowOutUpRight className="ml-2 h-4 w-4" />
+                                            </Button>
+                                            {hasApplied && (
+                                                <Badge
+                                                    variant="secondary"
+                                                    className="w-fit self-end border-green-200 bg-green-50 text-green-700"
                                                 >
-                                                    Visit Website
-                                                </Link>
+                                                    ✓ Tracked in Applied Jobs
+                                                </Badge>
                                             )}
                                         </div>
                                     )
                                 ) : (
                                     <button
                                         disabled
-                                        className="inline-flex cursor-not-allowed items-center rounded-md bg-gray-400 px-8 py-3 text-base font-medium text-white shadow-sm"
+                                        className="inline-flex w-full cursor-not-allowed items-center justify-center rounded-md bg-gray-400 px-8 py-3 text-base font-medium text-white shadow-sm"
                                     >
                                         Applications Closed
                                     </button>
                                 )}
+
+                                <SaveJobButton jobId={job.id} isSaved={isSaved} size="lg" className="w-full max-w-[224px]" />
+
+                                <ShareJobButton
+                                    title={`${job.title} at ${job.law_firm?.name || 'Solicitor Jobs'}`}
+                                    summary={job.excerpt || job.location?.name || null}
+                                    relativePath={`/jobs/${job.slug}`}
+                                    buttonVariant="outline"
+                                    buttonSize="lg"
+                                    className="w-full max-w-[224px]"
+                                />
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Content */}
-                <div className="mx-auto max-w-5xl px-6 py-8">
+                <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
                     <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                         {/* Main Content */}
                         <div className="space-y-8 lg:col-span-2">
@@ -293,54 +324,36 @@ export default function JobShow() {
                         {/* Sidebar */}
                         <div className="space-y-6">
                             {/* Quick Apply */}
-                            {job.is_active && (
+                            {job.external_link && (
                                 <div className="rounded-lg border bg-white p-6">
                                     <h3 className="mb-4 text-lg font-semibold text-gray-900">Ready to Apply?</h3>
-                                    {job.application_url ? (
-                                        <button
-                                            onClick={handleApplyClick}
-                                            className="inline-flex w-full items-center justify-center rounded-md bg-amber-600 px-6 py-3 text-base font-medium text-white shadow-sm transition-colors hover:bg-amber-700 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:outline-none"
+                                    <div>
+                                        <p className="mb-4 text-sm text-gray-600">Contact the employer directly to apply for this position.</p>
+                                        <a
+                                            href={job.external_link}
+                                            target="_blank"
+                                            className="inline-flex w-full items-center justify-center rounded-md border border-gray-300 bg-[#a32245] px-4 py-2 text-base font-semibold text-white hover:bg-[#af2449] focus:ring-2 focus:ring-[#3a8bd1] focus:outline-none"
                                         >
                                             Apply Now
-                                            <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                                                />
-                                            </svg>
-                                        </button>
-                                    ) : (
-                                        <div>
-                                            <p className="mb-4 text-sm text-gray-600">Contact the employer directly to apply for this position.</p>
-                                            {job.law_firm?.website && (
-                                                <Link
-                                                    href={job.law_firm.website}
-                                                    target="_blank"
-                                                    className="inline-flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-3 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-amber-500 focus:outline-none"
-                                                >
-                                                    Visit Website
-                                                </Link>
-                                            )}
-                                        </div>
-                                    )}
+                                            <SquareArrowOutUpRight className="ml-2 h-4 w-4" />
+                                        </a>
+                                    </div>
                                 </div>
                             )}
 
                             {/* Job Details */}
                             <div className="rounded-lg border bg-white p-6">
-                                <h3 className="mb-4 text-lg font-semibold text-gray-900">Job Details</h3>
+                                <h3 className="mb-4 border-b pb-2 text-lg font-semibold text-gray-900">Job Details</h3>
                                 <dl className="space-y-3">
                                     {job.location && (
                                         <div>
                                             <dt className="text-sm font-medium text-gray-500">Location</dt>
-                                            <dd className="text-sm text-gray-900">{job.location}</dd>
+                                            <dd className="text-sm text-gray-900">{job.location?.name}</dd>
                                         </div>
                                     )}
                                     <div>
                                         <dt className="text-sm font-medium text-gray-500">Job Type</dt>
-                                        <dd className="text-sm text-gray-900">{job.type}</dd>
+                                        <dd className="text-sm text-gray-900">{job.workplace_type}</dd>
                                     </div>
                                     {job.experience_level && (
                                         <div>
@@ -368,9 +381,9 @@ export default function JobShow() {
                             {/* Company Info */}
                             {job.law_firm && (
                                 <div className="rounded-lg border bg-white p-6">
-                                    <h3 className="mb-4 text-lg font-semibold text-gray-900">About {job.law_firm.name}</h3>
-                                    {job.law_firm.description ? (
-                                        <p className="mb-4 text-sm text-gray-700">{job.law_firm.description}</p>
+                                    <h3 className="mb-4 border-b pb-2 text-lg font-semibold text-gray-900">About {job.law_firm.name}</h3>
+                                    {job.law_firm.plain_description ? (
+                                        <p className="mb-4 text-sm text-gray-700">{job.law_firm.plain_description.slice(0, 200)}</p>
                                     ) : (
                                         <p className="mb-4 text-sm text-gray-500">No company description available.</p>
                                     )}

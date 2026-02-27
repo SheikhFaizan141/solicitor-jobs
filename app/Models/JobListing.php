@@ -2,16 +2,20 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasEditLock;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 class JobListing extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasEditLock, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'title',
@@ -33,6 +37,8 @@ class JobListing extends Model
         'benefits',
         'posted_by',
         'published_at',
+        'locked_by',
+        'locked_at',
     ];
 
     protected $casts = [
@@ -41,6 +47,7 @@ class JobListing extends Model
         'is_active' => 'boolean',
         'closing_date' => 'date',
         'published_at' => 'datetime',
+        'locked_at' => 'datetime',
     ];
 
     protected static function booted(): void
@@ -78,9 +85,23 @@ class JobListing extends Model
         return $this->belongsTo(Location::class);
     }
 
+    public function jobInteractions(): HasMany
+    {
+        return $this->hasMany(UserJobInteraction::class);
+    }
+
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    #[Scope]
+    public function open($query): void
+    {
+        $query->where(function (Builder $q): void {
+            $q->whereNull('closing_date')
+                ->orWhere('closing_date', '>=', now());
+        });
     }
 
     public function scopePublished($query)

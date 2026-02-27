@@ -1,9 +1,10 @@
-import { Firm } from '@/pages/law-firms/index';
+import { show } from '@/routes/law-firms';
+import { LawFirm } from '@/types/law-firms';
 import { Link } from '@inertiajs/react';
 import { Briefcase, Building2, MapPin, Star } from 'lucide-react';
 
 interface FirmCardProps {
-    firm: Firm;
+    firm: LawFirm;
 }
 
 export function FirmCard({ firm }: FirmCardProps) {
@@ -38,13 +39,9 @@ export function FirmCard({ firm }: FirmCardProps) {
             .slice(0, 2);
     };
 
-    console.log(firm);
-    
     return (
         <div className="group relative rounded-lg border bg-white p-6 shadow-sm transition-all hover:shadow-md">
-            <Link href={`/law-firms/${firm.slug}`} className="absolute inset-0 z-0" aria-label={`View ${firm.name} profile`} />
-
-            <div className="relative z-10 flex gap-4">
+            <div className="relative z-10 flex gap-5">
                 {/* Logo */}
                 <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-gray-50">
                     {firm.logo_url ? (
@@ -56,17 +53,29 @@ export function FirmCard({ firm }: FirmCardProps) {
 
                 {/* Content */}
                 <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900 group-hover:text-amber-600">{firm.name}</h3>
+                    <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                            <h3 className="text-lg font-semibold text-gray-900 group-hover:text-amber-600">{firm.name}</h3>
 
-                    {/* Rating */}
-                    {firm.average_rating > 0 && (
-                        <div className="mt-1 flex items-center gap-2">
-                            <div className="flex gap-0.5">{renderStars(firm.average_rating)}</div>
-                            <span className="text-sm text-gray-600">
-                                {/* {firm.average_rating.toFixed(1)} ({firm.reviews_count} reviews) */}
-                            </span>
+                            {/* Rating */}
+                            {firm.average_rating > 0 && (
+                                <div className="mt-1 flex items-center gap-2">
+                                    <div className="flex gap-0.5">{renderStars(firm.average_rating)}</div>
+                                    <span className="text-sm text-gray-600">
+                                        {/* {firm.average_rating.toFixed(1)} ({firm.reviews_count} reviews) */}
+                                    </span>
+                                </div>
+                            )}
                         </div>
-                    )}
+
+                        <Link
+                            href={show({ slug: firm.slug })}
+                            className="inline-flex items-center gap-2 rounded-md bg-amber-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-amber-700 focus:ring-2 focus:ring-amber-300 focus:outline-none"
+                            aria-label={`View ${firm.name} profile`}
+                        >
+                            View Profile
+                        </Link>
+                    </div>
 
                     {/* Location */}
                     {firm.location && (
@@ -98,7 +107,7 @@ export function FirmCard({ firm }: FirmCardProps) {
                         )}
                     </div>
 
-                    {/* Practice Areas Tags */}
+                    {/* Practice Areas */}
                     {firm.practice_areas && firm.practice_areas.length > 0 && (
                         <div className="mt-3 flex flex-wrap gap-2">
                             {firm.practice_areas.slice(0, 3).map((area) => (

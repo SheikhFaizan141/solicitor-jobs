@@ -71,6 +71,14 @@ class SendJobAlerts extends Command
                                 $sub->location_id,
                                 fn($q) => $q->where('location_id', $sub->location_id)
                             )
+                            ->when(
+                                filled($sub->keyword),
+                                fn ($q) => $q->where('title', 'like', '%'.$sub->keyword.'%')
+                            )
+                            ->when(
+                                filled($sub->experience_level),
+                                fn ($q) => $q->where('experience_level', $sub->experience_level)
+                            )
                             ->where('published_at', '>=', $since)
                             ->latest('published_at')
                             ->limit(50)

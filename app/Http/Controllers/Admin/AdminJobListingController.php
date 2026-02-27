@@ -28,7 +28,7 @@ class AdminJobListingController extends Controller
 
         $jobs = JobListing::query()
             ->when($search, function ($query, $search) {
-                $query->where('title', 'like', '%' . $search . '%');
+                $query->where('title', 'like', '%'.$search.'%');
             })
             ->when($status === 'active', function ($query) {
                 $query->where('is_active', true);
@@ -37,10 +37,9 @@ class AdminJobListingController extends Controller
                 $query->where('is_active', false);
             })
             ->orderBy($sortBy, 'desc')
-            ->with('lawFirm')
+            ->with('lawFirm', 'location')
             ->paginate(20)
             ->withQueryString();
-
 
         // return response()->json($jobs);
 
@@ -48,7 +47,6 @@ class AdminJobListingController extends Controller
             'jobs' => $jobs,
         ]);
     }
-
 
     public function show(JobListing $jobListing)
     {
@@ -102,7 +100,7 @@ class AdminJobListingController extends Controller
             'practice_areas.*' => ['integer', Rule::exists('practice_areas', 'id')],
         ]);
 
-        if (!empty($data['description'])) {
+        if (! empty($data['description'])) {
             $data['description'] = Purify::clean($data['description']);
         }
 
@@ -120,9 +118,28 @@ class AdminJobListingController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(JobListing $jobListing)
+    public function edit(Request $request, JobListing $jobListing)
     {
         Gate::authorize('update', $jobListing);
+
+        $user = $request->user();
+
+        // Check if locked by another user
+        if ($jobListing->isLockedByAnotherUser($user)) {
+            $lockedByUser = $jobListing->lockedByUser;
+
+            return Inertia::render('admin/job-listings/locked', [
+                'job' => $jobListing->only(['id', 'title', 'slug']),
+                'lockedBy' => [
+                    'name' => $lockedByUser->name,
+                    'email' => $lockedByUser->email,
+                ],
+                'lockedAt' => $jobListing->locked_at->toISOString(),
+            ]);
+        }
+
+        // Acquire lock for current user
+        $jobListing->acquireLock($user);
 
         // format the closing date for the date input field
         $jobData = $jobListing->load(['practiceAreas', 'location'])->toArray();
@@ -137,6 +154,30 @@ class AdminJobListingController extends Controller
             'practiceAreas' => PracticeArea::orderBy('name')->get(['id', 'name', 'parent_id']),
             'locations' => Location::where('is_active', true)->orderBy('name')->get(['id', 'name', 'region', 'country', 'is_remote']),
         ]);
+    }
+
+    /**
+     * Refresh the editing lock (heartbeat endpoint).
+     */
+    public function refreshLock(Request $request, JobListing $jobListing)
+    {
+        $user = $request->user();
+
+        if ($jobListing->refreshLock($user)) {
+            return response()->json(['success' => true]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Lock refresh failed'], 403);
+    }
+
+    /**
+     * Release the editing lock.
+     */
+    public function releaseLock(Request $request, JobListing $jobListing)
+    {
+        $jobListing->releaseLock($request->user());
+
+        return response()->json(['success' => true]);
     }
 
     /**
@@ -169,7 +210,7 @@ class AdminJobListingController extends Controller
             'practice_areas.*' => ['integer', Rule::exists('practice_areas', 'id')],
         ]);
 
-        if (!empty($data['description'])) {
+        if (! empty($data['description'])) {
             $data['description'] = Purify::clean($data['description']);
         }
 
@@ -179,6 +220,9 @@ class AdminJobListingController extends Controller
 
         $jobListing->update($data);
         $jobListing->practiceAreas()->sync($data['practice_areas'] ?? []);
+
+        // Release the lock after successful update
+        $jobListing->releaseLock($request->user());
 
         return redirect()->route('admin.job-listings.index')->with('success', 'Job listing updated.');
     }

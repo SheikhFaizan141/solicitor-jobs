@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\JobListing;
 use App\Models\Location;
 use App\Models\PracticeArea;
+use App\Models\UserJobInteraction;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -17,7 +18,12 @@ class JobController extends Controller
         $query = JobListing::query()
             ->active()
             ->published()
-            ->with(['lawFirm', 'practiceAreas']);
+            ->with(['lawFirm', 'practiceAreas'])
+            ->where(function ($q): void {
+                // Allow jobs with no firm, or jobs from active, non-deleted firms
+                $q->whereNull('law_firm_id')
+                    ->orWhereHas('lawFirm', fn ($q) => $q->active());
+            });
 
         if ($filters['q'] ?? null) {
             $q = $filters['q'];
@@ -55,8 +61,18 @@ class JobController extends Controller
             $query->where('law_firm_id', $filters['firm']);
         }
 
-        // dd($filters);
         $jobs = $query->latest()->paginate(20)->withQueryString();
+
+        $savedJobIds = [];
+        if ($request->user()) {
+            $savedJobIds = $request->user()
+                ->jobInteractions()
+                ->where('type', UserJobInteraction::TYPE_SAVED)
+                ->where('status', UserJobInteraction::STATUS_ACTIVE)
+                ->whereIn('job_listing_id', $jobs->getCollection()->pluck('id'))
+                ->pluck('job_listing_id')
+                ->all();
+        }
 
         // Get filter options
         // $locations = JobListing::active()
@@ -75,8 +91,6 @@ class JobController extends Controller
 
         $practiceAreas = PracticeArea::orderBy('name')
             ->get(['id', 'name']);
-
-        // dd($practiceAreas->toArray());
 
         $employmentTypes = JobListing::active()
             ->published()
@@ -97,6 +111,7 @@ class JobController extends Controller
 
         return Inertia::render('jobs/index', [
             'jobs' => $jobs,
+            'savedJobIds' => $savedJobIds,
             'filters' => [
                 'locations' => $locations,
                 'employment_types' => $employmentTypes,
@@ -107,19 +122,38 @@ class JobController extends Controller
                 'locations' => $locations,
                 'employment_types' => $employmentTypes,
                 'practice_areas' => $practiceAreas,
+                'experience_levels' => $experienceLevels,
             ],
-            'appliedFilters' => $filters
+            'appliedFilters' => $filters,
         ]);
     }
 
-    public function show(JobListing $job)
+    public function show(Request $request, JobListing $job)
     {
-        $job->load(['lawFirm', 'practiceAreas', 'postedBy']);
+        $job->load(['lawFirm', 'practiceAreas', 'location',  'postedBy']);
 
-        // var_dump($job->toArray()); exit;
+        $isSaved = false;
+        $hasApplied = false;
+        if ($request->user()) {
+            $isSaved = $request->user()
+                ->jobInteractions()
+                ->where('type', UserJobInteraction::TYPE_SAVED)
+                ->where('status', UserJobInteraction::STATUS_ACTIVE)
+                ->where('job_listing_id', $job->id)
+                ->exists();
+
+            $hasApplied = $request->user()
+                ->jobInteractions()
+                ->where('type', UserJobInteraction::TYPE_APPLIED)
+                ->where('status', UserJobInteraction::STATUS_ACTIVE)
+                ->where('job_listing_id', $job->id)
+                ->exists();
+        }
 
         return Inertia::render('jobs/show', [
             'job' => $job,
+            'isSaved' => $isSaved,
+            'hasApplied' => $hasApplied,
         ]);
     }
 

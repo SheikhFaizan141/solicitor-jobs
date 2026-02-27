@@ -7,85 +7,43 @@ use App\Http\Controllers\Admin\AdminLawFirmController;
 use App\Http\Controllers\Admin\AdminLocationController;
 use App\Http\Controllers\Admin\AdminReviewController;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\AppliedJobController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JobAlertClickController;
 use App\Http\Controllers\JobAlertSubscriptionController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\LawFirmController;
 use App\Http\Controllers\PracticeAreaController;
-use App\Mail\JobAlertDigestMail;
+use App\Http\Controllers\SavedJobController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::get('/', HomeController::class)->name('home');
 
+// Law Firms public routes
 Route::get('/law-firms', [LawFirmController::class, 'index'])->name('law-firms.index');
-
 Route::get('/law-firms/{lawFirm:slug}', [LawFirmController::class, 'show'])->name('law-firms.show');
 
-Route::middleware('auth')->group(function () {
-    Route::post('/law-firms/{lawFirm:slug}/reviews', [LawFirmController::class, 'storeReview'])->name('law-firms.reviews.store');
-});
-
+// Job Listings public routes
 Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
-
 Route::get('/jobs/{job:slug}', [JobController::class, 'show'])->name('jobs.show');
 
+// Job Alerts public tracking route
 Route::get('/job-alert/click', [JobAlertClickController::class, 'track'])->name('job-alert.click');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        $user = auth()->user();
+    Route::get('dashboard', DashboardController::class)->name('dashboard');
+    Route::get('/saved-jobs', [SavedJobController::class, 'index'])->name('saved-jobs.index');
 
-        // Check if admin
-        if ($user->role === 'admin') {
-            return Inertia::render('dashboard', [
-                'isAdmin' => true,
-                'adminStats' => [
-                    'totalJobs' => \App\Models\JobListing::count(),
-                    'activeJobs' => \App\Models\JobListing::where('is_active', true)->count(),
-                    'totalUsers' => \App\Models\User::where('role', 'user')->count(),
-                    'totalFirms' => \App\Models\LawFirm::count(),
-                ],
-            ]);
-        }
-
-        // Regular user dashboard
-        $activeAlerts = $user->jobAlertSubscriptions()->where('is_active', true);
-
-        return Inertia::render('dashboard', [
-            'isAdmin' => false,
-            'stats' => [
-                'activeAlerts' => $activeAlerts->count(),
-                'savedJobs' => 0, // TODO: Implement saved jobs
-                'applications' => 0, // TODO: Implement applications  
-                'newMatches' => 0, // TODO: Calculate actual job matches
-            ],
-            'recentAlerts' => $activeAlerts
-                ->with('location')
-                ->limit(3)
-                ->get()
-                ->map(fn($alert) => [
-                    'id' => $alert->id,
-                    'frequency' => $alert->frequency,
-                    'location' => $alert->location?->name,
-                    'employment_types' => $alert->employment_types,
-                    'practice_area_count' => count($alert->practice_area_ids ?? []),
-                    'matchCount' => 0, // TODO: Calculate matches
-                ]),
-            'filterOptions' => [
-                'locations' => \App\Models\Location::where('is_active', true)
-                    ->orderBy('name')
-                    ->get(['id', 'name', 'region', 'country', 'is_remote']),
-                'practice_areas' => \App\Models\PracticeArea::orderBy('name')
-                    ->get(['id', 'name']),
-                'employment_types' => ['full_time', 'part_time', 'contract', 'internship'],
-            ],
-        ]);
-    })->name('dashboard');
+    // Law Firm reviews
+    Route::post('/law-firms/{lawFirm:slug}/reviews', [LawFirmController::class, 'storeReview'])->name('law-firms.reviews.store');
 });
 
 Route::middleware(['auth'])->group(function () {
+
+    Route::post('/jobs/{jobListing}/save', [SavedJobController::class, 'store'])->name('jobs.save');
+    Route::delete('/jobs/{jobListing}/unsave', [SavedJobController::class, 'destroy'])->name('jobs.unsave');
+    Route::patch('/saved-jobs/{interaction}/notes', [SavedJobController::class, 'updateNotes'])->name('saved-jobs.notes.update');
 
     // JOB ALERT SUBSCRIPTIONS TEST ROUTE - DEV ONLY
     /*     Route::get('/dev/preview-job-alert', function () {
@@ -148,63 +106,91 @@ Route::middleware(['auth'])->group(function () {
         return new \App\Mail\JobAlertDigestMail($subscription, $jobs);
     })->middleware('auth');
 
-    // Route
+    // Applied Jobs routes
+    Route::get('/applied-jobs', [AppliedJobController::class, 'index'])->name('applied-jobs.index');
+    Route::post('/jobs/{jobListing}/apply', [AppliedJobController::class, 'store'])->name('jobs.apply');
+    Route::patch('/applied-jobs/{interaction}/status', [AppliedJobController::class, 'updateStatus'])->name('applied-jobs.status.update');
+    Route::delete('/applied-jobs/{interaction}', [AppliedJobController::class, 'destroy'])->name('applied-jobs.destroy');
+
+    // Job Alerts routes
     Route::get('/job-alerts', [JobAlertSubscriptionController::class, 'index'])->name('job-alerts.index');
     Route::post('/job-alerts', [JobAlertSubscriptionController::class, 'store'])->name('job-alerts.store');
     Route::delete('/job-alerts/{subscription}', [JobAlertSubscriptionController::class, 'destroy'])->name('job-alerts.destroy');
+});
 
-    // Admin Panel (prefix: /admin)
-    Route::prefix('admin')->name('admin.')->group(function () {
+// Admin routes
+Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+    // Accessible to both Admin and Editor
+    Route::middleware('role:admin|editor')->group(function () {
+        // Dashboard
+        Route::get('/', AdminDashboardController::class)->name('dashboard');
 
-        // Accessible to both Admin and Editor
-        Route::middleware('role:admin,editor')->group(function () {
-            // Dashboard
-            Route::get('/', AdminDashboardController::class)->name('dashboard');
+        // Law Firms
+        // Note: trash route must be declared before resource() to prevent {law_firm} capturing "trash"
+        Route::get('law-firms/trash', [AdminLawFirmController::class, 'trash'])
+            ->name('law-firms.trash');
+        Route::post('law-firms/{id}/restore', [AdminLawFirmController::class, 'restore'])
+            ->name('law-firms.restore');
+        Route::delete('law-firms/{id}/force-destroy', [AdminLawFirmController::class, 'forceDestroy'])
+            ->name('law-firms.force-destroy');
 
-            // Law Firms
-            Route::resource('law-firms', AdminLawFirmController::class)
-                ->names('law-firms');
+        Route::resource('law-firms', AdminLawFirmController::class)
+            ->names('law-firms');
 
-            // Practice Areas
-            Route::resource('practice-areas', PracticeAreaController::class)
-                ->names('practice-areas')
-                ->except(['show']);
+        // Law Firm Bulk Operations
+        Route::post('law-firms/bulk-destroy', [AdminLawFirmController::class, 'bulkDestroy'])
+            ->name('law-firms.bulk-destroy');
 
-            // Job Listings
-            Route::resource('job-listings', AdminJobListingController::class)
-                ->names('job-listings');
-                // ->except(['show']);
+        // Law Firm Lock Management
+        Route::post('law-firms/{law_firm}/refresh-lock', [AdminLawFirmController::class, 'refreshLock'])
+            ->name('law-firms.refresh-lock');
+        Route::post('law-firms/{law_firm}/release-lock', [AdminLawFirmController::class, 'releaseLock'])
+            ->name('law-firms.release-lock');
 
-            // Locations
-            Route::resource('locations', AdminLocationController::class)
-                ->names('locations')
-                ->except(['show', 'create', 'edit']);
+        // Practice Areas
+        Route::resource('practice-areas', PracticeAreaController::class)
+            ->names('practice-areas');
 
-            // Reviews
-            Route::prefix('reviews')->name('reviews.')->group(function () {
-                Route::get('/', [AdminReviewController::class, 'index'])->name('index');
-                Route::get('/spam', [AdminReviewController::class, 'spam'])->name('spam');
-                Route::get('/trash', [AdminReviewController::class, 'trash'])->name('trash');
-                Route::post('/bulk', [AdminReviewController::class, 'bulkAction'])->name('bulk');
-                Route::post('/{review}/spam', [AdminReviewController::class, 'markAsSpam'])->name('spam.mark');
-                Route::post('/{review}/trash', [AdminReviewController::class, 'moveToTrash'])->name('trash.move');
-                Route::post('/{id}/restore', [AdminReviewController::class, 'restore'])->name('restore');
-                Route::delete('/{id}/force', [AdminReviewController::class, 'forceDelete'])->name('force-delete');
-            });
+        // Job Listings
+        Route::resource('job-listings', AdminJobListingController::class)
+            ->names('job-listings');
+        // ->except(['show']);
+
+        // Job Listing Lock Management
+        Route::post('job-listings/{job_listing}/refresh-lock', [AdminJobListingController::class, 'refreshLock'])
+            ->name('job-listings.refresh-lock');
+        Route::post('job-listings/{job_listing}/release-lock', [AdminJobListingController::class, 'releaseLock'])
+            ->name('job-listings.release-lock');
+
+        // Locations
+        Route::resource('locations', AdminLocationController::class)
+            ->names('locations')
+            ->except(['show', 'create', 'edit']);
+
+        // Reviews
+        Route::prefix('reviews')->name('reviews.')->group(function () {
+            Route::get('/', [AdminReviewController::class, 'index'])->name('index');
+            Route::get('/spam', [AdminReviewController::class, 'spam'])->name('spam');
+            Route::get('/trash', [AdminReviewController::class, 'trash'])->name('trash');
+            Route::post('/bulk', [AdminReviewController::class, 'bulkAction'])->name('bulk');
+            Route::post('/{review}/spam', [AdminReviewController::class, 'markAsSpam'])->name('spam.mark');
+            Route::post('/{review}/trash', [AdminReviewController::class, 'moveToTrash'])->name('trash.move');
+            Route::post('/{id}/restore', [AdminReviewController::class, 'restore'])->name('restore');
+            Route::delete('/{id}/force', [AdminReviewController::class, 'forceDelete'])->name('force-delete');
         });
+    });
 
-        // Only Admins (for User Management)
-        Route::middleware('role:admin')->group(function () {
-            Route::resource('users', AdminUserController::class)
-                ->names('users')
-                ->except(['show']);
+    // Only Admins (for User Management)
+    Route::middleware('role:admin')->group(function () {
+        Route::resource('users', AdminUserController::class)
+            ->names('users')
+            ->except(['show']);
 
-            Route::resource('job-alerts', AdminJobAlertController::class)->only(['index', 'update', 'destroy']);
-            Route::post('job-alerts/bulk-destroy', [AdminJobAlertController::class, 'bulkDestroy'])->name('job-alerts.bulk-destroy');
-            Route::post('job-alerts/bulk-toggle', [AdminJobAlertController::class, 'bulkToggle'])->name('job-alerts.bulk-toggle');
-        });
+        Route::resource('job-alerts', AdminJobAlertController::class)->only(['index', 'update', 'destroy']);
+        Route::post('job-alerts/bulk-destroy', [AdminJobAlertController::class, 'bulkDestroy'])->name('job-alerts.bulk-destroy');
+        Route::post('job-alerts/bulk-toggle', [AdminJobAlertController::class, 'bulkToggle'])->name('job-alerts.bulk-toggle');
     });
 });
 
-require __DIR__ . '/settings.php';
-require __DIR__ . '/auth.php';
+require __DIR__.'/settings.php';
+require __DIR__.'/auth.php';

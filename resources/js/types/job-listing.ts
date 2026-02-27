@@ -1,21 +1,10 @@
-import { PracticeArea } from '@/pages/home-old';
+// import { PracticeArea } from '@/pages/home-old';
 import { LawFirm } from './law-firms';
 import { Location } from './locations';
+import { PracticeArea } from './practice-area';
 
 export type WorkplaceType = 'onsite' | 'remote' | 'hybrid';
 export type EmploymentType = 'full_time' | 'part_time' | 'contract' | 'intership';
-
-// export interface LawFirm {
-//     id: number;
-//     name: string;
-//     slug: string;
-//     description: string | null;
-//     website: string | null;
-//     logo_url: string | null;
-
-//     created_at: string;
-//     updated_at: string;
-// }
 
 export interface JobListing {
     id: number;

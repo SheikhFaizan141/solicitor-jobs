@@ -1,15 +1,15 @@
-import AdminLayout from '@/layouts/admin-layout';
-import { Head, Link, router, useForm } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import AdminLayout from '@/layouts/admin-layout';
 import { queryParams } from '@/wayfinder';
-import { Bell, Search, Trash2, ToggleLeft, ToggleRight, TrendingUp, Users, Mail, MousePointerClick } from 'lucide-react';
+import { Head, router } from '@inertiajs/react';
+import { Bell, Mail, MousePointerClick, Search, ToggleLeft, ToggleRight, Trash2, Users } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
-import { Checkbox } from '@/components/ui/checkbox';
 
 interface User {
     id: number;
@@ -98,18 +98,14 @@ export default function Index({ subscriptions, stats, filters, locations, practi
     const handleFilter = (key: string, value: string) => {
         const newFilters = { ...filters, [key]: value, page: 1 };
         if (!value || value === 'all') {
-            delete newFilters[key];
+            delete newFilters[key as keyof Filters];
         }
         router.get('/admin/job-alerts' + queryParams({ query: newFilters }), {}, { preserveState: true });
     };
 
     const handleSort = (sortBy: string) => {
         const sortOrder = filters.sort_by === sortBy && filters.sort_order === 'asc' ? 'desc' : 'asc';
-        router.get(
-            '/admin/job-alerts' + queryParams({ query: { ...filters, sort_by: sortBy, sort_order: sortOrder } }),
-            {},
-            { preserveState: true }
-        );
+        router.get('/admin/job-alerts' + queryParams({ query: { ...filters, sort_by: sortBy, sort_order: sortOrder } }), {}, { preserveState: true });
     };
 
     const toggleSelect = (id: number) => {
@@ -117,9 +113,7 @@ export default function Index({ subscriptions, stats, filters, locations, practi
     };
 
     const toggleSelectAll = () => {
-        setSelectedIds((prev) =>
-            prev.length === subscriptions.data.length ? [] : subscriptions.data.map((s) => s.id)
-        );
+        setSelectedIds((prev) => (prev.length === subscriptions.data.length ? [] : subscriptions.data.map((s) => s.id)));
     };
 
     const handleBulkToggle = (isActive: boolean) => {
@@ -131,7 +125,7 @@ export default function Index({ subscriptions, stats, filters, locations, practi
             {
                 preserveScroll: true,
                 onSuccess: () => setSelectedIds([]),
-            }
+            },
         );
     };
 
@@ -139,10 +133,14 @@ export default function Index({ subscriptions, stats, filters, locations, practi
         if (selectedIds.length === 0) return;
         if (!confirm(`Are you sure you want to delete ${selectedIds.length} job alert(s)?`)) return;
 
-        router.post('/admin/job-alerts/bulk-destroy', { ids: selectedIds }, {
-            preserveScroll: true,
-            onSuccess: () => setSelectedIds([]),
-        });
+        router.post(
+            '/admin/job-alerts/bulk-destroy',
+            { ids: selectedIds },
+            {
+                preserveScroll: true,
+                onSuccess: () => setSelectedIds([]),
+            },
+        );
     };
 
     const handleToggle = (id: number, isActive: boolean) => {
@@ -166,7 +164,7 @@ export default function Index({ subscriptions, stats, filters, locations, practi
             <div className="space-y-6">
                 <div>
                     <h1 className="text-3xl font-bold">Job Alerts</h1>
-                    <p className="text-muted-foreground mt-2">Manage user job alert subscriptions and track engagement</p>
+                    <p className="mt-2 text-muted-foreground">Manage user job alert subscriptions and track engagement</p>
                 </div>
 
                 {/* Stats Cards */}
@@ -178,9 +176,7 @@ export default function Index({ subscriptions, stats, filters, locations, practi
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{stats.total_active}</div>
-                            <p className="text-xs text-muted-foreground">
-                                {stats.total_inactive} inactive
-                            </p>
+                            <p className="text-xs text-muted-foreground">{stats.total_inactive} inactive</p>
                         </CardContent>
                     </Card>
 
@@ -190,7 +186,9 @@ export default function Index({ subscriptions, stats, filters, locations, practi
                             <Users className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{stats.daily_alerts} / {stats.weekly_alerts}</div>
+                            <div className="text-2xl font-bold">
+                                {stats.daily_alerts} / {stats.weekly_alerts}
+                            </div>
                             <p className="text-xs text-muted-foreground">Daily / Weekly</p>
                         </CardContent>
                     </Card>
@@ -202,9 +200,7 @@ export default function Index({ subscriptions, stats, filters, locations, practi
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{stats.total_sent.toLocaleString()}</div>
-                            <p className="text-xs text-muted-foreground">
-                                {stats.total_clicks.toLocaleString()} clicks
-                            </p>
+                            <p className="text-xs text-muted-foreground">{stats.total_clicks.toLocaleString()} clicks</p>
                         </CardContent>
                     </Card>
 
@@ -228,7 +224,7 @@ export default function Index({ subscriptions, stats, filters, locations, practi
                     <CardContent className="space-y-4">
                         <form onSubmit={handleSearch} className="flex gap-2">
                             <div className="relative flex-1">
-                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
                                 <Input
                                     type="search"
                                     placeholder="Search by user name or email..."
@@ -345,24 +341,15 @@ export default function Index({ subscriptions, stats, filters, locations, practi
                                     <TableHead>Frequency</TableHead>
                                     <TableHead>Location</TableHead>
                                     <TableHead>Practice Areas</TableHead>
-                                    <TableHead 
-                                        className="cursor-pointer hover:bg-muted/50"
-                                        onClick={() => handleSort('sent_count')}
-                                    >
+                                    <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => handleSort('sent_count')}>
                                         Sent
                                     </TableHead>
-                                    <TableHead 
-                                        className="cursor-pointer hover:bg-muted/50"
-                                        onClick={() => handleSort('click_count')}
-                                    >
+                                    <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => handleSort('click_count')}>
                                         Clicks
                                     </TableHead>
                                     <TableHead>CTR</TableHead>
                                     <TableHead>Status</TableHead>
-                                    <TableHead 
-                                        className="cursor-pointer hover:bg-muted/50"
-                                        onClick={() => handleSort('last_sent_at')}
-                                    >
+                                    <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => handleSort('last_sent_at')}>
                                         Last Sent
                                     </TableHead>
                                     <TableHead className="text-right">Actions</TableHead>
@@ -371,7 +358,7 @@ export default function Index({ subscriptions, stats, filters, locations, practi
                             <TableBody>
                                 {subscriptions.data.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
+                                        <TableCell colSpan={11} className="py-8 text-center text-muted-foreground">
                                             No job alerts found
                                         </TableCell>
                                     </TableRow>
@@ -395,9 +382,7 @@ export default function Index({ subscriptions, stats, filters, locations, practi
                                                     {subscription.frequency}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell className="text-sm">
-                                                {subscription.location ? subscription.location.name : 'All'}
-                                            </TableCell>
+                                            <TableCell className="text-sm">{subscription.location ? subscription.location.name : 'All'}</TableCell>
                                             <TableCell>
                                                 {subscription.practice_areas.length > 0 ? (
                                                     <div className="flex flex-wrap gap-1">
@@ -425,9 +410,7 @@ export default function Index({ subscriptions, stats, filters, locations, practi
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="text-sm text-muted-foreground">
-                                                {subscription.last_sent_at
-                                                    ? new Date(subscription.last_sent_at).toLocaleDateString()
-                                                    : 'Never'}
+                                                {subscription.last_sent_at ? new Date(subscription.last_sent_at).toLocaleDateString() : 'Never'}
                                             </TableCell>
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end gap-2">
@@ -442,11 +425,7 @@ export default function Index({ subscriptions, stats, filters, locations, practi
                                                             <ToggleRight className="h-4 w-4" />
                                                         )}
                                                     </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="ghost"
-                                                        onClick={() => handleDelete(subscription.id)}
-                                                    >
+                                                    <Button size="sm" variant="ghost" onClick={() => handleDelete(subscription.id)}>
                                                         <Trash2 className="h-4 w-4 text-destructive" />
                                                     </Button>
                                                 </div>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\JobListing;
 use App\Models\LawFirm;
 use App\Models\PracticeArea;
 use Illuminate\Http\Request;
@@ -19,27 +20,26 @@ class LawFirmController extends Controller
         $sort = $request->input('sort', 'latest');
 
         $query = LawFirm::with(['contacts', 'practiceAreas'])
+            ->active()
             ->withCount('activeReviews as reviews_count')
             ->withAvg('activeReviews as average_rating', 'rating')
-            ->withCount('jobs as jobs_count');
+            ->withCount(['jobs as jobs_count' => fn ($q) => $q->active()->open()]);
 
-        // Search filter
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('excerpt', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%");
-                    // ->orWhere('location', 'like', "%{$search}%");
+                // ->orWhere('location', 'like', "%{$search}%");
             });
         }
 
-        // Practice area filter
         if ($practiceAreaId) {
             $query->whereHas('practiceAreas', function ($q) use ($practiceAreaId) {
                 $q->where('practice_areas.id', $practiceAreaId);
             });
         }
 
-        // Sorting
         switch ($sort) {
             case 'high':
                 $query->orderByDesc('average_rating');
@@ -50,7 +50,7 @@ class LawFirmController extends Controller
             case 'name':
                 $query->orderBy('name');
                 break;
-            default: // 'latest'
+            default:
                 $query->latest();
                 break;
         }
@@ -69,19 +69,43 @@ class LawFirmController extends Controller
             ],
         ]);
     }
+
     /**
      * Display the specified resource.
      */
     public function show(LawFirm $lawFirm)
     {
+        abort_if(! $lawFirm->is_active, 404);
+
         $reviews = $lawFirm->reviews()
-            ->where('status', 'active')
+            ->active()
             ->with('user')
             ->latest()->paginate(10);
 
+        $jobs = $lawFirm->jobs()
+            ->active()
+            ->open()
+            ->latest()
+            ->with('location')
+            ->paginate(5)
+            ->through(function (JobListing $job): array {
+                $location = $job->getRelation('location')?->name;
+
+                return [
+                    'id' => $job->id,
+                    'slug' => $job->slug,
+                    'title' => $job->title,
+                    'location' => $location ?? $job->location,
+                    'excerpt' => $job->excerpt,
+                    'employment_type' => $job->employment_type,
+                    'published_at' => $job->published_at?->toDateString(),
+                ];
+            });
+
         return Inertia::render('law-firms/show', [
-            'lawFirm' => $lawFirm->load(['contacts', 'reviews']),
+            'lawFirm' => $lawFirm->load(['contacts', 'practiceAreas']),
             'reviews' => $reviews,
+            'jobs' => $jobs,
         ]);
     }
 

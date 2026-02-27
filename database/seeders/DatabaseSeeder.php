@@ -13,8 +13,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create additional test users for job postings
-        // User::factory(15)->create();
+        // Create roles first
+        $this->call(RoleSeeder::class);
 
         // // Seed law firms, practice areas, reviews, and jobs
         $this->call([
@@ -25,14 +25,18 @@ class DatabaseSeeder extends Seeder
             JobListingSeeder::class,
         ]);
 
-        \App\Models\User::firstOrCreate(
+        // Create admin user
+        $admin = User::firstOrCreate(
             ['email' => 'admin@example.com'],
-            ['name' => 'Admin', 'password' => bcrypt('password'), 'role' => \App\Models\User::ROLE_ADMIN]
+            ['name' => 'Admin', 'password' => bcrypt('password')]
         );
+        $admin->syncRoles([User::ROLE_ADMIN]);
 
-        \App\Models\User::firstOrCreate(
+        // Create editor user
+        $editor = User::firstOrCreate(
             ['email' => 'editor@example.com'],
-            ['name' => 'Editor', 'password' => bcrypt('password'), 'role' => \App\Models\User::ROLE_EDITOR]
+            ['name' => 'Editor', 'password' => bcrypt('password')]
         );
+        $editor->syncRoles([User::ROLE_EDITOR]);
     }
 }

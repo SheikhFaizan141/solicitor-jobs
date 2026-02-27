@@ -18,7 +18,8 @@ class AdminUserController extends Controller
     public function index(Request $request)
     {
         $query = User::query()
-            ->select('id', 'name', 'email', 'role', 'created_at')
+            ->select('id', 'name', 'email', 'created_at')
+            ->with('roles:id,name')
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('search')) {
@@ -30,7 +31,7 @@ class AdminUserController extends Controller
         }
 
         if ($request->filled('role')) {
-            $query->where('role', $request->get('role'));
+            $query->role($request->get('role'));
         }
 
         $users = $query->paginate(20)
@@ -72,12 +73,13 @@ class AdminUserController extends Controller
             'role' => ['required', Rule::in([User::ROLE_EDITOR, User::ROLE_USER])],
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
-            'role' => $data['role'],
         ]);
+
+        $user->assignRole($data['role']);
 
         return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
     }
@@ -117,15 +119,14 @@ class AdminUserController extends Controller
         $user->fill([
             'name' => $data['name'],
             'email' => $data['email'],
-            'role' => $data['role'],
         ]);
 
         if (! empty($data['password'])) {
             $user->password = Hash::make($data['password']);
         }
 
-        // dd($user->toArray());
         $user->save();
+        $user->syncRoles([$data['role']]);
 
         return redirect()->route('admin.users.index')->with('success', 'User updated.');
     }
@@ -139,7 +140,7 @@ class AdminUserController extends Controller
             return back()->withErrors(['general' => 'You cannot delete your own account.']);
         }
 
-        if ($user->role === User::ROLE_ADMIN && User::where('role', User::ROLE_ADMIN)->count() <= 1) {
+        if ($user->hasRole(User::ROLE_ADMIN) && User::role(User::ROLE_ADMIN)->count() <= 1) {
             return back()->withErrors(['general' => 'You cannot delete the last admin account.']);
         }
 

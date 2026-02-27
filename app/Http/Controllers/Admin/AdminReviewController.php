@@ -154,11 +154,11 @@ class AdminReviewController extends Controller
      */
     private function applyFilters($query, Request $request)
     {
-        if ($request->filled('rating')) {
+        if ($request->filled('rating') && $request->rating !== 'all') {
             $query->byRating($request->rating);
         }
 
-        if ($request->filled('law_firm')) {
+        if ($request->filled('law_firm') && $request->law_firm !== 'all') {
             $query->byLawFirm($request->law_firm);
         }
 
@@ -184,6 +184,9 @@ class AdminReviewController extends Controller
 
         if ($request->filled('sort')) {
             switch ($request->sort) {
+                case 'latest':
+                    $query->latest();
+                    break;
                 case 'oldest':
                     $query->oldest();
                     break;

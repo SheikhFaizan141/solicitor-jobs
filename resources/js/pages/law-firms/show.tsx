@@ -1,11 +1,15 @@
+import AboutLawFirm from '@/components/law-firm-about';
+import LawFirmContacts from '@/components/law-firm-contacts';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import Layout from '@/layouts/main-layout';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
+import { PaginatedResponse } from '@/types/types';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { Globe2Icon } from 'lucide-react';
+import { Globe2Icon, Pencil } from 'lucide-react';
 import React from 'react';
+import LawFirmJobsTab, { JobOverview } from './law-firm-jobs-tab';
 
 interface Contact {
     label?: string;
@@ -21,7 +25,10 @@ interface Firm {
     logo_url: string | null;
     website: string | null;
     description: string | null;
+    excerpt: string | null;
+    plain_description: string;
     contacts: Contact[];
+    practice_areas: { id: number; name: string }[];
 }
 
 interface Review {
@@ -34,18 +41,23 @@ interface Review {
     };
 }
 
-export default function Show() {
-    const { lawFirm } = usePage<SharedData>().props as unknown as { lawFirm: Firm };
+interface FirmShowProps {
+    lawFirm: Firm;
+    jobs: PaginatedResponse<JobOverview>;
+}
+export default function Show({ lawFirm, jobs }: FirmShowProps) {
+    console.log(jobs);
 
-    console.log(lawFirm);
+    const { auth } = usePage<SharedData>().props;
 
-    //    console.log(lawFirm);
+    const user = auth?.user;
+    const isStaff = user?.role === 'admin' || user?.role === 'editor';
 
     // Get tab from URL query parameter
     const urlParams = new URLSearchParams(window.location.search);
-    const initialTab = (urlParams.get('tab') as 'reviews' | 'jobs' | 'contacts') || 'reviews';
-    
-    const [activeTab, setActiveTab] = React.useState<'reviews' | 'jobs' | 'contacts'>(initialTab);
+    const initialTab = (urlParams.get('tab') as 'reviews' | 'jobs' | 'contacts' | 'about') || 'about';
+
+    const [activeTab, setActiveTab] = React.useState<'reviews' | 'jobs' | 'contacts' | 'about'>(initialTab);
 
     // Update URL when tab changes
     React.useEffect(() => {
@@ -57,14 +69,40 @@ export default function Show() {
         }
         window.history.replaceState({}, '', url.toString());
     }, [activeTab]);
+
     return (
         <>
-            <Head title={lawFirm?.name ?? 'Listing'} />
-               <article className="mx-auto my-12 w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+            <Head title={lawFirm.name ?? 'Listing'}>
+                <meta name="description" content={lawFirm.plain_description.slice(0, 160)} />
+                <meta property="og:title" content={lawFirm.name} />
+                <meta property="og:description" content={lawFirm.plain_description.slice(0, 160)} />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content={`/law-firms/${lawFirm.slug}`} />
+                {lawFirm.logo_url && <meta property="og:image" content={lawFirm.logo_url} />}
+            </Head>
+            <article className="mx-auto w-full max-w-7xl px-4 pt-1 sm:px-6 lg:px-8">
+                {/* Staff Edit Banner */}
+                {isStaff && (
+                    <div className="mb-6 border-b border-blue-200 bg-blue-50">
+                        <div className="flex items-center justify-between rounded-t-lg px-4 py-3 sm:px-6">
+                            <span className="text-sm text-blue-700">
+                                You are viewing this page as {user?.role === 'admin' ? 'an admin' : 'an editor'}
+                            </span>
+                            <Link
+                                href={`/admin/law-firms/${lawFirm.id}/edit`}
+                                className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                            >
+                                <Pencil className="h-3.5 w-3.5" />
+                                Edit Firm
+                            </Link>
+                        </div>
+                    </div>
+                )}
+
                 {/* Header Section */}
                 <header className="mb-12 flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
                     <div className="flex items-start gap-6">
-                        <div className="flex h-24 w-24 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gray-100">
+                        <div className="flex h-24 w-24 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gray-100 shadow-sm">
                             {lawFirm.logo_url ? (
                                 <img src={`${lawFirm.logo_url}`} alt={`${lawFirm.name} logo`} className="h-full w-full object-cover" />
                             ) : (
@@ -78,14 +116,34 @@ export default function Show() {
                             )}
                         </div>
 
-                        <div>
+                        <div className="flex flex-col">
                             <h1 className="mb-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">{lawFirm.name}</h1>
+
+                            {/* Practice Areas Chips (Limited to 5) */}
+                            {lawFirm.practice_areas && lawFirm.practice_areas.length > 0 && (
+                                <div className="mt-3 flex flex-wrap gap-2">
+                                    {lawFirm.practice_areas.slice(0, 5).map((area) => (
+                                        <span
+                                            key={area.id}
+                                            className="inline-flex items-center rounded bg-[#EBECF0] px-3.5 py-1 text-[14px] font-medium text-[#42526E] ring-1 ring-blue-700/10 ring-inset"
+                                        >
+                                            {area.name}
+                                        </span>
+                                    ))}
+                                    {lawFirm.practice_areas.length > 5 && (
+                                        <span className="inline-flex items-center rounded bg-gray-50 px-3.5 py-1 text-[14px] font-medium text-gray-600 ring-1 ring-gray-600/10 ring-inset">
+                                            +{lawFirm.practice_areas.length - 5} more
+                                        </span>
+                                    )}
+                                </div>
+                            )}
+
                             {!lawFirm.website && (
                                 <a
                                     // href={lawFirm.website}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="mt-2 inline-flex items-center text-sm font-medium text-amber-600 hover:text-amber-700"
+                                    className="mt-4 inline-flex items-center text-sm font-medium text-amber-600 hover:text-amber-700"
                                 >
                                     Visit website
                                     <Globe2Icon className="ml-1 h-4 w-4" />
@@ -94,7 +152,7 @@ export default function Show() {
                         </div>
                     </div>
 
-                    <Link href="/" className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-900">
+                    <Link href="/law-firms" className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-900">
                         <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
@@ -105,25 +163,15 @@ export default function Show() {
                 <div className="grid gap-12">
                     <div className="space-y-12 lg:col-span-2">
                         {/* About Section */}
-                        <section>
-                            <h2 className="mb-4 text-xl font-bold text-gray-900">About</h2>
-                            <div className="prose prose-gray max-w-none">
-                                {lawFirm.description ? (
-                                    <p>{lawFirm.description}</p>
-                                ) : (
-                                    <p className="text-gray-500 italic">No description provided.</p>
-                                )}
-                            </div>
-                        </section>
 
                         {/* Tabs Section */}
                         <section>
                             <div className="border-b border-gray-200">
                                 <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-                                    {['reviews', 'jobs', 'contacts'].map((tab) => (
+                                    {['about', 'reviews', 'jobs', 'contacts'].map((tab) => (
                                         <button
                                             key={tab}
-                                            onClick={() => setActiveTab(tab as 'reviews' | 'jobs' | 'contacts')}
+                                            onClick={() => setActiveTab(tab as 'about' | 'reviews' | 'jobs' | 'contacts')}
                                             className={cn(
                                                 'border-b-2 px-1 py-4 text-sm font-medium capitalize transition-colors',
                                                 activeTab === tab
@@ -138,116 +186,20 @@ export default function Show() {
                             </div>
 
                             <div className="py-8">
+                                <div className={cn(activeTab !== 'about' && 'hidden')}>
+                                    <AboutLawFirm description={lawFirm.description} />
+                                </div>
+
                                 <div className={cn(activeTab !== 'reviews' && 'hidden')}>
                                     <Reviews lawFirm={lawFirm} />
                                 </div>
 
                                 <div className={cn(activeTab !== 'jobs' && 'hidden')}>
-                                    <div className="rounded-xl bg-gray-50 py-12 text-center">
-                                        <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6M8 8v10a2 2 0 002 2h4a2 2 0 002-2V8"
-                                            />
-                                        </svg>
-                                        <h3 className="mt-4 text-lg font-medium text-gray-900">No Jobs Available</h3>
-                                        <p className="mt-2 text-sm text-gray-500">This law firm hasn't posted any job openings yet.</p>
-                                    </div>
+                                    <LawFirmJobsTab jobs={jobs} />
                                 </div>
 
                                 <div className={cn(activeTab !== 'contacts' && 'hidden')}>
-                                    <h3 className="mb-6 text-lg font-bold text-gray-900">Contact Information</h3>
-                                    {(lawFirm.contacts || []).length ? (
-                                        <div className="grid gap-6 sm:grid-cols-2">
-                                            {lawFirm.contacts.map((c: Contact, i: number) => (
-                                                <div key={i} className="group relative rounded-xl bg-gray-50 p-6 transition-colors hover:bg-gray-100">
-                                                    <h4 className="mb-4 font-semibold text-gray-900">{c.label || 'Office'}</h4>
-                                                    <div className="space-y-3 text-sm text-gray-600">
-                                                        {c.address && (
-                                                            <div className="flex items-start gap-3">
-                                                                <svg
-                                                                    className="mt-0.5 h-5 w-5 flex-shrink-0 text-gray-400"
-                                                                    fill="none"
-                                                                    stroke="currentColor"
-                                                                    viewBox="0 0 24 24"
-                                                                >
-                                                                    <path
-                                                                        strokeLinecap="round"
-                                                                        strokeLinejoin="round"
-                                                                        strokeWidth={2}
-                                                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                                                                    />
-                                                                    <path
-                                                                        strokeLinecap="round"
-                                                                        strokeLinejoin="round"
-                                                                        strokeWidth={2}
-                                                                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                                                                    />
-                                                                </svg>
-                                                                <span>{c.address}</span>
-                                                            </div>
-                                                        )}
-                                                        {c.email && (
-                                                            <div className="flex items-center gap-3">
-                                                                <svg
-                                                                    className="h-5 w-5 flex-shrink-0 text-gray-400"
-                                                                    fill="none"
-                                                                    stroke="currentColor"
-                                                                    viewBox="0 0 24 24"
-                                                                >
-                                                                    <path
-                                                                        strokeLinecap="round"
-                                                                        strokeLinejoin="round"
-                                                                        strokeWidth={2}
-                                                                        d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                                                                    />
-                                                                </svg>
-                                                                <a
-                                                                    href={`mailto:${c.email}`}
-                                                                    className="text-amber-600 hover:text-amber-700 hover:underline"
-                                                                >
-                                                                    {c.email}
-                                                                </a>
-                                                            </div>
-                                                        )}
-                                                        {c.phone && (
-                                                            <div className="flex items-center gap-3">
-                                                                <svg
-                                                                    className="h-5 w-5 flex-shrink-0 text-gray-400"
-                                                                    fill="none"
-                                                                    stroke="currentColor"
-                                                                    viewBox="0 0 24 24"
-                                                                >
-                                                                    <path
-                                                                        strokeLinecap="round"
-                                                                        strokeLinejoin="round"
-                                                                        strokeWidth={2}
-                                                                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                                                                    />
-                                                                </svg>
-                                                                <span>{c.phone}</span>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <div className="rounded-xl bg-gray-50 py-12 text-center">
-                                            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                                                />
-                                            </svg>
-                                            <h3 className="mt-4 text-lg font-medium text-gray-900">No Contact Information</h3>
-                                            <p className="mt-2 text-sm text-gray-500">Contact details are not available for this law firm.</p>
-                                        </div>
-                                    )}
+                                    <LawFirmContacts contacts={lawFirm.contacts} />
                                 </div>
                             </div>
                         </section>
@@ -437,7 +389,5 @@ function Reviews({ lawFirm }: { lawFirm: Firm }) {
         </div>
     );
 }
-
-// Remove the unused ReviewForm component since it's integrated into Reviews
 
 Show.layout = (page: React.ReactNode) => <Layout>{page}</Layout>;

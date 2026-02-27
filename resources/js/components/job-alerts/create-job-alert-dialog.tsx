@@ -1,13 +1,6 @@
 import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from '@inertiajs/react';
@@ -32,31 +25,37 @@ interface FilterOptions {
     practice_areas?: PracticeArea[];
     practiceAreas?: PracticeArea[];
     employment_types: string[];
+    experience_levels?: string[];
 }
 
 interface CreateJobAlertDialogProps {
     filterOptions: FilterOptions;
     prefilledFilters?: {
+        keyword?: string;
         locationId?: string;
         practiceAreaId?: string;
         employmentType?: string;
+        experienceLevel?: string;
     };
     triggerButton?: React.ReactNode;
 }
 
 export function CreateJobAlertDialog({ filterOptions, prefilledFilters, triggerButton }: CreateJobAlertDialogProps) {
     const [open, setOpen] = useState(false);
-    
+
     // Extract filter options with fallbacks
     const locations = filterOptions.locations || [];
     const practiceAreas = filterOptions.practiceAreas || filterOptions.practice_areas || [];
     const employmentTypes = filterOptions.employment_types || ['full_time', 'part_time', 'contract', 'internship'];
+    const experienceLevels = filterOptions.experience_levels || [];
 
     const { data, setData, post, processing, errors, reset } = useForm({
         frequency: 'daily' as 'daily' | 'weekly',
+        keyword: prefilledFilters?.keyword || '',
         employment_types: prefilledFilters?.employmentType ? [prefilledFilters.employmentType] : ([] as string[]),
         practice_area_ids: prefilledFilters?.practiceAreaId ? [parseInt(prefilledFilters.practiceAreaId)] : ([] as number[]),
         location_id: prefilledFilters?.locationId ? parseInt(prefilledFilters.locationId) : (null as number | null),
+        experience_level: prefilledFilters?.experienceLevel || '',
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -111,7 +110,7 @@ export function CreateJobAlertDialog({ filterOptions, prefilledFilters, triggerB
                     </Button>
                 )}
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[525px] max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[525px]">
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
                         <DialogTitle>Create Job Alert</DialogTitle>
@@ -126,7 +125,7 @@ export function CreateJobAlertDialog({ filterOptions, prefilledFilters, triggerB
                             <Label>How often would you like to receive alerts?</Label>
                             <div className="flex gap-4">
                                 {(['daily', 'weekly'] as const).map((freq) => (
-                                    <label key={freq} className="flex items-center gap-2 cursor-pointer">
+                                    <label key={freq} className="flex cursor-pointer items-center gap-2">
                                         <input
                                             type="radio"
                                             name="frequency"
@@ -140,6 +139,19 @@ export function CreateJobAlertDialog({ filterOptions, prefilledFilters, triggerB
                                 ))}
                             </div>
                             {errors.frequency && <p className="text-sm text-red-600">{errors.frequency}</p>}
+                        </div>
+
+                        {/* Keyword */}
+                        <div className="space-y-2">
+                            <Label htmlFor="keyword">Keyword (Optional)</Label>
+                            <Input
+                                id="keyword"
+                                type="text"
+                                value={data.keyword}
+                                onChange={(event) => setData('keyword', event.target.value)}
+                                placeholder="e.g. corporate, associate, litigation"
+                            />
+                            {errors.keyword && <p className="text-sm text-red-600">{errors.keyword}</p>}
                         </div>
 
                         {/* Employment Types */}
@@ -164,6 +176,30 @@ export function CreateJobAlertDialog({ filterOptions, prefilledFilters, triggerB
                             {errors.employment_types && <p className="text-sm text-red-600">{errors.employment_types}</p>}
                         </div>
 
+                        {/* Experience Level */}
+                        {experienceLevels.length > 0 && (
+                            <div className="space-y-2">
+                                <Label htmlFor="experience-level">Experience Level (Optional)</Label>
+                                <Select
+                                    value={data.experience_level || 'all'}
+                                    onValueChange={(value) => setData('experience_level', value === 'all' ? '' : value)}
+                                >
+                                    <SelectTrigger id="experience-level">
+                                        <SelectValue placeholder="All Levels" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Levels</SelectItem>
+                                        {experienceLevels.map((level) => (
+                                            <SelectItem key={level} value={level}>
+                                                {level}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                {errors.experience_level && <p className="text-sm text-red-600">{errors.experience_level}</p>}
+                            </div>
+                        )}
+
                         {/* Practice Areas */}
                         {practiceAreas.length > 0 && (
                             <div className="space-y-2">
@@ -171,7 +207,7 @@ export function CreateJobAlertDialog({ filterOptions, prefilledFilters, triggerB
                                 <div className="max-h-48 overflow-y-auto rounded-md border border-gray-200 p-3">
                                     <div className="grid grid-cols-1 gap-2">
                                         {practiceAreas.map((area) => (
-                                            <label key={area.id} className="flex items-center gap-2 cursor-pointer">
+                                            <label key={area.id} className="flex cursor-pointer items-center gap-2">
                                                 <input
                                                     type="checkbox"
                                                     checked={data.practice_area_ids.includes(area.id)}

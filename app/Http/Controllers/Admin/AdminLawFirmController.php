@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\LawFirm;
 use App\Models\PracticeArea;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Inertia\Response;
+use Stevebauman\Purify\Facades\Purify;
 
 class AdminLawFirmController extends Controller
 {
@@ -22,21 +25,18 @@ class AdminLawFirmController extends Controller
         $statusFilter = $request->input('status');
 
         $query = LawFirm::query()
-            ->with('contacts')
+            ->with('contacts', 'practiceAreas')
             ->when($search, function ($query, $search) {
-                $query->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('description', 'like', '%' . $search . '%')
-                    ->orWhere('website', 'like', '%' . $search . '%');
+                $query->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('description', 'like', '%'.$search.'%')
+                    ->orWhere('website', 'like', '%'.$search.'%');
             })
             ->when($statusFilter === 'active', function ($query) {
-                // Add your active condition if you have an is_active column
-                // $query->where('is_active', true);
+                $query->where('is_active', true);
             })
             ->when($statusFilter === 'inactive', function ($query) {
-                // Add your inactive condition
-                // $query->where('is_active', false);
+                $query->where('is_active', false);
             });
-
 
         // Sorting
         switch ($sortBy) {
@@ -80,6 +80,8 @@ class AdminLawFirmController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', 'unique:law_firms,slug'],
             'description' => ['nullable', 'string'],
+            'excerpt' => ['nullable', 'string', 'max:500'],
+            'is_active' => ['boolean'],
             'website' => ['nullable', 'url', 'max:255'],
             'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,svg,webp', 'max:512'], // 512KB
             'practice_areas' => ['nullable', 'array'],
@@ -90,6 +92,11 @@ class AdminLawFirmController extends Controller
             'contacts.*.email' => ['nullable', 'email', 'max:255'],
             'contacts.*.phone' => ['nullable', 'string', 'max:255'],
         ]);
+
+        // Sanitize HTML description
+        if (! empty($data['description'])) {
+            $data['description'] = Purify::clean($data['description']);
+        }
 
         if (blank($data['slug'] ?? null)) {
             unset($data['slug']);
@@ -125,14 +132,57 @@ class AdminLawFirmController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(LawFirm $lawFirm)
+    public function edit(Request $request, LawFirm $lawFirm)
     {
+        $user = $request->user();
+
+        // Check if locked by another user
+        if ($lawFirm->isLockedByAnotherUser($user)) {
+            $lockedByUser = $lawFirm->lockedByUser;
+
+            return Inertia::render('admin/law-firms/locked', [
+                'lawFirm' => $lawFirm->only(['id', 'name', 'slug']),
+                'lockedBy' => [
+                    'name' => $lockedByUser->name,
+                    'email' => $lockedByUser->email,
+                ],
+                'lockedAt' => $lawFirm->locked_at->toISOString(),
+            ]);
+        }
+
+        // Acquire lock for current user
+        $lawFirm->acquireLock($user);
+
         $lawFirm->load('contacts', 'practiceAreas');
 
         return Inertia::render('admin/law-firms/edit', [
             'lawFirm' => $lawFirm,
             'practiceAreas' => PracticeArea::orderBy('name')->get(),
         ]);
+    }
+
+    /**
+     * Refresh the editing lock (heartbeat endpoint).
+     */
+    public function refreshLock(Request $request, LawFirm $lawFirm)
+    {
+        $user = $request->user();
+
+        if ($lawFirm->refreshLock($user)) {
+            return response()->json(['success' => true]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Lock refresh failed'], 403);
+    }
+
+    /**
+     * Release the editing lock.
+     */
+    public function releaseLock(Request $request, LawFirm $lawFirm)
+    {
+        $lawFirm->releaseLock($request->user());
+
+        return response()->json(['success' => true]);
     }
 
     /**
@@ -144,6 +194,8 @@ class AdminLawFirmController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', Rule::unique('law_firms', 'slug')->ignore($lawFirm->id)],
             'description' => ['nullable', 'string'],
+            'excerpt' => ['nullable', 'string', 'max:500'],
+            'is_active' => ['boolean'],
             'website' => ['nullable', 'url', 'max:255'],
             'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,svg,webp', 'max:512'], // 512KB
             'remove_logo' => ['nullable', 'boolean'], // flag to remove existing logo
@@ -156,6 +208,10 @@ class AdminLawFirmController extends Controller
             'contacts.*.phone' => ['nullable', 'string', 'max:255'],
         ]);
 
+        // Sanitize HTML description
+        if (! empty($data['description'])) {
+            $data['description'] = Purify::clean($data['description']);
+        }
         if (blank($data['slug'] ?? null)) {
             unset($data['slug']);
         }
@@ -196,20 +252,97 @@ class AdminLawFirmController extends Controller
             }
         }
 
+        // Release the lock after successful update
+        $lawFirm->releaseLock($request->user());
+
         return redirect()
             ->route('admin.law-firms.index')
             ->with('success', 'Law firm updated successfully.');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Display the specified resource.
      */
-    public function destroy(LawFirm $lawFirm)
+    public function show(LawFirm $lawFirm)
+    {
+        return Inertia::render('admin/law-firms/show', [
+            'lawFirm' => $lawFirm->load('contacts', 'practiceAreas'),
+        ]);
+    }
+
+    /**
+     * Remove the specified resource from storage (soft delete).
+     */
+    public function destroy(LawFirm $lawFirm): RedirectResponse
     {
         $lawFirm->delete();
 
         return redirect()
             ->route('admin.law-firms.index')
-            ->with('success', 'Law firm deleted successfully.');
+            ->with('success', 'Law firm moved to trash.');
+    }
+
+    /**
+     * Display trashed (soft-deleted) law firms.
+     */
+    public function trash(): Response
+    {
+        $lawFirms = LawFirm::onlyTrashed()
+            ->latest('deleted_at')
+            ->paginate(20);
+
+        return Inertia::render('admin/law-firms/trash', [
+            'lawFirms' => $lawFirms,
+        ]);
+    }
+
+    /**
+     * Restore a soft-deleted law firm.
+     */
+    public function restore(int $id): RedirectResponse
+    {
+        $lawFirm = LawFirm::withTrashed()->findOrFail($id);
+        $lawFirm->restore();
+
+        return redirect()
+            ->route('admin.law-firms.trash')
+            ->with('success', "{$lawFirm->name} has been restored.");
+    }
+
+    /**
+     * Permanently delete a soft-deleted law firm.
+     */
+    public function forceDestroy(int $id): RedirectResponse
+    {
+        $lawFirm = LawFirm::withTrashed()->findOrFail($id);
+
+        if ($lawFirm->logo_path) {
+            Storage::disk('public')->delete($lawFirm->logo_path);
+        }
+
+        $lawFirm->forceDelete();
+
+        return redirect()
+            ->route('admin.law-firms.trash')
+            ->with('success', 'Law firm permanently deleted.');
+    }
+
+    /**
+     * Bulk delete law firms (soft delete).
+     */
+    public function bulkDestroy(Request $request): RedirectResponse
+    {
+        $ids = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'exists:law_firms,id'],
+        ])['ids'];
+
+        LawFirm::whereIn('id', $ids)->delete();
+
+        $count = count($ids);
+
+        return redirect()
+            ->route('admin.law-firms.index')
+            ->with('success', "{$count} law firm(s) moved to trash.");
     }
 }

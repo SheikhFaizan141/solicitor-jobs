@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\PracticeArea;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -15,16 +14,28 @@ class PracticeAreaController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->input('search');
+        $search = $request->input('search', '');
         $sortBy = $request->input('sort_by', 'name');
+        $filterBy = $request->input('filter_by', 'all');
 
         $query = PracticeArea::query()
             ->with(['parent'])
-            ->withCount('lawFirms')
-            ->when($search, function (Builder $query, $search) {
-                $query->where('name', 'like', '%' . $search . '%');
-            });
+            ->withCount(['lawFirms', 'jobListings']);
 
+        // Search
+        if ($search) {
+            $query->where('name', 'like', '%'.$search.'%');
+        }
+
+        // Filters
+        if ($filterBy === 'top-level') {
+            $query->whereNull('parent_id');
+        } elseif ($filterBy === 'with-children') {
+            $query->whereHas('children');
+        } elseif ($filterBy === 'unused') {
+            $query->having('law_firms_count', '=', 0)
+                ->having('job_listings_count', '=', 0);
+        }
 
         // Sorting
         switch ($sortBy) {
@@ -34,16 +45,30 @@ class PracticeAreaController extends Controller
             case '-name':
                 $query->orderBy('name', 'desc');
                 break;
-            case 'firms':
+            case 'job_listings_count':
+                $query->orderBy('job_listings_count', 'desc');
+                break;
+            case 'law_firms_count':
                 $query->orderBy('law_firms_count', 'desc');
+                break;
+            case 'created_at':
+                $query->latest();
                 break;
             default:
                 $query->orderBy('name', 'asc');
         }
 
-        $areas = $query->paginate(10)->withQueryString();
+        $areas = $query->paginate(15)->withQueryString();
+
+        // Calculate stats
+        $stats = [
+            'totalFirmUsage' => PracticeArea::withCount('lawFirms')->get()->sum('law_firms_count'),
+            'totalJobUsage' => PracticeArea::query()->withCount('jobListings')->get()->sum('job_listings_count'),
+        ];
+
         return Inertia::render('admin/practice-areas/index', [
             'areas' => $areas,
+            'stats' => $stats,
         ]);
     }
 
@@ -77,7 +102,24 @@ class PracticeAreaController extends Controller
      */
     public function show(PracticeArea $practiceArea)
     {
-        //
+        $practiceArea->load([
+            'lawFirms' => function ($query) {
+                $query->select('law_firms.id', 'law_firms.name', 'law_firms.slug')
+                    ->where('is_active', true)
+                    ->orderBy('name');
+            },
+            'jobListings' => function ($query) {
+                $query->select('job_listings.id', 'job_listings.title', 'job_listings.slug')
+                    ->where('is_active', true)
+                    ->orderBy('title');
+            },
+            'parent',
+            'children',
+        ]);
+
+        return Inertia::render('admin/practice-areas/show', [
+            'practiceArea' => $practiceArea,
+        ]);
     }
 
     /**
@@ -97,7 +139,7 @@ class PracticeAreaController extends Controller
     public function update(Request $request, PracticeArea $practiceArea)
     {
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:practice_areas,name,' . $practiceArea->id],
+            'name' => ['required', 'string', 'max:255', 'unique:practice_areas,name,'.$practiceArea->id],
             'parent_id' => ['nullable', 'integer', 'different:id', 'exists:practice_areas,id'],
         ]);
 

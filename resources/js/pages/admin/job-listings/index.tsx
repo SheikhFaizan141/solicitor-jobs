@@ -1,51 +1,83 @@
+import { Pagination } from '@/components/pagination';
 import AdminLayout from '@/layouts/admin-layout';
-import { JobListing, PaginatedResponse } from '@/types/job-listing';
+import { JobListingWithRelations } from '@/types/job-listing';
+import { PaginatedResponse } from '@/types/types';
+import { queryParams } from '@/wayfinder';
 import { Link, router, useForm } from '@inertiajs/react';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 export interface JobAdminProps {
-    jobs: PaginatedResponse<JobListing>;
-    can: {
-        create: boolean;
-    };
+    jobs: PaginatedResponse<JobListingWithRelations>;
 }
 
-const JobAdminIndex: React.FC<JobAdminProps> & { layout?: (page: React.ReactNode) => React.ReactNode } = ({ jobs, can }) => {
+const JobAdminIndex = ({ jobs }: JobAdminProps) => {
+    console.log(jobs);
     const { delete: destroy, processing } = useForm();
 
-    console.log(can);
+    const urlParams = useRef(new URLSearchParams(window.location.search));
 
-    const [search, setSearch] = useState('');
-    const [sortBy, setSortBy] = useState('created_at');
-    const [statusFilter, setStatusFilter] = useState('all');
+    const [search, setSearch] = useState(urlParams.current.get('search') ?? '');
+    const [sortBy, setSortBy] = useState(urlParams.current.get('sort_by') ?? 'created_at');
+    const [statusFilter, setStatusFilter] = useState(urlParams.current.get('status') ?? 'all');
 
-    console.log(jobs);
+    const isInitialSearchMount = useRef(true);
+    const [pendingSortBy, setPendingSortBy] = useState(sortBy);
+    const [pendingStatusFilter, setPendingStatusFilter] = useState(statusFilter);
 
-    // Debounced search
+    const buildQuery = useCallback(
+        (overrides?: Partial<{ search: string; sort_by: string; status: string }>) => {
+            const nextSearch = overrides?.search ?? search;
+            const nextSortBy = overrides?.sort_by ?? sortBy;
+            const nextStatus = overrides?.status ?? statusFilter;
+
+            return {
+                search: nextSearch.trim() !== '' ? nextSearch : null,
+                sort_by: nextSortBy !== 'created_at' ? nextSortBy : null,
+                status: nextStatus !== 'all' ? nextStatus : null,
+            };
+        },
+        [search, sortBy, statusFilter],
+    );
+
     useEffect(() => {
+        if (isInitialSearchMount.current) {
+            isInitialSearchMount.current = false;
+            return;
+        }
+
         const timeoutId = setTimeout(() => {
             router.get(
-                '/admin/job-listings',
-                { search: search, sort_by: sortBy, status: statusFilter },
+                `/admin/job-listings${queryParams({
+                    query: buildQuery({ search }),
+                })}`,
+                {},
                 { preserveState: true, preserveScroll: true },
             );
         }, 300);
 
         return () => clearTimeout(timeoutId);
-    }, [search, sortBy, statusFilter]);
+    }, [search, buildQuery]);
+
+    const applyFilters = () => {
+        setSortBy(pendingSortBy);
+        setStatusFilter(pendingStatusFilter);
+
+        router.get(
+            `/admin/job-listings${queryParams({
+                query: buildQuery({
+                    sort_by: pendingSortBy,
+                    status: pendingStatusFilter,
+                }),
+            })}`,
+            {},
+            { preserveState: true, preserveScroll: true },
+        );
+    };
 
     const handleDelete = (id: number) => {
         if (confirm('Delete this job listing?')) {
             destroy(`/admin/job-listings/${id}`, { preserveScroll: true });
         }
-    };
-
-    const getPaginationInfo = () => {
-        // const { current_page, per_page, total }
-
-        const start = (jobs.current_page - 1) * jobs.per_page + 1;
-        const end = Math.min(jobs.current_page * jobs.per_page, jobs.total);
-        return `Showing ${start}-${end} of ${jobs.total} results`;
     };
 
     return (
@@ -82,7 +114,7 @@ const JobAdminIndex: React.FC<JobAdminProps> & { layout?: (page: React.ReactNode
                             </svg>
                             <input
                                 type="search"
-                                placeholder="Search jobs by title, location..."
+                                placeholder="Search firms by name, location..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 className="w-full rounded-lg border border-gray-300 py-2 pr-4 pl-10 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
@@ -92,8 +124,8 @@ const JobAdminIndex: React.FC<JobAdminProps> & { layout?: (page: React.ReactNode
 
                     <div className="flex gap-3">
                         <select
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
+                            value={pendingStatusFilter}
+                            onChange={(e) => setPendingStatusFilter(e.target.value)}
                             className="rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                         >
                             <option value="all">All Status</option>
@@ -102,8 +134,8 @@ const JobAdminIndex: React.FC<JobAdminProps> & { layout?: (page: React.ReactNode
                         </select>
 
                         <select
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value)}
+                            value={pendingSortBy}
+                            onChange={(e) => setPendingSortBy(e.target.value)}
                             className="rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                         >
                             <option value="created_at">Latest</option>
@@ -111,6 +143,14 @@ const JobAdminIndex: React.FC<JobAdminProps> & { layout?: (page: React.ReactNode
                             <option value="-title">Title Z-A</option>
                             <option value="location">Location</option>
                         </select>
+
+                        <button
+                            type="button"
+                            onClick={applyFilters}
+                            className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+                        >
+                            Apply filters
+                        </button>
                     </div>
                 </div>
             </div>
@@ -147,7 +187,7 @@ const JobAdminIndex: React.FC<JobAdminProps> & { layout?: (page: React.ReactNode
                                         {job.law_firm?.name || <span className="text-gray-400 italic">Independent</span>}
                                     </td>
                                     <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
-                                        {job.location || <span className="text-gray-400">—</span>}
+                                        {job.location?.name || <span className="text-gray-400">—</span>}
                                     </td>
                                     <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900 capitalize">
                                         {job.employment_type.replace('_', ' ')}
@@ -163,6 +203,26 @@ const JobAdminIndex: React.FC<JobAdminProps> & { layout?: (page: React.ReactNode
                                     </td>
                                     <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
                                         <div className="flex justify-end space-x-2">
+                                            <Link
+                                                href={`/admin/job-listings/${job.id}`}
+                                                className="inline-flex items-center text-gray-600 transition-colors hover:text-gray-900"
+                                            >
+                                                <svg className="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                                    />
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                                    />
+                                                </svg>
+                                                View
+                                            </Link>
                                             <Link
                                                 href={`/admin/job-listings/${job.id}/edit`}
                                                 className="inline-flex items-center text-blue-600 transition-colors hover:text-blue-900"
@@ -216,37 +276,12 @@ const JobAdminIndex: React.FC<JobAdminProps> & { layout?: (page: React.ReactNode
                 </div>
 
                 {/* Pagination */}
-                {jobs.data.length > 0 && (
-                    <div className="border-t border-gray-200 bg-white px-6 py-3">
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                            <div className="text-sm text-gray-700">{getPaginationInfo()}</div>
-
-                            <nav className="flex items-center space-x-2">
-                                {jobs.links.map((link, index) => (
-                                    <Link
-                                        key={index}
-                                        href={link.url || '#'}
-                                        preserveState={true}
-                                        preserveScroll={true}
-                                        className={`rounded-md px-3 py-1 text-sm font-medium ${
-                                            link.active
-                                                ? 'bg-blue-600 text-white'
-                                                : link.url
-                                                  ? 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
-                                                  : 'cursor-not-allowed text-gray-300'
-                                        }`}
-                                        dangerouslySetInnerHTML={{ __html: link.label }}
-                                    />
-                                ))}
-                            </nav>
-                        </div>
-                    </div>
-                )}
+                <Pagination currentPage={jobs.current_page} perPage={jobs.per_page} total={jobs.total} links={jobs.links} />
             </div>
         </div>
     );
 };
 
-JobAdminIndex.layout = (page: React.ReactNode) => <AdminLayout>{page}</AdminLayout>;
+JobAdminIndex.layout = (page: React.ReactNode) => <AdminLayout breadcrumbs={[{ label: 'Job Listings' }]}>{page}</AdminLayout>;
 
 export default JobAdminIndex;
