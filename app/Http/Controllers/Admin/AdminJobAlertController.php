@@ -7,6 +7,8 @@ use App\Models\JobAlertDeliveryItem;
 use App\Models\JobAlertSubscription;
 use App\Models\Location;
 use App\Models\PracticeArea;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -15,89 +17,32 @@ use Inertia\Response;
 
 class AdminJobAlertController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(): RedirectResponse
+    {
+        return redirect()->route('admin.job-alerts.dashboard');
+    }
+
+    public function dashboard(): Response
     {
         $windowStart = now()->subDays(30);
 
-        $query = JobAlertSubscription::query()
-            ->with(['user:id,name,email', 'location:id,name,region,country', 'practiceAreas:id,name'])
-            ->withCount('clicks');
+        return Inertia::render('admin/job-alerts/dashboard', [
+            'stats' => $this->buildStats($windowStart),
+        ]);
+    }
 
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->whereHas('user', function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('frequency')) {
-            $query->where('frequency', $request->frequency);
-        }
-
-        if ($request->filled('is_active')) {
-            $query->where('is_active', $request->boolean('is_active'));
-        }
-
-        if ($request->filled('location_id')) {
-            $query->where('location_id', $request->location_id);
-        }
-
-        if ($request->filled('practice_area_id')) {
-            $query->whereHas('practiceAreas', function ($q) use ($request) {
-                $q->where('practice_areas.id', $request->practice_area_id);
-            });
-        }
-
-        if ($request->filled('rank_bucket') && in_array($request->rank_bucket, ['top3', 'rest'], true)) {
-            $query->whereHas('deliveryItems', function ($q) use ($request, $windowStart) {
-                $q->where('delivered_at', '>=', $windowStart)
-                    ->when(
-                        $request->rank_bucket === 'top3',
-                        fn ($qq) => $qq->where('rank_position', '<=', 3),
-                        fn ($qq) => $qq->where('rank_position', '>', 3)
-                    );
-            });
-        }
-
-        if ($request->filled('strategy') && in_array($request->strategy, ['personalized', 'baseline'], true)) {
-            $isPersonalized = $request->strategy === 'personalized';
-            $query->whereHas('deliveryItems', function ($q) use ($windowStart, $isPersonalized) {
-                $q->where('delivered_at', '>=', $windowStart)
-                    ->where('is_personalized', $isPersonalized);
-            });
-        }
+    public function subscriptions(Request $request): Response
+    {
+        $windowStart = now()->subDays(30);
+        $subscriptions = $this->baseSubscriptionsQuery($request, $windowStart)
+            ->paginate(5)
+            ->withQueryString();
 
         $sortBy = $request->input('sort_by', 'created_at');
         $sortOrder = $request->input('sort_order', 'desc');
 
-        $allowedSorts = ['created_at', 'last_sent_at', 'sent_count', 'click_count', 'failed_count'];
-        if (in_array($sortBy, $allowedSorts, true)) {
-            $query->orderBy($sortBy, $sortOrder);
-        }
-
-        $subscriptions = $query->paginate(5)->withQueryString();
-
-        $deliveryBase = JobAlertDeliveryItem::query()->where('delivered_at', '>=', $windowStart);
-
-        $stats = [
-            'total_active' => JobAlertSubscription::where('is_active', true)->count(),
-            'total_inactive' => JobAlertSubscription::where('is_active', false)->count(),
-            'daily_alerts' => JobAlertSubscription::where('frequency', 'daily')->where('is_active', true)->count(),
-            'weekly_alerts' => JobAlertSubscription::where('frequency', 'weekly')->where('is_active', true)->count(),
-            'total_sent' => JobAlertSubscription::sum('sent_count'),
-            'total_clicks' => JobAlertSubscription::sum('click_count'),
-            'avg_click_rate' => $this->calculateAverageClickRate(),
-            'ctr_top_3' => $this->calculateCtr(clone $deliveryBase, 'top3'),
-            'ctr_rest' => $this->calculateCtr(clone $deliveryBase, 'rest'),
-            'apply_rate_from_alerts' => $this->calculateApplyRate(clone $deliveryBase),
-            'personalized_vs_baseline_lift' => $this->calculatePersonalizationLift(clone $deliveryBase),
-            'trend_last_30_days' => $this->buildTrendSeries($windowStart),
-        ];
-
-        return Inertia::render('admin/job-alerts/index', [
+        return Inertia::render('admin/job-alerts/subscriptions', [
             'subscriptions' => $subscriptions,
-            'stats' => $stats,
             'filters' => [
                 'search' => $request->search,
                 'frequency' => $request->frequency,
@@ -157,6 +102,88 @@ class AdminJobAlertController extends Controller
 
         $status = $validated['is_active'] ? 'activated' : 'deactivated';
         return back()->with('success', "Job alerts {$status} successfully.");
+    }
+
+    private function baseSubscriptionsQuery(Request $request, Carbon $windowStart): Builder
+    {
+        $query = JobAlertSubscription::query()
+            ->with(['user:id,name,email', 'location:id,name,region,country', 'practiceAreas:id,name'])
+            ->withCount('clicks');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('user', function (Builder $q) use ($search): void {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('frequency')) {
+            $query->where('frequency', $request->frequency);
+        }
+
+        if ($request->filled('is_active')) {
+            $query->where('is_active', $request->boolean('is_active'));
+        }
+
+        if ($request->filled('location_id')) {
+            $query->where('location_id', $request->location_id);
+        }
+
+        if ($request->filled('practice_area_id')) {
+            $query->whereHas('practiceAreas', function (Builder $q) use ($request): void {
+                $q->where('practice_areas.id', $request->practice_area_id);
+            });
+        }
+
+        if ($request->filled('rank_bucket') && in_array($request->rank_bucket, ['top3', 'rest'], true)) {
+            $query->whereHas('deliveryItems', function (Builder $q) use ($request, $windowStart): void {
+                $q->where('delivered_at', '>=', $windowStart)
+                    ->when(
+                        $request->rank_bucket === 'top3',
+                        fn (Builder $qq) => $qq->where('rank_position', '<=', 3),
+                        fn (Builder $qq) => $qq->where('rank_position', '>', 3),
+                    );
+            });
+        }
+
+        if ($request->filled('strategy') && in_array($request->strategy, ['personalized', 'baseline'], true)) {
+            $isPersonalized = $request->strategy === 'personalized';
+            $query->whereHas('deliveryItems', function (Builder $q) use ($windowStart, $isPersonalized): void {
+                $q->where('delivered_at', '>=', $windowStart)
+                    ->where('is_personalized', $isPersonalized);
+            });
+        }
+
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortOrder = $request->input('sort_order', 'desc');
+        $allowedSorts = ['created_at', 'last_sent_at', 'sent_count', 'click_count', 'failed_count'];
+
+        if (in_array($sortBy, $allowedSorts, true)) {
+            $query->orderBy($sortBy, $sortOrder);
+        }
+
+        return $query;
+    }
+
+    private function buildStats(Carbon $windowStart): array
+    {
+        $deliveryBase = JobAlertDeliveryItem::query()->where('delivered_at', '>=', $windowStart);
+
+        return [
+            'total_active' => JobAlertSubscription::where('is_active', true)->count(),
+            'total_inactive' => JobAlertSubscription::where('is_active', false)->count(),
+            'daily_alerts' => JobAlertSubscription::where('frequency', 'daily')->where('is_active', true)->count(),
+            'weekly_alerts' => JobAlertSubscription::where('frequency', 'weekly')->where('is_active', true)->count(),
+            'total_sent' => JobAlertSubscription::sum('sent_count'),
+            'total_clicks' => JobAlertSubscription::sum('click_count'),
+            'avg_click_rate' => $this->calculateAverageClickRate(),
+            'ctr_top_3' => $this->calculateCtr(clone $deliveryBase, 'top3'),
+            'ctr_rest' => $this->calculateCtr(clone $deliveryBase, 'rest'),
+            'apply_rate_from_alerts' => $this->calculateApplyRate(clone $deliveryBase),
+            'personalized_vs_baseline_lift' => $this->calculatePersonalizationLift(clone $deliveryBase),
+            'trend_last_30_days' => $this->buildTrendSeries($windowStart),
+        ];
     }
 
     private function calculateAverageClickRate(): float

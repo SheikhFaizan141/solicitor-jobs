@@ -188,7 +188,10 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
             ->names('users')
             ->except(['show']);
 
-        Route::resource('job-alerts', AdminJobAlertController::class)->only(['index', 'update', 'destroy']);
+        Route::get('job-alerts', [AdminJobAlertController::class, 'index'])->name('job-alerts.index');
+        Route::get('job-alerts/dashboard', [AdminJobAlertController::class, 'dashboard'])->name('job-alerts.dashboard');
+        Route::get('job-alerts/subscriptions', [AdminJobAlertController::class, 'subscriptions'])->name('job-alerts.subscriptions');
+        Route::resource('job-alerts', AdminJobAlertController::class)->only(['update', 'destroy']);
         Route::post('job-alerts/bulk-destroy', [AdminJobAlertController::class, 'bulkDestroy'])->name('job-alerts.bulk-destroy');
         Route::post('job-alerts/bulk-toggle', [AdminJobAlertController::class, 'bulkToggle'])->name('job-alerts.bulk-toggle');
     });

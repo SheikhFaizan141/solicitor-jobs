@@ -109,7 +109,7 @@ const AdminDashboard = () => {
                         <p className="mt-1 text-xs text-muted-foreground">{stats.jobAlerts.peopleWithActiveAlerts} people with active alerts</p>
                         <p className="mt-1 text-xs text-muted-foreground">{stats.jobAlerts.newThisMonth} new this month</p>
                         <Button variant="link" asChild className="mt-4 p-0">
-                            <Link href="/admin/job-alerts">Manage job alerts →</Link>
+                            <Link href="/admin/job-alerts/dashboard">Manage job alerts →</Link>
                         </Button>
                     </CardContent>
                 </Card>

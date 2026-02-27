@@ -323,11 +323,33 @@ it('exposes accurate smart alert analytics on the admin page', function () {
 
     $this->actingAs($admin)
         ->get(route('admin.job-alerts.index'))
+        ->assertRedirect(route('admin.job-alerts.dashboard'));
+
+    $this->actingAs($admin)
+        ->get(route('admin.job-alerts.dashboard'))
         ->assertOk()
         ->assertInertia(fn ($page) => $page
-            ->component('admin/job-alerts/index')
+            ->component('admin/job-alerts/dashboard')
             ->where('stats.ctr_top_3', 50)
             ->where('stats.ctr_rest', 0)
             ->where('stats.apply_rate_from_alerts', 25)
             ->where('stats.personalized_vs_baseline_lift', 50));
+});
+
+it('shows subscriptions management page for admins', function () {
+    $admin = User::factory()->admin()->create();
+    $user = User::factory()->create();
+
+    JobAlertSubscription::query()->create([
+        'user_id' => $user->id,
+        'frequency' => 'daily',
+        'is_active' => true,
+    ]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.job-alerts.subscriptions'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('admin/job-alerts/subscriptions')
+            ->has('subscriptions.data', 1));
 });
