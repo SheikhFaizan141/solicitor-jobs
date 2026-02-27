@@ -1,11 +1,14 @@
 import AdminLayout from '@/layouts/admin-layout';
-import { Link, useForm, usePage } from '@inertiajs/react';
+import { Link, useForm } from '@inertiajs/react';
 import React from 'react';
 
 type PracticeArea = { id: number; name: string };
 
-const Create = () => {
-    const { parents } = usePage().props as { parents: PracticeArea[] };
+interface CreateProps {
+    parents: PracticeArea[];
+}
+
+const Create = ({ parents }: CreateProps) => {
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         parent_id: '' as string | number | '',

@@ -98,7 +98,7 @@ export default function Index({ subscriptions, stats, filters, locations, practi
     const handleFilter = (key: string, value: string) => {
         const newFilters = { ...filters, [key]: value, page: 1 };
         if (!value || value === 'all') {
-            delete newFilters[key];
+            delete newFilters[key as keyof Filters];
         }
         router.get('/admin/job-alerts' + queryParams({ query: newFilters }), {}, { preserveState: true });
     };
