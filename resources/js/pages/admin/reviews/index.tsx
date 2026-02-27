@@ -1,3 +1,4 @@
+import ReviewActions from '@/components/admin/reviews/review-actions';
 import ReviewFilters from '@/components/admin/reviews/review-filters';
 import ReviewStats from '@/components/admin/reviews/review-stats';
 import { Badge } from '@/components/ui/badge';
@@ -7,15 +8,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AdminLayout from '@/layouts/admin-layout';
-import { bulk, forceDelete, index, restore, spam, trash } from '@/routes/admin/reviews';
-import { mark } from '@/routes/admin/reviews/spam';
-import { move } from '@/routes/admin/reviews/trash';
+import { bulk, index, spam, trash } from '@/routes/admin/reviews';
 import { LawFirm } from '@/types/law-firms';
 import { Review, ReviewStatus } from '@/types/review';
 import { PaginatedResponse } from '@/types/types';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router} from '@inertiajs/react';
 import React, { useState } from 'react';
 
+// TODO: Review and see if we should keep the reviews from that law firms which are deleted. If we keep them, then we should show them as orphaned reviews in the admin panel and not show the law firm name. If we delete them, then we need to make sure to delete them when a law firm is deleted.
 interface ReviewsIndexProps {
     reviews: PaginatedResponse<Review>;
     activeTab: 'active' | 'spam' | 'trash';
@@ -270,7 +270,8 @@ export default function ReviewsIndex({ reviews, activeTab, filters, lawFirms, st
                                                         // href={route('admin.law-firms.show', review.law_firm.id)}
                                                         className="text-blue-600 hover:underline"
                                                     >
-                                                        {review.law_firm.name}
+                                                        {/* Orphaned review */}
+                                                        {review.law_firm?.name || <em className="text-gray-500">No law firm</em>}
                                                     </Link>
                                                 </TableCell>
                                                 <TableCell>{getStatusBadge(review.status)}</TableCell>
@@ -316,76 +317,6 @@ export default function ReviewsIndex({ reviews, activeTab, filters, lawFirms, st
                 </Tabs>
             </div>
         </>
-    );
-}
-interface ReviewActionsProps {
-    review: Review;
-    activeTab: 'active' | 'spam' | 'trash';
-}
-
-function ReviewActions({ review, activeTab }: ReviewActionsProps) {
-    const { post, processing } = useForm();
-
-    const handleAction = (action: string, reviewId: number) => {
-        let confirmMessage = '';
-
-        if (action === 'forceDelete') {
-            confirmMessage = 'Permanently delete this review? This cannot be undone.';
-        } else if (action === 'moveToTrash') {
-            confirmMessage = 'Move this review to trash?';
-        } else if (action === 'markAsSpam') {
-            confirmMessage = 'Mark this review as spam?';
-        }
-
-        if (confirmMessage && !confirm(confirmMessage)) {
-            return;
-        }
-
-        const routes = {
-            markAsSpam: mark.url(reviewId),
-            moveToTrash: move.url(reviewId),
-            restore: restore.url(reviewId),
-            forceDelete: forceDelete.url(reviewId),
-        };
-
-        post(routes[action as keyof typeof routes]);
-    };
-
-    return (
-        <div className="flex gap-2">
-            {activeTab === 'active' && (
-                <>
-                    <Button size="sm" variant="outline" onClick={() => handleAction('markAsSpam', review.id)} disabled={processing}>
-                        Spam
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleAction('moveToTrash', review.id)} disabled={processing}>
-                        Trash
-                    </Button>
-                </>
-            )}
-
-            {activeTab === 'spam' && (
-                <>
-                    <Button size="sm" variant="outline" onClick={() => handleAction('restore', review.id)} disabled={processing}>
-                        Activate
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleAction('moveToTrash', review.id)} disabled={processing}>
-                        Trash
-                    </Button>
-                </>
-            )}
-
-            {activeTab === 'trash' && (
-                <>
-                    <Button size="sm" variant="outline" onClick={() => handleAction('restore', review.id)} disabled={processing}>
-                        Restore
-                    </Button>
-                    <Button size="sm" variant="destructive" onClick={() => handleAction('forceDelete', review.id)} disabled={processing}>
-                        Delete
-                    </Button>
-                </>
-            )}
-        </div>
     );
 }
 
