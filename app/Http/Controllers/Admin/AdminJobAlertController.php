@@ -35,7 +35,7 @@ class AdminJobAlertController extends Controller
     {
         $windowStart = now()->subDays(30);
         $subscriptions = $this->baseSubscriptionsQuery($request, $windowStart)
-            ->paginate(5)
+            ->paginate(20)
             ->withQueryString();
 
         $sortBy = $request->input('sort_by', 'created_at');

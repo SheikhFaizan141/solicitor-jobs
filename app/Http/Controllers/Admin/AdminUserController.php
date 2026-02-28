@@ -57,7 +57,7 @@ class AdminUserController extends Controller
     public function create()
     {
         return Inertia::render('admin/users/create', [
-            'roles' => [User::ROLE_EDITOR, User::ROLE_USER],
+            'roles' => [User::ROLE_ADMIN, User::ROLE_EDITOR, User::ROLE_USER],
         ]);
     }
 
@@ -70,7 +70,7 @@ class AdminUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
             'password' => ['required', Password::min(8)],
-            'role' => ['required', Rule::in([User::ROLE_EDITOR, User::ROLE_USER])],
+            'role' => ['required', Rule::in([User::ROLE_ADMIN, User::ROLE_EDITOR, User::ROLE_USER])],
         ]);
 
         $user = User::create([

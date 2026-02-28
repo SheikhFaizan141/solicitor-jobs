@@ -1,28 +1,31 @@
+import UserForm, { UserFormData } from '@/components/admin/forms/user-form';
 import AdminLayout from '@/layouts/admin-layout';
-import { Link, useForm } from '@inertiajs/react';
+import { type Role, type SharedData } from '@/types';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import React from 'react';
 
 interface FormUser {
     id: number;
     name: string;
     email: string;
-    role: string;
+    role: Role;
 }
 
-interface Props {
+interface EditUserPageProps {
     user: FormUser;
-    roles: string[];
+    roles: Role[];
 }
 
-const EditUserPage = ({ user, roles }: Props) => {
-    const { data, setData, put, processing, errors } = useForm({
+const EditUserPage = ({ user, roles }: EditUserPageProps) => {
+    const { auth } = usePage<SharedData>().props;
+    const isSelfEdit = auth.user.id === user.id;
+
+    const { data, setData, put, processing, errors } = useForm<UserFormData>({
         name: user.name,
         email: user.email,
         role: user.role,
         password: '',
     });
-
-    console.log(data);
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -30,57 +33,37 @@ const EditUserPage = ({ user, roles }: Props) => {
     };
 
     return (
-        <div className="max-w-lg space-y-6">
-            <h1 className="text-xl font-semibold">Edit User</h1>
-            <form onSubmit={submit} className="space-y-4">
-                <div>
-                    <label className="mb-1 block text-sm font-medium">Name</label>
-                    <input className="w-full rounded border px-3 py-2" value={data.name} onChange={(e) => setData('name', e.target.value)} />
-                    {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name}</p>}
-                </div>
-                <div>
-                    <label className="mb-1 block text-sm font-medium">Email</label>
-                    <input
-                        type="email"
-                        className="w-full rounded border px-3 py-2"
-                        value={data.email}
-                        onChange={(e) => setData('email', e.target.value)}
-                    />
-                    {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email}</p>}
-                </div>
-                <div>
-                    <label className="mb-1 block text-sm font-medium">Role</label>
-                    <select className="w-full rounded border px-3 py-2" value={data.role} onChange={(e) => setData('role', e.target.value)}>
-                        {roles.map((r) => (
-                            <option key={r} value={r}>
-                                {r}
-                            </option>
-                        ))}
-                    </select>
-                    {errors.role && <p className="mt-1 text-xs text-red-600">{errors.role}</p>}
-                </div>
-                <div>
-                    <label className="mb-1 block text-sm font-medium">Password (leave blank to keep)</label>
-                    <input
-                        type="password"
-                        className="w-full rounded border px-3 py-2"
-                        value={data.password}
-                        onChange={(e) => setData('password', e.target.value)}
-                    />
-                    {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password}</p>}
-                </div>
-                <div className="flex items-center gap-3">
-                    <button disabled={processing} className="rounded bg-indigo-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50">
-                        Save
-                    </button>
-                    <Link href="/admin/users" className="text-sm text-neutral-600 hover:underline">
-                        Cancel
-                    </Link>
-                </div>
-            </form>
-        </div>
+        <>
+            <Head title="Edit User - Admin" />
+
+            <div className="mx-auto w-full max-w-3xl space-y-6 px-4 py-3">
+                <header className="space-y-1">
+                    <h1 className="text-2xl font-bold">Edit User</h1>
+                    <p className="text-sm text-muted-foreground">Update account details and adjust permissions when needed.</p>
+                </header>
+
+                <UserForm
+                    data={data}
+                    setData={setData}
+                    errors={errors}
+                    processing={processing}
+                    roles={roles}
+                    mode="edit"
+                    onSubmit={submit}
+                    onCancelHref="/admin/users"
+                    isSelfEdit={isSelfEdit}
+                />
+            </div>
+        </>
     );
 };
 
-EditUserPage.layout = (page: React.ReactNode) => <AdminLayout>{page}</AdminLayout>;
+EditUserPage.layout = (page: React.ReactNode) => {
+    const { user } = (page as React.ReactElement<{ user: FormUser }>).props;
+
+    return (
+        <AdminLayout breadcrumbs={[{ label: 'Users', href: '/admin/users' }, { label: user?.name ?? 'User' }, { label: 'Edit' }]}>{page}</AdminLayout>
+    );
+};
+
 export default EditUserPage;
