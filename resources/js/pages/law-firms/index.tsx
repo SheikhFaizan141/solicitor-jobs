@@ -12,7 +12,7 @@ import { X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface LawFirmPageProps {
-    lawFirms: PaginatedResponse<LawFirm>;
+    lawFirms: PaginatedResponse<LawFirm & { reviews_count: number; average_rating: number | null }>;
     practiceAreas: PracticeArea[];
     filters: {
         search?: string;

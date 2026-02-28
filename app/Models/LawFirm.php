@@ -30,6 +30,11 @@ class LawFirm extends Model
     protected $casts = [
         'is_active' => 'boolean',
         'locked_at' => 'datetime',
+        // These are computed by query helpers like withAvg/withCount in controllers.
+        // Cast them so frontend gets numbers (not strings) when the model is serialized.
+        'average_rating' => 'float',
+        'reviews_count' => 'integer',
+        'jobs_count' => 'integer',
     ];
 
     // Add this so logo_url and plain_description are included when model is serialized
@@ -74,7 +79,7 @@ class LawFirm extends Model
     protected function plainDescription(): Attribute
     {
         return Attribute::make(
-            get: fn (): string => $this->excerpt ?? strip_tags($this->description ?? ''),
+            get: fn(): string => $this->excerpt ?? strip_tags($this->description ?? ''),
         );
     }
 
@@ -113,19 +118,19 @@ class LawFirm extends Model
 
         // If slug empty (e.g., name is only non-latin chars) fallback to a short unique id.
         if ($slug === '') {
-            $slug = 'firm-'.Str::lower(Str::random(6));
+            $slug = 'firm-' . Str::lower(Str::random(6));
         }
 
         $original = $slug;
         $i = 2;
 
         while (static::where('slug', $slug)->exists()) {
-            $slug = $original.'-'.$i;
+            $slug = $original . '-' . $i;
             $i++;
 
             // Safety: if many collisions, append random suffix and break.
             if ($i > 50) {
-                $slug = $original.'-'.Str::lower(Str::random(4));
+                $slug = $original . '-' . Str::lower(Str::random(4));
                 break;
             }
         }
