@@ -147,4 +147,16 @@
         height: 0;
         pointer-events: none;
     }
+
+    /* Tiptap Editor Content Styles */
+    .tiptap hr {
+        border-color: var(--border);
+        margin: 1rem 0;
+    }
+    .tiptap blockquote {
+        border-left: 4px solid oklch(0.828 0.189 84.429);
+        padding-left: 1rem;
+        font-style: italic;
+        color: oklch(0.556 0 0);
+    }
 }
