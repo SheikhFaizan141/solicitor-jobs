@@ -147,9 +147,10 @@ export function JobListingForm({ data, setData, errors, processing, firms, pract
                             <RichTextEditor
                                 value={data.description}
                                 onChange={(val) => setData('description', val)}
+                                error={errors.description}
                                 placeholder="Describe the role, responsibilities, and company culture..."
+                                label="Full Description"
                             />
-                            {errors.description && <p className="text-sm text-red-500">{errors.description}</p>}
                         </div>
 
                         <div className="space-y-2">

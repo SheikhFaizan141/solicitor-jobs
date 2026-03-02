@@ -150,8 +150,8 @@ export default function ({ data, setData, errors, processing, onSubmit, practice
                             onChange={(html) => setData('description', html)}
                             error={errors.description}
                             placeholder="Describe the law firm, practice areas, expertise, culture..."
+                            label="Description"
                         />
-                        {errors.description && <InputError message={errors.description} className="mt-2" />}
                     </div>
 
                     <div>

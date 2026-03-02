@@ -42,7 +42,7 @@ return [
         'default' => [
             'Core.Encoding' => 'utf-8',
             'HTML.Doctype' => 'HTML 4.01 Transitional',
-            'HTML.Allowed' => 'p,br,strong,b,em,i,u,a[href|title|target],ul,ol,li,h2,h3,h4',
+            'HTML.Allowed' => 'p[style],br,strong,b,em,i,u,s,del,a[href|title|target],ul,ol,li,h1[style],h2[style],h3[style],h4[style],h5[style],h6[style],blockquote,hr,code,pre',
             'HTML.TargetBlank' => true,
             'HTML.ForbiddenElements' => '',
             'CSS.AllowedProperties' => 'font,font-size,font-weight,font-style,font-family,text-decoration,padding-left,color,background-color,text-align',
