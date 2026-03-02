@@ -103,72 +103,75 @@ const JobAdminIndex = ({ jobs, locations }: JobAdminProps) => {
             </div>
 
             {/* Filters */}
-            <div className="rounded-lg border border-gray-200 bg-white p-4">
-                <div className="flex flex-col gap-4 sm:flex-row">
-                    <div className="flex-1">
-                        <div className="relative">
-                            <svg
-                                className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
+            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all hover:shadow-md">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    {/* Search Input */}
+                    <div className="relative flex-1">
+                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                            <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
-                            <input
-                                type="search"
-                                placeholder="Search job listings by title..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="w-full rounded-lg border border-gray-300 py-2 pr-4 pl-10 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-                            />
                         </div>
+                        <input
+                            type="search"
+                            placeholder="Search job listings by title..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="block w-full rounded-lg border border-gray-300 bg-gray-50 py-2.5 pr-4 pl-10 text-sm text-gray-900 transition-colors focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                        />
                     </div>
 
-                    <div className="flex flex-wrap gap-3">
-                        <Select onValueChange={(value) => setPendingLocationFilter(value)} defaultValue={pendingLocationFilter}>
-                            <SelectTrigger className="rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500">
-                                <SelectValue placeholder="Select Location" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Locations</SelectItem>
-                                {locations.map((location) => (
-                                    <SelectItem key={location.id} value={String(location.id)}>
-                                        {location.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                    {/* Filter Dropdowns & Button */}
+                    <div className="flex flex-wrap items-center gap-3">
+                        <div className="w-full sm:w-[150px]">
+                            <Select onValueChange={(value) => setPendingLocationFilter(value)} defaultValue={pendingLocationFilter}>
+                                <SelectTrigger className="h-10 w-full rounded-lg border-gray-300 bg-gray-50 text-sm focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20">
+                                    <SelectValue placeholder="Location" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Locations</SelectItem>
+                                    {locations.map((location) => (
+                                        <SelectItem key={location.id} value={String(location.id)}>
+                                            {location.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
 
-                        <Select onValueChange={(value) => setPendingStatusFilter(value)} defaultValue={pendingStatusFilter}>
-                            <SelectTrigger className="rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500">
-                                <SelectValue placeholder="Select Status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Status</SelectItem>
-                                <SelectItem value="active">Active</SelectItem>
-                                <SelectItem value="inactive">Inactive</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <div className="w-full sm:w-[140px]">
+                            <Select onValueChange={(value) => setPendingStatusFilter(value)} defaultValue={pendingStatusFilter}>
+                                <SelectTrigger className="h-10 w-full rounded-lg border-gray-300 bg-gray-50 text-sm focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20">
+                                    <SelectValue placeholder="Status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Status</SelectItem>
+                                    <SelectItem value="active">Active</SelectItem>
+                                    <SelectItem value="inactive">Inactive</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
 
-                        <Select onValueChange={(value) => setPendingSortBy(value)} defaultValue={pendingSortBy}>
-                            <SelectTrigger className="rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500">
-                                <SelectValue placeholder="Sort By" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="created_at">Latest</SelectItem>
-                                <SelectItem value="oldest">Oldest</SelectItem>
-                                <SelectItem value="title">Title A-Z</SelectItem>
-                                <SelectItem value="-title">Title Z-A</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <div className="w-full sm:w-[140px]">
+                            <Select onValueChange={(value) => setPendingSortBy(value)} defaultValue={pendingSortBy}>
+                                <SelectTrigger className="h-10 w-full rounded-lg border-gray-300 bg-gray-50 text-sm focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20">
+                                    <SelectValue placeholder="Sort By" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="created_at">Latest</SelectItem>
+                                    <SelectItem value="oldest">Oldest</SelectItem>
+                                    <SelectItem value="title">Title A-Z</SelectItem>
+                                    <SelectItem value="-title">Title Z-A</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
 
                         <button
                             type="button"
                             onClick={applyFilters}
-                            className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+                            className="inline-flex h-10 w-full items-center justify-center rounded-lg bg-blue-600 px-5 text-sm font-medium text-white shadow-sm transition-all hover:bg-blue-700 hover:shadow focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none sm:w-auto"
                         >
-                            Apply filters
+                            Apply Filters
                         </button>
                     </div>
                 </div>
