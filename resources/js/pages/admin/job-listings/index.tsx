@@ -1,4 +1,5 @@
 import { Pagination } from '@/components/pagination';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AdminLayout from '@/layouts/admin-layout';
 import { JobListingWithRelations } from '@/types/job-listing';
 import { PaginatedResponse } from '@/types/types';
@@ -8,35 +9,40 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 export interface JobAdminProps {
     jobs: PaginatedResponse<JobListingWithRelations>;
+    locations: { id: number; name: string }[];
 }
 
-const JobAdminIndex = ({ jobs }: JobAdminProps) => {
-    console.log(jobs);
+const JobAdminIndex = ({ jobs, locations }: JobAdminProps) => {
     const { delete: destroy, processing } = useForm();
 
-    const urlParams = useRef(new URLSearchParams(window.location.search));
+    const initialParams = new URLSearchParams(window.location.search);
 
-    const [search, setSearch] = useState(urlParams.current.get('search') ?? '');
-    const [sortBy, setSortBy] = useState(urlParams.current.get('sort_by') ?? 'created_at');
-    const [statusFilter, setStatusFilter] = useState(urlParams.current.get('status') ?? 'all');
+    const [search, setSearch] = useState(initialParams.get('search') ?? '');
+    const [sortBy, setSortBy] = useState(initialParams.get('sort_by') ?? 'created_at');
+    const [statusFilter, setStatusFilter] = useState(initialParams.get('status') ?? 'all');
+    const [locationFilter, setLocationFilter] = useState(initialParams.get('location') ?? 'all');
 
-    const isInitialSearchMount = useRef(true);
     const [pendingSortBy, setPendingSortBy] = useState(sortBy);
     const [pendingStatusFilter, setPendingStatusFilter] = useState(statusFilter);
+    const [pendingLocationFilter, setPendingLocationFilter] = useState(locationFilter);
+
+    const isInitialSearchMount = useRef(true);
 
     const buildQuery = useCallback(
-        (overrides?: Partial<{ search: string; sort_by: string; status: string }>) => {
+        (overrides?: Partial<{ search: string; sort_by: string; status: string; location: string }>) => {
             const nextSearch = overrides?.search ?? search;
             const nextSortBy = overrides?.sort_by ?? sortBy;
             const nextStatus = overrides?.status ?? statusFilter;
+            const nextLocation = overrides?.location ?? locationFilter;
 
             return {
                 search: nextSearch.trim() !== '' ? nextSearch : null,
                 sort_by: nextSortBy !== 'created_at' ? nextSortBy : null,
                 status: nextStatus !== 'all' ? nextStatus : null,
+                location: nextLocation !== 'all' ? nextLocation : null,
             };
         },
-        [search, sortBy, statusFilter],
+        [search, sortBy, statusFilter, locationFilter],
     );
 
     useEffect(() => {
@@ -46,13 +52,7 @@ const JobAdminIndex = ({ jobs }: JobAdminProps) => {
         }
 
         const timeoutId = setTimeout(() => {
-            router.get(
-                `/admin/job-listings${queryParams({
-                    query: buildQuery({ search }),
-                })}`,
-                {},
-                { preserveState: true, preserveScroll: true },
-            );
+            router.get(`/admin/job-listings${queryParams({ query: buildQuery({ search }) })}`, {}, { preserveState: true, preserveScroll: true });
         }, 300);
 
         return () => clearTimeout(timeoutId);
@@ -61,13 +61,16 @@ const JobAdminIndex = ({ jobs }: JobAdminProps) => {
     const applyFilters = () => {
         setSortBy(pendingSortBy);
         setStatusFilter(pendingStatusFilter);
+        setLocationFilter(pendingLocationFilter);
 
         router.get(
             `/admin/job-listings${queryParams({
-                query: buildQuery({
-                    sort_by: pendingSortBy,
-                    status: pendingStatusFilter,
-                }),
+                query: {
+                    search: search.trim() !== '' ? search : null,
+                    sort_by: pendingSortBy !== 'created_at' ? pendingSortBy : null,
+                    status: pendingStatusFilter !== 'all' ? pendingStatusFilter : null,
+                    location: pendingLocationFilter !== 'all' ? pendingLocationFilter : null,
+                },
             })}`,
             {},
             { preserveState: true, preserveScroll: true },
@@ -105,7 +108,7 @@ const JobAdminIndex = ({ jobs }: JobAdminProps) => {
                     <div className="flex-1">
                         <div className="relative">
                             <svg
-                                className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400"
+                                className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -114,7 +117,7 @@ const JobAdminIndex = ({ jobs }: JobAdminProps) => {
                             </svg>
                             <input
                                 type="search"
-                                placeholder="Search firms by name, location..."
+                                placeholder="Search job listings by title..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 className="w-full rounded-lg border border-gray-300 py-2 pr-4 pl-10 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
@@ -122,27 +125,43 @@ const JobAdminIndex = ({ jobs }: JobAdminProps) => {
                         </div>
                     </div>
 
-                    <div className="flex gap-3">
-                        <select
-                            value={pendingStatusFilter}
-                            onChange={(e) => setPendingStatusFilter(e.target.value)}
-                            className="rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-                        >
-                            <option value="all">All Status</option>
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                        </select>
+                    <div className="flex flex-wrap gap-3">
+                        <Select onValueChange={(value) => setPendingLocationFilter(value)} defaultValue={pendingLocationFilter}>
+                            <SelectTrigger className="rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500">
+                                <SelectValue placeholder="Select Location" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Locations</SelectItem>
+                                {locations.map((location) => (
+                                    <SelectItem key={location.id} value={String(location.id)}>
+                                        {location.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
 
-                        <select
-                            value={pendingSortBy}
-                            onChange={(e) => setPendingSortBy(e.target.value)}
-                            className="rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-                        >
-                            <option value="created_at">Latest</option>
-                            <option value="title">Title A-Z</option>
-                            <option value="-title">Title Z-A</option>
-                            <option value="location">Location</option>
-                        </select>
+                        <Select onValueChange={(value) => setPendingStatusFilter(value)} defaultValue={pendingStatusFilter}>
+                            <SelectTrigger className="rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500">
+                                <SelectValue placeholder="Select Status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Status</SelectItem>
+                                <SelectItem value="active">Active</SelectItem>
+                                <SelectItem value="inactive">Inactive</SelectItem>
+                            </SelectContent>
+                        </Select>
+
+                        <Select onValueChange={(value) => setPendingSortBy(value)} defaultValue={pendingSortBy}>
+                            <SelectTrigger className="rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500">
+                                <SelectValue placeholder="Sort By" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="created_at">Latest</SelectItem>
+                                <SelectItem value="oldest">Oldest</SelectItem>
+                                <SelectItem value="title">Title A-Z</SelectItem>
+                                <SelectItem value="-title">Title Z-A</SelectItem>
+                            </SelectContent>
+                        </Select>
 
                         <button
                             type="button"
@@ -174,20 +193,17 @@ const JobAdminIndex = ({ jobs }: JobAdminProps) => {
                                 <tr key={job.id} className="transition-colors hover:bg-gray-50">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <Link href={`/admin/job-listings/${job.id}`} className="hover:underline">
-                                            <div>
-                                                <div className="text-sm font-medium text-blue-600 hover:text-blue-700">{job.title}</div>
-                                                <div className="text-sm text-gray-500">
-                                                    {job.published_at ? new Date(job.published_at).toLocaleDateString() : 'Draft'}
-                                                </div>
+                                            <div className="text-sm font-medium text-blue-600 hover:text-blue-700">{job.title}</div>
+                                            <div className="text-sm text-gray-500">
+                                                {job.published_at ? new Date(job.published_at).toLocaleDateString() : 'Draft'}
                                             </div>
                                         </Link>
                                     </td>
-
                                     <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
-                                        {job.law_firm?.name || <span className="text-gray-400 italic">Independent</span>}
+                                        {job.law_firm?.name ?? <span className="text-gray-400 italic">Independent</span>}
                                     </td>
                                     <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
-                                        {job.location?.name || <span className="text-gray-400">—</span>}
+                                        {job.location?.name ?? <span className="text-gray-400">—</span>}
                                     </td>
                                     <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900 capitalize">
                                         {job.employment_type.replace('_', ' ')}
@@ -202,7 +218,7 @@ const JobAdminIndex = ({ jobs }: JobAdminProps) => {
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
-                                        <div className="flex justify-end space-x-2">
+                                        <div className="flex justify-end gap-2">
                                             <Link
                                                 href={`/admin/job-listings/${job.id}`}
                                                 className="inline-flex items-center text-gray-600 transition-colors hover:text-gray-900"
@@ -269,13 +285,12 @@ const JobAdminIndex = ({ jobs }: JobAdminProps) => {
                                     d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                                 />
                             </svg>
-                            <h3 className="mt-2 text-sm font-medium text-gray-900">No job listings</h3>
-                            <p className="mt-1 text-sm text-gray-500">Get started by creating a new job listing.</p>
+                            <h3 className="mt-2 text-sm font-medium text-gray-900">No job listings found</h3>
+                            <p className="mt-1 text-sm text-gray-500">Try adjusting your filters or create a new job listing.</p>
                         </div>
                     )}
                 </div>
 
-                {/* Pagination */}
                 <Pagination currentPage={jobs.current_page} perPage={jobs.per_page} total={jobs.total} links={jobs.links} />
             </div>
         </div>

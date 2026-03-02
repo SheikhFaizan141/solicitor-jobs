@@ -23,28 +23,54 @@ class AdminJobListingController extends Controller
         Gate::authorize('viewAny', JobListing::class);
 
         $search = $request->input('search');
-        $sortBy = $request->input('sort_by', 'created_at');
         $status = $request->input('status');
+        $locationId = $request->input('location');
+        $sortByRaw = $request->input('sort_by', 'created_at');
+
+        $sortColumn = 'created_at';
+        $sortDirection = 'desc';
+
+        switch ($sortByRaw) {
+            case 'oldest':
+                $sortColumn = 'created_at';
+                $sortDirection = 'asc';
+                break;
+            case 'title':
+                $sortColumn = 'title';
+                $sortDirection = 'asc';
+                break;
+            case '-title':
+                $sortColumn = 'title';
+                $sortDirection = 'desc';
+                break;
+            case 'created_at':
+            default:
+                $sortColumn = 'created_at';
+                $sortDirection = 'desc';
+                break;
+        }
 
         $jobs = JobListing::query()
             ->when($search, function ($query, $search) {
-                $query->where('title', 'like', '%'.$search.'%');
+                $query->where('title', 'like', '%' . $search . '%');
             })
-            ->when($status === 'active', function ($query) {
-                $query->where('is_active', true);
+            ->when($status === 'active', fn($q) => $q->active())
+            ->when($status === 'inactive', fn($q) => $q->inactive())
+            ->when($locationId, function ($query, $locationId) {
+                $query->where('location_id', $locationId);
             })
-            ->when($status === 'inactive', function ($query) {
-                $query->where('is_active', false);
-            })
-            ->orderBy($sortBy, 'desc')
+            ->orderBy($sortColumn, $sortDirection)
             ->with('lawFirm', 'location')
             ->paginate(20)
             ->withQueryString();
 
+
+        $locations = Location::active()->orderBy('name')->get(['id', 'name']);
         // return response()->json($jobs);
 
         return Inertia::render('admin/job-listings/index', [
             'jobs' => $jobs,
+            'locations' => $locations,
         ]);
     }
 
