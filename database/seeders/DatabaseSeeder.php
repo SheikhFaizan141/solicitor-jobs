@@ -17,13 +17,13 @@ class DatabaseSeeder extends Seeder
         $this->call(RoleSeeder::class);
 
         // // Seed law firms, practice areas, reviews, and jobs
-        $this->call([
-            PracticeAreaSeeder::class,
-            LawFirmSeeder::class,
-            ReviewSeeder::class,
-            LocationSeeder::class,
-            JobListingSeeder::class,
-        ]);
+        // $this->call([
+        //     PracticeAreaSeeder::class,
+        //     LawFirmSeeder::class,
+        //     ReviewSeeder::class,
+        //     LocationSeeder::class,
+        //     JobListingSeeder::class,
+        // ]);
 
         // Create admin user
         $admin = User::firstOrCreate(
@@ -37,6 +37,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'editor@example.com'],
             ['name' => 'Editor', 'password' => bcrypt('password')]
         );
+        
         $editor->syncRoles([User::ROLE_EDITOR]);
     }
 }
