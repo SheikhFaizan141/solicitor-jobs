@@ -80,20 +80,25 @@ const AdminSidebar: React.FC = () => {
             ],
         },
         {
-            label: 'Engagement',
-            icon: Users,
+            label: 'Job Alerts',
+            icon: Bell,
             children: [
                 {
-                    href: '/admin/job-alerts',
+                    href: '/admin/job-alerts/dashboard',
                     icon: Bell,
-                    label: 'Job Alerts',
+                    label: 'Dashboard',
                 },
                 {
-                    href: '/admin/reviews',
-                    icon: MessageSquare,
-                    label: 'Reviews',
+                    href: '/admin/job-alerts/subscriptions',
+                    icon: Users,
+                    label: 'Subscriptions',
                 },
             ],
+        },
+        {
+            href: '/admin/reviews',
+            icon: MessageSquare,
+            label: 'Reviews',
         },
         {
             href: '/admin/users',

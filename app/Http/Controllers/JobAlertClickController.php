@@ -3,34 +3,36 @@
 namespace App\Http\Controllers;
 
 use App\Models\JobAlertClick;
-use App\Models\JobAlertSubscription;
-use App\Models\JobListing;
+use App\Models\JobAlertDeliveryItem;
 use Illuminate\Http\Request;
 
 class JobAlertClickController extends Controller
 {
-    public function track(Request $request)
+    public function track(Request $request, JobAlertDeliveryItem $deliveryItem)
     {
-        $validated = $request->validate([
-            'alert_id' => 'required|exists:job_alert_subscriptions,id',
-            'job_id' => 'required|exists:job_listings,id',
-        ]);
+        if ($request->user() && $request->user()->id !== $deliveryItem->user_id) {
+            abort(403);
+        }
 
-        $subscription = JobAlertSubscription::findOrFail($validated['alert_id']);
-        $jobListing = JobListing::findOrFail($validated['job_id']);
+        $deliveryItem->loadMissing(['subscription', 'jobListing']);
+        $subscription = $deliveryItem->subscription;
+        $jobListing = $deliveryItem->jobListing;
 
-        // Record the click
-        JobAlertClick::create([
-            'job_alert_subscription_id' => $subscription->id,
-            'job_listing_id' => $jobListing->id,
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-            'clicked_at' => now(),
-        ]);
+        if (! $deliveryItem->clicked_at) {
+            $clickedAt = now();
+            $deliveryItem->forceFill(['clicked_at' => $clickedAt])->save();
 
-        // Increment click count
-        $subscription->incrementClickCount();
-        // Redirect to the job listing
+            JobAlertClick::create([
+                'job_alert_subscription_id' => $subscription->id,
+                'job_listing_id' => $jobListing->id,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'clicked_at' => $clickedAt,
+            ]);
+
+            $subscription->incrementClickCount();
+        }
+
         return redirect()->route('jobs.show', $jobListing);
     }
 }

@@ -90,13 +90,25 @@ class JobListing extends Model
         return $this->hasMany(UserJobInteraction::class);
     }
 
-    public function scopeActive($query)
+    public function alertDeliveryItems(): HasMany
     {
-        return $query->where('is_active', true);
+        return $this->hasMany(JobAlertDeliveryItem::class);
     }
 
     #[Scope]
-    public function open($query): void
+    public function active(Builder $query): void
+    {
+        $query->where('is_active', true);
+    }
+
+    #[Scope]
+    public function inactive(Builder $query): void
+    {
+        $query->where('is_active', false);
+    }
+
+    #[Scope]
+    public function open(Builder $query): void
     {
         $query->where(function (Builder $q): void {
             $q->whereNull('closing_date')

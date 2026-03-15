@@ -22,7 +22,7 @@ class JobController extends Controller
             ->where(function ($q): void {
                 // Allow jobs with no firm, or jobs from active, non-deleted firms
                 $q->whereNull('law_firm_id')
-                    ->orWhereHas('lawFirm', fn ($q) => $q->active());
+                    ->orWhereHas('lawFirm', fn($q) => $q->active());
             });
 
         if ($filters['q'] ?? null) {
@@ -92,14 +92,16 @@ class JobController extends Controller
         $practiceAreas = PracticeArea::orderBy('name')
             ->get(['id', 'name']);
 
-        $employmentTypes = JobListing::active()
+        $employmentTypes = JobListing::query()
+            ->active()
             ->published()
             ->distinct()
             ->orderBy('employment_type')
             ->pluck('employment_type')
             ->toArray();
 
-        $experienceLevels = JobListing::active()
+        $experienceLevels = JobListing::query()
+            ->active()
             ->published()
             ->whereNotNull('experience_level')
             ->distinct()

@@ -4,10 +4,16 @@ import { Link } from '@inertiajs/react';
 import { Briefcase, Building2, MapPin, Star } from 'lucide-react';
 
 interface FirmCardProps {
-    firm: LawFirm;
+    firm: LawFirm & {
+        reviews_count: number;
+        average_rating: number | null;
+    };
 }
 
 export function FirmCard({ firm }: FirmCardProps) {
+    const averageRating = firm.average_rating === null ? null : Number(firm.average_rating);
+    const reviewsCount = Number(firm.reviews_count);
+    
     const renderStars = (rating: number) => {
         const stars = [];
         const fullStars = Math.floor(rating);
@@ -53,16 +59,16 @@ export function FirmCard({ firm }: FirmCardProps) {
 
                 {/* Content */}
                 <div className="flex-1">
-                    <div className="flex items-start justify-between">
+                    <div className="flex flex-col items-start justify-between sm:flex-row">
                         <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-gray-900 group-hover:text-amber-600">{firm.name}</h3>
+                            <h3 className="mb-2 text-lg font-semibold text-gray-900 group-hover:text-amber-600 sm:mb-0">{firm.name}</h3>
 
                             {/* Rating */}
-                            {firm.average_rating > 0 && (
-                                <div className="mt-1 flex items-center gap-2">
-                                    <div className="flex gap-0.5">{renderStars(firm.average_rating)}</div>
+                            {averageRating !== null && Number.isFinite(averageRating) && averageRating > 0 && (
+                                <div className="mt-1 mb-1.5 flex items-center gap-2 sm:mb-0">
+                                    <div className="flex gap-0.5">{renderStars(averageRating)}</div>
                                     <span className="text-sm text-gray-600">
-                                        {/* {firm.average_rating.toFixed(1)} ({firm.reviews_count} reviews) */}
+                                        {averageRating.toFixed(1)} ({reviewsCount} reviews)
                                     </span>
                                 </div>
                             )}

@@ -14,8 +14,9 @@ export interface LawFirm {
     location: string;
     phone: string;
     is_active: boolean;
-    average_rating: number;
-    // reviews_count: number;
+    average_rating: number | null;
+    // Included on some endpoints (e.g. index) via withCount('activeReviews as reviews_count')
+    reviews_count?: number;
     jobs_count: number;
 
     contacts?: Contact[];

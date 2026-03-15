@@ -29,7 +29,9 @@ Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
 Route::get('/jobs/{job:slug}', [JobController::class, 'show'])->name('jobs.show');
 
 // Job Alerts public tracking route
-Route::get('/job-alert/click', [JobAlertClickController::class, 'track'])->name('job-alert.click');
+Route::get('/job-alert/click/{deliveryItem}', [JobAlertClickController::class, 'track'])
+    ->middleware('signed')
+    ->name('job-alert.click');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
@@ -44,36 +46,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/jobs/{jobListing}/save', [SavedJobController::class, 'store'])->name('jobs.save');
     Route::delete('/jobs/{jobListing}/unsave', [SavedJobController::class, 'destroy'])->name('jobs.unsave');
     Route::patch('/saved-jobs/{interaction}/notes', [SavedJobController::class, 'updateNotes'])->name('saved-jobs.notes.update');
-
-    // JOB ALERT SUBSCRIPTIONS TEST ROUTE - DEV ONLY
-    /*     Route::get('/dev/preview-job-alert', function () {
-            $user = User::factory()->create(['email' => 'amesaaasaa@example.test']); // [app/Models/User.php](app/Models/User.php)
-
-            $area = PracticeArea::first(); // or PracticeArea::first()
-            $job = JobListing::factory()->create([     // [app/Models/JobListing.php](app/Models/JobListing.php)
-                'employment_type' => 'full_time',
-                'location' => 'London',
-                'is_active' => true,
-                'published_at' => now(),
-            ]);
-            $job->practiceAreas()->sync([$area->id]);
-
-            $sub = JobAlertSubscription::create([
-                'user_id' => $user->id,
-                'frequency' => 'daily',
-                'employment_types' => ['full_time'],
-                'practice_area_ids' => [$area->id],
-                'location' => 'London',
-                'is_active' => true,
-            ]);
-
-
-            $subscription = \App\Models\JobAlertSubscription::with('user')->first();
-            $jobs = \App\Models\JobListing::with(['lawFirm', 'practiceAreas'])->active()->published()->take(3)->get();
-
-            return new JobAlertDigestMail($subscription, $jobs);
-        });
-     */
 
     Route::get('/dev/preview-job-alert', function () {
         $user = \App\Models\User::first(); // Or create a test user
@@ -186,9 +158,12 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
             ->names('users')
             ->except(['show']);
 
-        Route::resource('job-alerts', AdminJobAlertController::class)->only(['index', 'update', 'destroy']);
+        Route::get('job-alerts', [AdminJobAlertController::class, 'index'])->name('job-alerts.index');
+        Route::get('job-alerts/dashboard', [AdminJobAlertController::class, 'dashboard'])->name('job-alerts.dashboard');
+        Route::get('job-alerts/subscriptions', [AdminJobAlertController::class, 'subscriptions'])->name('job-alerts.subscriptions');
         Route::post('job-alerts/bulk-destroy', [AdminJobAlertController::class, 'bulkDestroy'])->name('job-alerts.bulk-destroy');
         Route::post('job-alerts/bulk-toggle', [AdminJobAlertController::class, 'bulkToggle'])->name('job-alerts.bulk-toggle');
+        Route::resource('job-alerts', AdminJobAlertController::class)->only(['update', 'destroy']);
     });
 });
 

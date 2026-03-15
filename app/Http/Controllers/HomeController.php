@@ -33,7 +33,7 @@ class HomeController extends Controller
             ->get(['id', 'name']);
 
         // Job statistics
-        $totalJobs = JobListing::active()->published()->count();
+        $totalJobs = JobListing::query()->active()->published()->count();
 
         return Inertia::render('home', [
             'featuredJobs' => $featuredJobs,

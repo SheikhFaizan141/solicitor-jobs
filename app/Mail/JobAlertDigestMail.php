@@ -9,6 +9,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Collection;
 
 class JobAlertDigestMail extends Mailable implements ShouldQueue
 {
@@ -17,7 +18,7 @@ class JobAlertDigestMail extends Mailable implements ShouldQueue
     /**
      * Create a new message instance.
      */
-    public function __construct(public JobAlertSubscription $subscription, public $jobs)
+    public function __construct(public JobAlertSubscription $subscription, public Collection $jobs)
     {
         //
     }
@@ -39,8 +40,6 @@ class JobAlertDigestMail extends Mailable implements ShouldQueue
      */
     public function content(): Content
     {
-
-        // dd( 'jobs', $this->jobs, 'subscription', $this->subscription );
 
         return new Content(
             markdown: 'emails.job_alert_digest',

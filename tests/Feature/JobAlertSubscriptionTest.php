@@ -55,7 +55,6 @@ it('stores keyword and experience level when creating a job alert', function () 
     $user = User::factory()->create();
     $location = Location::query()->create([
         'name' => 'London',
-        'type' => 'city',
         'region' => 'Greater London',
         'country' => 'UK',
         'is_remote' => false,
@@ -113,7 +112,7 @@ it('filters digest jobs by keyword', function () {
         return $mail->hasTo($user->email)
             && $mail->subscription->is($subscription)
             && $mail->jobs->count() === 1
-            && $mail->jobs->first()->title === 'Corporate Associate';
+            && $mail->jobs->first()['job']->title === 'Corporate Associate';
     });
 });
 
@@ -149,6 +148,6 @@ it('filters digest jobs by experience level', function () {
         return $mail->hasTo($user->email)
             && $mail->subscription->is($subscription)
             && $mail->jobs->count() === 1
-            && $mail->jobs->first()->title === 'Senior Corporate Lawyer';
+            && $mail->jobs->first()['job']->title === 'Senior Corporate Lawyer';
     });
 });
